@@ -9,9 +9,13 @@
         .header-container { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 15px; flex-wrap: wrap; }
         h1 { font-size: 3.5em; text-shadow: 0 0 20px #00ffcc; margin: 0; text-transform: uppercase; letter-spacing: 4px; font-weight: bold;}
         .badge { background-color: #111; border: 3px solid #00ffcc; border-radius: 12px; padding: 5px 20px; font-size: 2.8em; text-shadow: 0 0 15px #00ffcc; box-shadow: 0 0 20px #00ffcc; font-weight: bold; color: #fff;}
-        .subtitle { color: #888; font-size: 1.2em; letter-spacing: 3px; margin-bottom: 40px; text-transform: uppercase; }
-        .back-btn { display: inline-block; margin-bottom: 40px; padding: 12px 25px; background-color: #1a1a1c; color: #fff; text-decoration: none; border-radius: 8px; border: 1px solid #333; transition: 0.3s; font-weight: bold; letter-spacing: 1px; }
+        .subtitle { color: #888; font-size: 1.2em; letter-spacing: 3px; margin-bottom: 20px; text-transform: uppercase; }
+        .search-container { margin: 0 auto 30px auto; max-width: 600px; display: flex; gap: 15px; align-items: center; justify-content: center;}
+        .back-btn { padding: 12px 25px; background-color: #1a1a1c; color: #fff; text-decoration: none; border-radius: 8px; border: 1px solid #333; transition: 0.3s; font-weight: bold; letter-spacing: 1px; }
         .back-btn:hover { background-color: #00ffcc; color: #000; box-shadow: 0 0 15px #00ffcc; }
+        .search-box { flex-grow: 1; padding: 12px 20px; font-size: 1.2em; background-color: #111; border: 2px solid #00ffcc; border-radius: 8px; color: #00ffcc; font-family: 'Courier New', Courier, monospace; box-shadow: 0 0 10px rgba(0, 255, 204, 0.2); outline: none; transition: 0.3s; }
+        .search-box:focus { box-shadow: 0 0 20px #00ffcc; background-color: #1a1a1c; }
+        .search-box::placeholder { color: #444; letter-spacing: 2px; }
         .dashboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; max-width: 1200px; margin: 0 auto; }
         .card { background-color: #161618; border: 1px solid #2a2a2c; border-radius: 12px; padding: 40px 20px; font-size: 1.4em; font-weight: bold; cursor: pointer; transition: all 0.3s ease-in-out; color: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; word-break: break-word; }
         .card:hover { background-color: #1a1a1c; border-color: #00ffcc; box-shadow: 0 0 20px rgba(0, 255, 204, 0.3); transform: translateY(-4px); color: #00ffcc; }
@@ -25,9 +29,13 @@
         <div class="badge">1</div>
     </div>
     <div class="subtitle" id="section-title">STATUS: ACTIVE</div>
-    <a href="../index.html" class="back-btn">⬅ RETURN</a>
     
-    <div class="dashboard">
+    <div class="search-container">
+        <a href="../index.html" class="back-btn">⬅ RETURN</a>
+        <input type="text" id="cartelSearch" class="search-box" placeholder="> FILTER FOLDERS & FILES_">
+    </div>
+    
+    <div class="dashboard" id="vaultGrid">
         <a href="Scene 1/index.html"><div class="card">Scene 1</div></a>
         <a href="Scene 2/index.html"><div class="card">Scene 2</div></a>
         <a href="Scene 3/index.html"><div class="card">Scene 3</div></a>
@@ -40,6 +48,21 @@
         if (!target || target === "") target = "MASTER VAULT";
         let folder = decodeURI(target).replace(/_/g, ' ');
         document.getElementById('section-title').innerText = "DIRECTORY: " + folder + " | STATUS: ONLINE";
+
+        document.getElementById('cartelSearch').addEventListener('keyup', function() {
+            let filter = this.value.toUpperCase();
+            let grid = document.getElementById('vaultGrid');
+            let links = grid.getElementsByTagName('a');
+            for (let i = 0; i < links.length; i++) {
+                let card = links[i].getElementsByClassName('card')[0];
+                let text = card.textContent || card.innerText;
+                if (text.toUpperCase().indexOf(filter) > -1) {
+                    links[i].style.display = "";
+                } else {
+                    links[i].style.display = "none";
+                }
+            }
+        });
     </script>
 </body>
 </html>
