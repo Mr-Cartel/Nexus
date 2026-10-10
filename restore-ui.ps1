@@ -1,0 +1,57 @@
+$utf8NoBom = New-Object System.Text.UTF8Encoding $False
+$sections = @("01_Nexus", "02_The_Cartel", "03_PYQs", "04_Short_Notes", "05_Cached", "06_Syllabus", "07_Specimens")
+
+foreach ($sec in $sections) {
+    if (Test-Path $sec) {
+        $speaking = if ($sec -eq "01_Nexus") { "<a href='Speaking Skills/index.html'><div class='card'>🗣️ Speaking Skills</div></a>" } else { "" }
+        
+        $html = @"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartel Section</title>
+    <style>
+        body { background-color: #0a0a0a; color: #00ffcc; font-family: 'Courier New', Courier, monospace; text-align: center; margin: 0; padding: 40px; }
+        h1 { font-size: 3em; text-shadow: 0 0 15px #00ffcc; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px;}
+        .back-btn { display: inline-block; margin-bottom: 40px; padding: 10px 20px; background-color: #222; color: #fff; text-decoration: none; border-radius: 5px; border: 1px solid #444; transition: 0.3s; }
+        .back-btn:hover { background-color: #00ffcc; color: #000; }
+        .dashboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: 1200px; margin: 0 auto; }
+        .card { background-color: #141414; border: 2px solid #222; border-radius: 10px; padding: 25px 15px; font-size: 1.2em; font-weight: bold; cursor: pointer; transition: all 0.3s ease-in-out; color: #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.5);}
+        .card:hover { border-color: #00ffcc; box-shadow: 0 0 15px #00ffcc; transform: translateY(-3px); color: #00ffcc; }
+        a { text-decoration: none; }
+    </style>
+</head>
+<body>
+    <h1 id="section-title">📂 LOADING...</h1>
+    <a href="../index.html" class="back-btn">⬅ RETURN TO MASTER DASHBOARD</a>
+    <div class="dashboard">
+        <a href="Biology/index.html"><div class="card">🧬 Biology</div></a>
+        <a href="Chemistry/index.html"><div class="card">🧪 Chemistry</div></a>
+        <a href="Computer Applications/index.html"><div class="card">💻 Computer Apps</div></a>
+        <a href="English Language/index.html"><div class="card">📝 Eng Language</div></a>
+        <a href="English Literature/index.html"><div class="card">📚 Eng Literature</div></a>
+        <a href="Geography/index.html"><div class="card">🌍 Geography</div></a>
+        <a href="Hindi/index.html"><div class="card">🖋️ Hindi</div></a>
+        <a href="History and Civics/index.html"><div class="card">🏛️ History & Civics</div></a>
+        <a href="Maths/index.html"><div class="card">➗ Maths</div></a>
+        <a href="Physics/index.html"><div class="card">🧲 Physics</div></a>
+        $speaking
+    </div>
+    <script>
+        let path = window.location.pathname;
+        let parts = path.split('/');
+        let target = parts[parts.length - 1].includes('.html') ? parts[parts.length - 2] : parts[parts.length - 1];
+        let folder = decodeURI(target).replace(/_/g, ' ');
+        document.getElementById('section-title').innerText = "📂 " + folder;
+    </script>
+</body>
+</html>
+"@
+        
+        $file = "$sec\index.html"
+        [System.IO.File]::WriteAllText((Join-Path (Get-Location) $file), $html, $utf8NoBom)
+    }
+}
+Write-Host "Emojis and UI flawlessly restored!" -ForegroundColor Cyan

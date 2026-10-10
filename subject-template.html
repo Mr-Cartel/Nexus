@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartel Section</title>
+    <style>
+        body { background-color: #0a0a0a; color: #00ffcc; font-family: 'Courier New', Courier, monospace; text-align: center; margin: 0; padding: 40px; }
+        h1 { font-size: 3em; text-shadow: 0 0 15px #00ffcc; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px;}
+        .back-btn { display: inline-block; margin-bottom: 40px; padding: 10px 20px; background-color: #222; color: #fff; text-decoration: none; border-radius: 5px; border: 1px solid #444; transition: 0.3s; }
+        .back-btn:hover { background-color: #00ffcc; color: #000; }
+        .dashboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: 1200px; margin: 0 auto; }
+        .card { background-color: #141414; border: 2px solid #222; border-radius: 10px; padding: 25px 15px; font-size: 1.2em; font-weight: bold; cursor: pointer; transition: all 0.3s ease-in-out; color: #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.5);}
+        .card:hover { border-color: #00ffcc; box-shadow: 0 0 15px #00ffcc; transform: translateY(-3px); color: #00ffcc; }
+        a { text-decoration: none; }
+    </style>
+</head>
+<body>
+    <h1 id="section-title">📂 LOADING...</h1>
+    <a href="../index.html" class="back-btn">⬅ RETURN TO MASTER DASHBOARD</a>
+    <div class="dashboard">
+        <a href="Biology"><div class="card">🧬 Biology</div></a>
+        <a href="Blueprint"><div class="card">📐 Blueprint</div></a>
+        <a href="Chemistry"><div class="card">🧪 Chemistry</div></a>
+        <a href="Computer Applications"><div class="card">💻 Computer Apps</div></a>
+        <a href="English Language"><div class="card">📝 Eng Language</div></a>
+        <a href="English Literature"><div class="card">📚 Eng Literature</div></a>
+        <a href="Geography"><div class="card">🌍 Geography</div></a>
+        <a href="Hindi"><div class="card">🖋️ Hindi</div></a>
+        <a href="History and Civics"><div class="card">🏛️ History & Civics</div></a>
+        <a href="Maths"><div class="card">➗ Maths</div></a>
+        <a href="Physics"><div class="card">🧲 Physics</div></a>
+        <a href="Speaking Skills"><div class="card">🗣️ Speaking Skills</div></a>
+    </div>
+    <script>
+        // Upgraded Script: Properly reads local Chrome paths
+        let path = window.location.pathname;
+        let parts = path.split('/');
+        let target = parts[parts.length - 1].includes('.html') ? parts[parts.length - 2] : parts[parts.length - 1];
+        let folder = decodeURI(target).replace(/_/g, ' ');
+        document.getElementById('section-title').innerText = "📂 " + folder;
+    </script>
+</body>
+</html>
