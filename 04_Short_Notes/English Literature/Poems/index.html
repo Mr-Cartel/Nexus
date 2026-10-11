@@ -34,10 +34,38 @@
         .intel-list { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
         .intel-chip { background: #161618; border: 1px solid var(--core); color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.95em; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 10px var(--core-glow); transition: 0.25s; }
         .intel-chip:hover { background: var(--core); color: #000; transform: translateY(-3px); box-shadow: 0 0 20px var(--core); }
+.holo-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 8, 0.85); backdrop-filter: blur(6px); z-index: 9500; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.25s ease; }
+        .holo-modal.active { display: flex; opacity: 1; }
+        .holo-window { width: 94%; height: 90%; max-width: 1400px; background: #0b0b0d; border: 2px solid var(--core); border-radius: 12px; box-shadow: 0 0 40px var(--core-glow), 0 0 15px var(--core); display: flex; flex-direction: column; overflow: hidden; transform: scale(0.92); transition: transform 0.25s ease; }
+        .holo-modal.active .holo-window { transform: scale(1); }
+        .holo-header { background: #121215; border-bottom: 2px solid var(--core); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .holo-title { color: var(--core); font-weight: bold; font-size: 1.05em; letter-spacing: 2px; text-shadow: 0 0 10px var(--core); text-transform: uppercase; word-break: break-all; text-align: left; }
+        .holo-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center; }
+        .holo-btn { background: #1a1a1d; color: var(--core); border: 1px solid var(--core); padding: 7px 12px; border-radius: 6px; font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 0.85em; cursor: pointer; text-decoration: none; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px; }
+        .holo-btn:hover { background: var(--core); color: #000; box-shadow: 0 0 15px var(--core); }
+        .holo-close { border-color: #ff0033; color: #ff0033; }
+        .holo-close:hover { background: #ff0033 !important; color: #fff !important; box-shadow: 0 0 15px #ff0033 !important; }
+        .holo-frame { width: 100%; flex-grow: 1; border: none; background: #161618; }
     </style>
 </head>
 <body>
     <canvas id="matrixCanvas"></canvas>
+<div id="holoModal" class="holo-modal">
+        <div class="holo-window">
+            <div class="holo-header">
+                <span id="holoTitle" class="holo-title">&#128196; HOLO-COCKPIT // READY</span>
+                <div class="holo-controls">
+                    <button id="holoSystem" class="holo-btn">&#128421; SYSTEM APP</button>
+                    <a id="holoSave" href="#" download class="holo-btn">&#128190; SAVE</a>
+                    <button id="holoPrint" class="holo-btn">&#128424; PRINT</button>
+                    <button id="holoShare" class="holo-btn">&#128279; SHARE</button>
+                    <a id="holoExternal" href="#" target="_blank" class="holo-btn">&#8599; FULL TAB</a>
+                    <button id="holoClose" class="holo-btn holo-close">&#10006; CLOSE [ESC]</button>
+                </div>
+            </div>
+            <iframe id="holoFrame" class="holo-frame" src=""></iframe>
+        </div>
+    </div>
     <button id="muteBtn" class="mute-btn">&#128266; AUDIO: ON</button>
     <button id="themeBtn" class="theme-btn">&#127912; CORE: CYAN</button>
     <div class="header-container">
@@ -266,6 +294,107 @@
             }
         });
         renderRecentIntel();
+// HOLO-COCKPIT IN-VAULT PDF THEATER (WITH SYSTEM APP, SAVE, PRINT & SHARE)
+        const holoModal = document.getElementById('holoModal');
+        const holoFrame = document.getElementById('holoFrame');
+        const holoTitle = document.getElementById('holoTitle');
+        const holoSystem = document.getElementById('holoSystem');
+        const holoSave = document.getElementById('holoSave');
+        const holoPrint = document.getElementById('holoPrint');
+        const holoShare = document.getElementById('holoShare');
+        const holoExternal = document.getElementById('holoExternal');
+        const holoClose = document.getElementById('holoClose');
+
+        function closeHoloCockpit() {
+            if (!holoModal || !holoModal.classList.contains('active')) return;
+            playSynth(700, 250, 0.15, 'sawtooth');
+            holoModal.classList.remove('active');
+            setTimeout(function() { holoFrame.src = ''; }, 250);
+        }
+
+        if (holoClose) holoClose.addEventListener('click', closeHoloCockpit);
+        if (holoModal) {
+            holoModal.addEventListener('click', function(e) {
+                if (e.target === holoModal) closeHoloCockpit();
+            });
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeHoloCockpit();
+        });
+
+        if (holoSystem) {
+            holoSystem.addEventListener('click', function() {
+                playSynth(500, 1500, 0.14, 'sawtooth');
+                const fileUrl = holoExternal.href;
+                const origText = holoSystem.innerHTML;
+                holoSystem.innerText = '\uD83D\uDE80 LAUNCHING APP...';
+                setTimeout(function() { holoSystem.innerHTML = origText; }, 1800);
+
+                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+                if (isMobile) {
+                    window.open(fileUrl, '_system');
+                } else {
+                    const sysLink = document.createElement('a');
+                    sysLink.href = fileUrl;
+                    sysLink.setAttribute('download', holoSave.getAttribute('download') || 'document.pdf');
+                    document.body.appendChild(sysLink);
+                    sysLink.click();
+                    sysLink.remove();
+                }
+            });
+        }
+
+        if (holoSave) {
+            holoSave.addEventListener('click', function() {
+                playSynth(600, 1200, 0.1, 'sine');
+            });
+        }
+
+        if (holoPrint) {
+            holoPrint.addEventListener('click', function() {
+                playSynth(800, 1400, 0.1, 'sine');
+                try {
+                    holoFrame.contentWindow.focus();
+                    holoFrame.contentWindow.print();
+                } catch (err) {
+                    window.open(holoFrame.src, '_blank');
+                }
+            });
+        }
+
+        if (holoShare) {
+            holoShare.addEventListener('click', function() {
+                playSynth(900, 1600, 0.12, 'triangle');
+                const shareUrl = holoExternal.href;
+                const shareTitle = holoTitle.innerText;
+                if (navigator.share && shareUrl.indexOf('http') === 0) {
+                    navigator.share({ title: shareTitle, text: 'Binary Cartel Intel: ' + shareTitle, url: shareUrl }).catch(function() {});
+                } else if (navigator.clipboard) {
+                    navigator.clipboard.writeText(shareUrl).then(function() {
+                        const orig = holoShare.innerHTML;
+                        holoShare.innerText = '\u2714 LINK COPIED!';
+                        setTimeout(function() { holoShare.innerHTML = orig; }, 1800);
+                    });
+                }
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (!link || link.id === 'holoExternal' || link.id === 'holoSave') return;
+            const rawHref = link.getAttribute('href') || '';
+            if (rawHref.toLowerCase().endsWith('.pdf') && holoModal && holoFrame) {
+                e.preventDefault();
+                playSynth(450, 1350, 0.16, 'triangle');
+                const cleanName = link.innerText.replace(/[\uD83D\uDCC4\uD83D\uDCC2]/g, '').trim();
+                holoTitle.innerText = '\uD83D\uDCC4 ' + cleanName;
+                holoExternal.href = link.href;
+                holoSave.href = link.href;
+                holoSave.setAttribute('download', cleanName);
+                holoFrame.src = link.href;
+                holoModal.classList.add('active');
+            }
+        });
     </script>
 </body>
 </html>
