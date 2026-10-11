@@ -119,6 +119,25 @@
         .cartel-ham-drop { display: none; flex-direction: column; gap: 10px; background: rgba(10, 10, 14, 0.96); border: 2px solid var(--core); border-radius: 12px; padding: 12px; box-shadow: 0 0 30px var(--core-glow); backdrop-filter: blur(8px); min-width: 215px; }
         .cartel-ham-drop.open { display: flex; }
         .cartel-ham-drop .cyberlab-orb, .cartel-ham-drop .ghostlink-orb { position: static !important; width: 100%; justify-content: flex-start; border-radius: 8px; padding: 10px 16px; font-size: 0.92em; box-sizing: border-box; }
+/* DUAL-PDF WAR ROOM & LASER ANNOTATOR */
+        .war-room-bar { background: #101015; border-bottom: 2px solid var(--core); padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; z-index: 30; font-family: 'Courier New', Courier, monospace; }
+        .war-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; background: #16161d; padding: 5px 9px; border-radius: 7px; border: 1px solid #2a2a36; }
+        .war-btn { background: #1c1c24; color: var(--core); border: 1px solid var(--core); border-radius: 5px; padding: 5px 10px; font-family: 'Courier New', Courier, monospace; font-size: 0.78em; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .war-btn:hover, .war-btn.active { background: var(--core); color: #000; box-shadow: 0 0 12px var(--core); }
+        .war-btn.danger { color: #ff0044; border-color: #ff0044; }
+        .war-btn.danger:hover, .war-btn.danger.active { background: #ff0044; color: #fff; box-shadow: 0 0 12px #ff0044; }
+        .war-input, .war-select { background: #0c0c10; color: var(--core); border: 1px solid var(--core); border-radius: 5px; padding: 4px 8px; font-family: 'Courier New', Courier, monospace; font-size: 0.78em; outline: none; }
+        .war-swatch { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid #444; display: inline-block; transition: 0.15s; }
+        .war-swatch.active { border-color: #fff; transform: scale(1.2); box-shadow: 0 0 8px #fff; }
+        .war-score-badge { background: #09090c; color: var(--core); border: 1px solid var(--core); padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 0.82em; letter-spacing: 1px; text-shadow: 0 0 6px var(--core); }
+        .war-split-wrap { position: relative; flex-grow: 1; width: 100%; height: 100%; display: flex; overflow: hidden; }
+        .war-split-wrap #holoFrame { flex: 1; width: 50%; height: 100%; border: none; }
+        .war-right-pane { flex: 1; width: 50%; height: 100%; display: none; flex-direction: column; border-left: 3px solid var(--core); background: #0b0b0f; }
+        .war-right-pane.open { display: flex; }
+        .war-right-top { background: #14141c; padding: 6px 10px; border-bottom: 1px solid var(--core); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+        .war-right-frame { flex-grow: 1; width: 100%; height: 100%; border: none; background: #fff; }
+        .war-ink-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 25; }
+        .war-ink-canvas.drawing { pointer-events: auto; cursor: crosshair; }
     </style>
 </head>
 <body>
@@ -2110,6 +2129,310 @@
                 }
             });
         }
+// ============================================================================
+        // DUAL-PDF WAR ROOM, TRANSPARENT LASER ANNOTATOR & LIVE MARKS TALLY ENGINE
+        // ============================================================================
+        (function initDualPdfWarRoom() {
+            const hFrame = document.getElementById('holoFrame');
+            if (!hFrame || !hFrame.parentNode) return;
+
+            const parentContainer = hFrame.parentNode;
+
+            // 1. Build Top War Room Command Strip
+            const warBar = document.createElement('div');
+            warBar.className = 'war-room-bar';
+            warBar.innerHTML =
+                // Dual View Controls
+                '<div class="war-group">' +
+                    '<button id="warDualToggle" class="war-btn">\u2694 DUAL VIEW: OFF</button>' +
+                '</div>' +
+                // Transparent Laser Ink Controls
+                '<div class="war-group">' +
+                    '<button id="warInkToggle" class="war-btn">\uD83D\uDD8D LASER INK: OFF</button>' +
+                    '<span class="war-swatch active" data-col="#00ffcc" style="background:#00ffcc;" title="Cyan Laser"></span>' +
+                    '<span class="war-swatch" data-col="#ff0033" style="background:#ff0033;" title="Sith Red"></span>' +
+                    '<span class="war-swatch" data-col="#ffcc00" style="background:#ffcc00;" title="Gold"></span>' +
+                    '<span class="war-swatch" data-col="#00ff66" style="background:#00ff66;" title="Matrix Green"></span>' +
+                    '<button id="warEraserBtn" class="war-btn" title="Eraser">\uD83E\uDDFD</button>' +
+                    '<button id="warClearInkBtn" class="war-btn danger" title="Wipe Glass">\uD83D\uDDD1 CLEAR</button>' +
+                '</div>' +
+                // Live Marks Tally Controls
+                '<div class="war-group">' +
+                    '<span style="color:#aaa;font-size:0.75em;font-weight:bold;">\uD83C\uDFAF MARKS:</span>' +
+                    '<button class="war-btn war-mark-btn" data-add="0.5">+0.5</button>' +
+                    '<button class="war-btn war-mark-btn" data-add="1">+1</button>' +
+                    '<button class="war-btn war-mark-btn" data-add="2">+2</button>' +
+                    '<button class="war-btn war-mark-btn" data-add="5">+5</button>' +
+                    '<button class="war-btn danger war-mark-btn" data-add="-0.5">-0.5</button>' +
+                    '<span style="color:#aaa;font-size:0.75em;">MAX:</span>' +
+                    '<input type="number" id="warMaxMarks" class="war-input" value="80" min="1" max="1000" style="width:52px;">' +
+                    '<span id="warScoreBadge" class="war-score-badge">0 / 80 (0%) [RANK: --]</span>' +
+                    '<button id="warResetMarks" class="war-btn" title="Reset Score">\uD83D\uDD04</button>' +
+                '</div>';
+
+            // 2. Build Split-Screen Wrapper, Right PDF Pane & Transparent Laser Canvas
+            const splitWrap = document.createElement('div');
+            splitWrap.className = 'war-split-wrap';
+
+            const rightPane = document.createElement('div');
+            rightPane.id = 'warRightPane';
+            rightPane.className = 'war-right-pane';
+            rightPane.innerHTML =
+                '<div class="war-right-top">' +
+                    '<span style="color:var(--core);font-weight:bold;font-size:0.78em;">\uD83D\uDCC4 2ND PDF:</span>' +
+                    '<input type="text" id="warPdfFilter" class="war-input" placeholder="Search vault PDF..." style="width:130px;">' +
+                    '<select id="warPdfSelect" class="war-select" style="flex:1;min-width:140px;"><option value="">-- Select Vault PDF --</option></select>' +
+                    '<label class="war-btn" style="cursor:pointer;">\uD83D\uDCC2 LOCAL PDF<input type="file" id="warLocalFile" accept="application/pdf" style="display:none;"></label>' +
+                '</div>' +
+                '<iframe id="holoFrame2" class="war-right-frame" src=""></iframe>';
+
+            const inkCanvas = document.createElement('canvas');
+            inkCanvas.id = 'warInkCanvas';
+            inkCanvas.className = 'war-ink-canvas';
+
+            parentContainer.insertBefore(warBar, hFrame);
+            parentContainer.insertBefore(splitWrap, hFrame);
+            splitWrap.appendChild(hFrame);
+            splitWrap.appendChild(rightPane);
+            splitWrap.appendChild(inkCanvas);
+
+            // 3. Populate 2nd PDF Selector from Global Index & Current Page
+            const warPdfSelect = document.getElementById('warPdfSelect');
+            const warPdfFilter = document.getElementById('warPdfFilter');
+            const hFrame2 = document.getElementById('holoFrame2');
+            let allPdfItems = [];
+
+            function collectVaultPdfs() {
+                allPdfItems = [];
+                const seen = {};
+                if (window.CARTEL_INDEX && window.CARTEL_INDEX.length > 0) {
+                    window.CARTEL_INDEX.forEach(function(item) {
+                        if (item.url && item.url.toLowerCase().indexOf('.pdf') > -1 && !seen[item.url]) {
+                            seen[item.url] = true;
+                            allPdfItems.push({ label: item.name + ' [' + item.sector + ']', url: item.url });
+                        }
+                    });
+                }
+                document.querySelectorAll('#vaultGrid a').forEach(function(a) {
+                    const href = a.getAttribute('href') || '';
+                    if (href.toLowerCase().indexOf('.pdf') > -1 && !seen[href]) {
+                        seen[href] = true;
+                        allPdfItems.push({ label: a.innerText.trim(), url: href });
+                    }
+                });
+                renderPdfOptions('');
+            }
+
+            function renderPdfOptions(query) {
+                if (!warPdfSelect) return;
+                const q = (query || '').toLowerCase();
+                warPdfSelect.innerHTML = '<option value="">-- Select 2nd PDF (' + allPdfItems.length + ' available) --</option>';
+                allPdfItems.forEach(function(item) {
+                    if (!q || item.label.toLowerCase().indexOf(q) > -1) {
+                        const opt = document.createElement('option');
+                        opt.value = item.url;
+                        opt.textContent = item.label;
+                        warPdfSelect.appendChild(opt);
+                    }
+                });
+            }
+
+            setTimeout(collectVaultPdfs, 500);
+
+            if (warPdfFilter) {
+                warPdfFilter.addEventListener('input', function() {
+                    renderPdfOptions(warPdfFilter.value);
+                    if (warPdfSelect.options.length > 1) {
+                        warPdfSelect.selectedIndex = 1;
+                        hFrame2.src = warPdfSelect.value;
+                    }
+                });
+            }
+            if (warPdfSelect) {
+                warPdfSelect.addEventListener('change', function() {
+                    if (warPdfSelect.value) {
+                        playSynth(600, 1300, 0.09, 'sine');
+                        hFrame2.src = warPdfSelect.value;
+                    }
+                });
+            }
+
+            const warLocalFile = document.getElementById('warLocalFile');
+            if (warLocalFile) {
+                warLocalFile.addEventListener('change', function(e) {
+                    const file = e.target.files && e.target.files[0];
+                    if (file) {
+                        playSynth(700, 1500, 0.1, 'triangle');
+                        hFrame2.src = URL.createObjectURL(file);
+                    }
+                });
+            }
+
+            // 4. Dual View Split Toggle
+            const warDualToggle = document.getElementById('warDualToggle');
+            let dualActive = false;
+            if (warDualToggle) {
+                warDualToggle.addEventListener('click', function() {
+                    dualActive = !dualActive;
+                    playSynth(550, 1400, 0.12, 'triangle');
+                    rightPane.classList.toggle('open', dualActive);
+                    warDualToggle.classList.toggle('active', dualActive);
+                    warDualToggle.innerText = dualActive ? '\u2694 DUAL VIEW: ON' : '\u2694 DUAL VIEW: OFF';
+                    if (dualActive && allPdfItems.length === 0) collectVaultPdfs();
+                    setTimeout(resizeInkCanvas, 100);
+                });
+            }
+
+            // 5. Transparent Laser Ink Annotator Engine
+            const warInkToggle = document.getElementById('warInkToggle');
+            const warEraserBtn = document.getElementById('warEraserBtn');
+            const warClearInkBtn = document.getElementById('warClearInkBtn');
+            const inkCtx = inkCanvas.getContext('2d');
+            let inkModeOn = false, isErasing = false, inkDrawing = false, inkCol = '#00ffcc';
+
+            function resizeInkCanvas() {
+                const r = splitWrap.getBoundingClientRect();
+                if (r.width === 0 || r.height === 0) return;
+                const temp = document.createElement('canvas');
+                temp.width = inkCanvas.width;
+                temp.height = inkCanvas.height;
+                if (inkCanvas.width > 0 && inkCanvas.height > 0) {
+                    temp.getContext('2d').drawImage(inkCanvas, 0, 0);
+                }
+                inkCanvas.width = r.width;
+                inkCanvas.height = r.height;
+                if (temp.width > 0 && temp.height > 0) {
+                    inkCtx.drawImage(temp, 0, 0);
+                }
+            }
+            window.addEventListener('resize', resizeInkCanvas);
+
+            if (warInkToggle) {
+                warInkToggle.addEventListener('click', function() {
+                    inkModeOn = !inkModeOn;
+                    playSynth(650, 1450, 0.09, 'sine');
+                    resizeInkCanvas();
+                    inkCanvas.classList.toggle('drawing', inkModeOn);
+                    warInkToggle.classList.toggle('active', inkModeOn);
+                    warInkToggle.innerText = inkModeOn ? '\uD83D\uDD8D DRAW: ON (CLICK TO SCROLL)' : '\uD83D\uDD8D LASER INK: OFF';
+                });
+            }
+
+            document.querySelectorAll('.war-swatch').forEach(function(sw) {
+                sw.addEventListener('click', function() {
+                    document.querySelectorAll('.war-swatch').forEach(function(s) { s.classList.remove('active'); });
+                    sw.classList.add('active');
+                    inkCol = sw.getAttribute('data-col');
+                    isErasing = false;
+                    if (warEraserBtn) warEraserBtn.classList.remove('active');
+                    if (!inkModeOn && warInkToggle) warInkToggle.click();
+                });
+            });
+
+            if (warEraserBtn) {
+                warEraserBtn.addEventListener('click', function() {
+                    isErasing = !isErasing;
+                    warEraserBtn.classList.toggle('active', isErasing);
+                    if (!inkModeOn && warInkToggle) warInkToggle.click();
+                });
+            }
+
+            if (warClearInkBtn) {
+                warClearInkBtn.addEventListener('click', function() {
+                    playSynth(500, 220, 0.1, 'sawtooth');
+                    inkCtx.clearRect(0, 0, inkCanvas.width, inkCanvas.height);
+                });
+            }
+
+            function getInkPos(e) {
+                const r = inkCanvas.getBoundingClientRect();
+                const cx = e.touches ? e.touches[0].clientX : e.clientX;
+                const cy = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: cx - r.left, y: cy - r.top };
+            }
+
+            function startInk(e) {
+                if (!inkModeOn) return;
+                e.preventDefault();
+                if (inkCanvas.width === 0) resizeInkCanvas();
+                inkDrawing = true;
+                const p = getInkPos(e);
+                inkCtx.beginPath();
+                inkCtx.moveTo(p.x, p.y);
+            }
+
+            function moveInk(e) {
+                if (!inkModeOn || !inkDrawing) return;
+                e.preventDefault();
+                const p = getInkPos(e);
+                inkCtx.lineCap = 'round';
+                inkCtx.lineJoin = 'round';
+                if (isErasing) {
+                    inkCtx.globalCompositeOperation = 'destination-out';
+                    inkCtx.lineWidth = 24;
+                    inkCtx.shadowBlur = 0;
+                } else {
+                    inkCtx.globalCompositeOperation = 'source-over';
+                    inkCtx.strokeStyle = inkCol;
+                    inkCtx.lineWidth = 3.2;
+                    inkCtx.shadowColor = inkCol;
+                    inkCtx.shadowBlur = 8;
+                }
+                inkCtx.lineTo(p.x, p.y);
+                inkCtx.stroke();
+            }
+
+            function stopInk() {
+                inkDrawing = false;
+                inkCtx.globalCompositeOperation = 'source-over';
+                inkCtx.shadowBlur = 0;
+            }
+
+            inkCanvas.addEventListener('mousedown', startInk);
+            inkCanvas.addEventListener('mousemove', moveInk);
+            window.addEventListener('mouseup', stopInk);
+            inkCanvas.addEventListener('touchstart', startInk, { passive: false });
+            inkCanvas.addEventListener('touchmove', moveInk, { passive: false });
+            window.addEventListener('touchend', stopInk);
+
+            // 6. Live Marks Tally & Grade Calculator
+            let currentMarks = 0;
+            const warMaxMarks = document.getElementById('warMaxMarks');
+            const warScoreBadge = document.getElementById('warScoreBadge');
+            const warResetMarks = document.getElementById('warResetMarks');
+
+            function updateMarksDisplay() {
+                const max = Math.max(1, parseFloat(warMaxMarks.value || '80'));
+                const pct = Math.max(0, (currentMarks / max) * 100);
+                let rank = 'C // RECRUIT';
+                if (pct >= 95) rank = 'S+ // OVERLORD';
+                else if (pct >= 90) rank = 'A1 // TITAN';
+                else if (pct >= 80) rank = 'A2 // ELITE';
+                else if (pct >= 70) rank = 'B1 //VANGUARD';
+                var dispScore = Number.isInteger(currentMarks) ? currentMarks : currentMarks.toFixed(1);
+                if (warScoreBadge) {
+                    warScoreBadge.innerText = dispScore + ' / ' + max + ' (' + pct.toFixed(1) + '%) [' + rank + ']';
+                }
+            }
+
+            document.querySelectorAll('.war-mark-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const delta = parseFloat(btn.getAttribute('data-add') || '0');
+                    currentMarks = Math.max(0, currentMarks + delta);
+                    playSynth(delta > 0 ? 750 : 400, delta > 0 ? 1550 : 250, 0.08, 'triangle');
+                    updateMarksDisplay();
+                });
+            });
+
+            if (warMaxMarks) warMaxMarks.addEventListener('input', updateMarksDisplay);
+            if (warResetMarks) {
+                warResetMarks.addEventListener('click', function() {
+                    currentMarks = 0;
+                    playSynth(500, 300, 0.08, 'sawtooth');
+                    updateMarksDisplay();
+                });
+            }
+        })();
     </script>
 </body>
 </html>
