@@ -474,14 +474,17 @@ $buttonsHtml
         const jarvisLog = document.getElementById('jarvisLog');
         const jarvisMicBtn = document.getElementById('jarvisMicBtn');
         const jarvisInput = document.getElementById('jarvisInput');
-        const jarvisSendBtn = document.getElementById('jarvisSendBtn');
-
-        let jarvisVoiceMuted = localStorage.getItem('cartelJarvisMute') === 'true';
+        const jarvisSendBtn = document.getElementById('jarvisSendBtn');let jarvisVoiceMuted = localStorage.getItem('cartelJarvisMute') === 'true';
+        let jarvisForceFree = localStorage.getItem('cartelForceFree') === 'true';
 
         function updateJarvisHeaderBtns() {
             if (jarvisKeyBtn) {
                 const hasKey = !!localStorage.getItem('cartelGeminiKey');
-                jarvisKeyBtn.innerText = hasKey ? '\uD83D\uDC8E CORE: GEMINI' : '\uD83D\uDD11 CORE: FREE';
+                if (!hasKey) {
+                    jarvisKeyBtn.innerText = '\uD83D\uDD11 CORE: FREE';
+                } else {
+                    jarvisKeyBtn.innerText = jarvisForceFree ? '\uD83C\uDF10 CORE: FREE' : '\uD83D\uDC8E CORE: GEMINI';
+                }
             }
             if (jarvisVoiceBtn) {
                 jarvisVoiceBtn.innerText = jarvisVoiceMuted ? '\uD83D\uDD07 VOICE: OFF' : '\uD83D\uDD0A VOICE: ON';
@@ -500,6 +503,53 @@ $buttonsHtml
                 }
                 updateJarvisHeaderBtns();
                 playSynth(700, 1200, 0.08, 'sine');
+            });
+        }
+
+        if (jarvisOrb && jarvisHud) {
+            jarvisOrb.addEventListener('click', function() {
+                playSynth(600, 1400, 0.12, 'triangle');
+                jarvisHud.classList.toggle('open');
+                if (jarvisHud.classList.contains('open') && jarvisInput) jarvisInput.focus();
+            });
+        }
+        if (jarvisCloseBtn) {
+            jarvisCloseBtn.addEventListener('click', function() {
+                playSynth(700, 300, 0.1, 'sawtooth');
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+                jarvisHud.classList.remove('open');
+            });
+        }
+        function promptForGeminiKey() {
+            const current = localStorage.getItem('cartelGeminiKey') || '';
+            const inputKey = prompt('Paste your Google Gemini API Key (or clear to remove key):', current);
+            if (inputKey !== null) {
+                const clean = inputKey.trim();
+                if (clean) {
+                    localStorage.setItem('cartelGeminiKey', clean);
+                    jarvisForceFree = false;
+                    localStorage.setItem('cartelForceFree', false);
+                } else {
+                    localStorage.removeItem('cartelGeminiKey');
+                }
+                updateJarvisHeaderBtns();
+                playSynth(800, 1600, 0.12, 'sine');
+            }
+        }
+        if (jarvisKeyBtn) {
+            jarvisKeyBtn.addEventListener('click', function() {
+                if (!localStorage.getItem('cartelGeminiKey')) {
+                    promptForGeminiKey();
+                } else {
+                    jarvisForceFree = !jarvisForceFree;
+                    localStorage.setItem('cartelForceFree', jarvisForceFree);
+                    updateJarvisHeaderBtns();
+                    playSynth(600, 1500, 0.1, 'triangle');
+                }
+            });
+            jarvisKeyBtn.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                promptForGeminiKey();
             });
         }
 
@@ -652,7 +702,7 @@ $buttonsHtml
                 'If the user asks to open a folder or PDF, include [OPEN:keyword] matching their request. ' +
                 'Available vault items: ' + getVaultContextList();
 
-            const gemKey = localStorage.getItem('cartelGeminiKey');
+            const gemKey = !jarvisForceFree ? localStorage.getItem('cartelGeminiKey') : null;
             if (gemKey) {
                 try {
                     const gUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + encodeURIComponent(gemKey);
