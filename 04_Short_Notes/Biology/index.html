@@ -23,11 +23,22 @@
 #matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.25; pointer-events: none; }
 .mute-btn { position: fixed; top: 20px; right: 20px; background-color: #111; color: #00ffcc; border: 2px solid #00ffcc; border-radius: 8px; padding: 8px 15px; font-family: 'Courier New', Courier, monospace; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px rgba(0, 255, 204, 0.3); z-index: 100; transition: 0.3s; }
         .mute-btn:hover { background-color: #00ffcc; color: #000; box-shadow: 0 0 20px #00ffcc; }
+:root { --core: #00ffcc; --core-glow: rgba(0, 255, 204, 0.3); --rain-filter: hue-rotate(0deg); }
+        body { color: var(--core) !important; }
+        h1 { text-shadow: 0 0 20px var(--core) !important; }
+        .badge { border-color: var(--core) !important; text-shadow: 0 0 15px var(--core) !important; box-shadow: 0 0 20px var(--core) !important; }
+        .search-box { border-color: var(--core) !important; color: var(--core) !important; box-shadow: 0 0 15px var(--core-glow) !important; }
+        .search-box:focus { box-shadow: 0 0 25px var(--core) !important; }
+        .card:hover { border-color: var(--core) !important; box-shadow: 0 0 20px var(--core-glow) !important; color: var(--core) !important; }
+        .back-btn:hover, .mute-btn:hover, .theme-btn:hover { background-color: var(--core) !important; color: #000 !important; box-shadow: 0 0 20px var(--core) !important; border-color: var(--core) !important; }
+        #matrixCanvas { filter: var(--rain-filter); transition: filter 0.4s ease; }
+        .theme-btn { position: fixed; top: 20px; right: 185px; background-color: #111; color: var(--core); border: 2px solid var(--core); border-radius: 8px; padding: 8px 15px; font-family: 'Courier New', Courier, monospace; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px var(--core-glow); z-index: 100; transition: 0.3s; }
     </style>
 </head>
 <body>
 <canvas id="matrixCanvas"></canvas>
 <button id="muteBtn" class="mute-btn">🔊 AUDIO: ON</button>
+<button id="themeBtn" class="theme-btn">🎨 CORE: CYAN</button>
     <div class="header-container">
         <h1>THE BINARY CARTEL</h1>
         <div class="badge">0</div>
@@ -142,6 +153,33 @@ const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         document.getElementById('cartelSearch').addEventListener('keydown', () => {
             playSynth(1600, 1200, 0.025, 'triangle');
         });
+const themes = [
+            { name: 'CYAN', hex: '#00ffcc', glow: 'rgba(0, 255, 204, 0.3)', filter: 'hue-rotate(0deg)' },
+            { name: 'SITH', hex: '#ff0033', glow: 'rgba(255, 0, 51, 0.3)', filter: 'hue-rotate(180deg) saturate(1.5)' },
+            { name: 'GOLD', hex: '#ffcc00', glow: 'rgba(255, 204, 0, 0.3)', filter: 'hue-rotate(240deg) saturate(1.5)' },
+            { name: 'PHANTOM', hex: '#bc13fe', glow: 'rgba(188, 19, 254, 0.3)', filter: 'hue-rotate(115deg) saturate(1.5)' }
+        ];
+        let currentTheme = parseInt(localStorage.getItem('cartelTheme')) || 0;
+        const themeBtn = document.getElementById('themeBtn');
+        function applyTheme(index) {
+            const t = themes[index];
+            document.documentElement.style.setProperty('--core', t.hex);
+            document.documentElement.style.setProperty('--core-glow', t.glow);
+            document.documentElement.style.setProperty('--rain-filter', t.filter);
+            themeBtn.innerText = '🎨 CORE: ' + t.name;
+            if (!isMuted) {
+                muteBtn.style.borderColor = t.hex;
+                muteBtn.style.color = t.hex;
+            }
+        }
+        applyTheme(currentTheme);
+        themeBtn.addEventListener('click', () => {
+            currentTheme = (currentTheme + 1) % themes.length;
+            localStorage.setItem('cartelTheme', currentTheme);
+            applyTheme(currentTheme);
+            playSynth(400, 1600, 0.15, 'sawtooth');
+        });
+        muteBtn.addEventListener('click', () => applyTheme(currentTheme));
     </script>
 </body>
 </html>
