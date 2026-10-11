@@ -20,9 +20,11 @@
         .card { background-color: #161618; border: 1px solid #2a2a2c; border-radius: 12px; padding: 40px 20px; font-size: 1.4em; font-weight: bold; cursor: pointer; transition: all 0.3s ease-in-out; color: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; word-break: break-word; }
         .card:hover { background-color: #1a1a1c; border-color: #00ffcc; box-shadow: 0 0 20px rgba(0, 255, 204, 0.3); transform: translateY(-4px); color: #00ffcc; }
         a { text-decoration: none; }
+#matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.25; pointer-events: none; }
     </style>
 </head>
 <body>
+<canvas id="matrixCanvas"></canvas>
     <div class="header-container">
         <h1>THE BINARY CARTEL</h1>
         <div class="badge">0</div>
@@ -71,6 +73,25 @@
                 }
             }
         });
+const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const drops = Array(Math.floor(canvas.width / 20)).fill(1);
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(13, 13, 13, 0.08)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#00ffcc';
+            ctx.font = '16px Courier New';
+            drops.forEach((y, i) => {
+                const text = Math.random() > 0.5 ? '1' : '0';
+                ctx.fillText(text, i * 20, y * 20);
+                if (y * 20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            });
+        }
+        setInterval(drawMatrix, 50);
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
     </script>
 </body>
 </html>
