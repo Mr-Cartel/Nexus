@@ -153,10 +153,64 @@
         .gv-floating-pill { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: #0c0c12; border: 2px solid #00ff66; border-radius: 40px; padding: 7px 18px; display: none; align-items: center; gap: 12px; z-index: 9900; box-shadow: 0 0 25px rgba(0, 255, 102, 0.4); font-family: 'Courier New', Courier, monospace; font-size: 0.82em; color: #00ff66; font-weight: bold; }
         .gv-floating-pill.active { display: flex; }
         @keyframes gvPulse { from { transform: scale(1); } to { transform: scale(1.07); } }
+.holopod-launcher { position: fixed; bottom: 85px; left: 25px; background: #111; color: var(--core); border: 2px solid var(--core); border-radius: 50px; padding: 10px 20px; font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 0.95em; cursor: pointer; box-shadow: 0 0 18px var(--core-glow), inset 0 0 8px var(--core-glow); z-index: 9400; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+        .holopod-launcher:hover, .holopod-launcher.active { background: var(--core); color: #000; box-shadow: 0 0 28px var(--core); transform: scale(1.05); }
+        .holopod-dock { position: fixed; top: 85px; right: 25px; width: 340px; background: rgba(10, 10, 15, 0.94); border: 2px solid var(--core); border-radius: 12px; box-shadow: 0 0 35px var(--core-glow); z-index: 9550; display: none; flex-direction: column; overflow: hidden; backdrop-filter: blur(8px); }
+        .holopod-dock.open { display: flex; }
+        .holopod-hdr { background: #14141c; border-bottom: 1px solid var(--core); padding: 8px 12px; cursor: move; display: flex; justify-content: space-between; align-items: center; font-size: 0.8em; font-weight: bold; color: var(--core); letter-spacing: 1px; user-select: none; }
+        .holopod-controls { display: flex; gap: 6px; padding: 8px 10px; background: #0d0d12; border-bottom: 1px solid #222; flex-wrap: wrap; justify-content: center; }
+        .hp-btn { background: #181822; color: var(--core); border: 1px solid var(--core); border-radius: 5px; padding: 5px 9px; font-family: 'Courier New', Courier, monospace; font-size: 0.74em; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .hp-btn:hover, .hp-btn.active { background: var(--core); color: #000; box-shadow: 0 0 10px var(--core); }
+        .hp-btn.danger { color: #ff0033; border-color: #ff0033; }
+        .hp-btn.danger:hover, .hp-btn.danger.active { background: #ff0033; color: #fff; box-shadow: 0 0 10px #ff0033; }
+        .holopod-stage { position: relative; width: 100%; height: 220px; background: #050508; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .holopod-remote-vid { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .holopod-local-vid { position: absolute; bottom: 8px; right: 8px; width: 96px; height: 72px; object-fit: cover; border: 2px solid var(--core); border-radius: 6px; background: #000; box-shadow: 0 0 12px rgba(0,0,0,0.9); z-index: 3; transform: scaleX(-1); }
+        .holopod-status { position: absolute; top: 8px; left: 8px; background: rgba(0, 0, 0, 0.75); border: 1px solid var(--core); color: var(--core); padding: 3px 8px; border-radius: 4px; font-size: 0.68em; font-weight: bold; z-index: 4; pointer-events: none; }
+        .holo-screen-theater { position: fixed; top: 6%; left: 6%; width: 88%; height: 84%; background: rgba(6, 6, 10, 0.96); border: 2px solid var(--core); border-radius: 12px; box-shadow: 0 0 50px var(--core-glow); z-index: 9650; display: none; flex-direction: column; overflow: hidden; }
+        .holo-screen-theater.open { display: flex; }
+        .holo-screen-theater.minimized { top: auto; bottom: 25px; left: 205px; width: 360px; height: 230px; }
+        .hst-video { width: 100%; flex-grow: 1; background: #000; object-fit: contain; min-height: 0; }
+        .vid-filter-nv { filter: sepia(100%) hue-rotate(130deg) saturate(300%) contrast(130%); }
+        .vid-filter-thermal { filter: invert(100%) hue-rotate(180deg) saturate(350%) contrast(150%); }
+        .vid-filter-matrix { filter: grayscale(100%) sepia(100%) hue-rotate(75deg) saturate(400%) contrast(140%); }
     </style>
 </head>
 <body>
     <canvas id="matrixCanvas"></canvas>
+<button id="holoPodLauncher" class="holopod-launcher">&#127909; HOLO-POD</button>
+
+    <!-- DRAGGABLE FLOATING HOLO-CAM POD -->
+    <div id="holoPodDock" class="holopod-dock">
+        <div id="holoPodHdr" class="holopod-hdr">
+            <span>&#127909; HOLO-POD COMMS &amp; TELEPORTER</span>
+            <button id="holoPodClose" class="hp-btn danger" style="padding:2px 7px;">&#10006;</button>
+        </div>
+        <div class="holopod-controls">
+            <button id="hpCamBtn" class="hp-btn">&#128247; HOLO-CAM</button>
+            <button id="hpScreenBtn" class="hp-btn">&#128421; CAST 60FPS SCREEN</button>
+            <button id="hpFlipBtn" class="hp-btn" title="Flip Front/Back Camera">&#128260; FLIP</button>
+            <button id="hpFilterBtn" class="hp-btn" title="Cycle Cyber Optics Filter">&#127912; OPTICS</button>
+        </div>
+        <div class="holopod-stage">
+            <div id="hpStatusBadge" class="holopod-status">STANDBY: CLICK HOLO-CAM OR CAST</div>
+            <video id="hpRemoteVid" class="holopod-remote-vid" autoplay playsinline></video>
+            <video id="hpLocalVid" class="holopod-local-vid" autoplay muted playsinline></video>
+        </div>
+    </div>
+
+    <!-- 60FPS LIVE SCREEN TELEPORTER THEATER -->
+    <div id="holoScreenTheater" class="holo-screen-theater">
+        <div class="holopod-hdr">
+            <span id="hstTitle">&#128421; 60FPS LIVE SCREEN TELEPORT FEED</span>
+            <div style="display:flex; gap:6px;">
+                <button id="hstMinBtn" class="hp-btn">&#128204; MINI-DOCK / EXPAND</button>
+                <button id="hstFullBtn" class="hp-btn">&#9974; FULLSCREEN</button>
+                <button id="hstCloseBtn" class="hp-btn danger">&#10006; CLOSE</button>
+            </div>
+        </div>
+        <video id="hstVideo" class="hst-video" autoplay playsinline controls></video>
+    </div>
 <div class="cartel-nav-wrap">
         <button id="cartelHamBtn" class="cartel-ham-btn" title="Tactical Menu">&#9776;</button>
         <div id="cartelHamDrop" class="cartel-ham-drop">
@@ -2329,7 +2383,388 @@
                 }
             });
         }
+// ============================================================================
+        // HOLO-POD FLOATING FACECAM & 60FPS SCREEN TELEPORTER ENGINE
+        // ============================================================================
+        const holoPodLauncher = document.getElementById('holoPodLauncher');
+        const holoPodDock = document.getElementById('holoPodDock');
+        const holoPodHdr = document.getElementById('holoPodHdr');
+        const holoPodClose = document.getElementById('holoPodClose');
+        const hpCamBtn = document.getElementById('hpCamBtn');
+        const hpScreenBtn = document.getElementById('hpScreenBtn');
+        const hpFlipBtn = document.getElementById('hpFlipBtn');
+        const hpFilterBtn = document.getElementById('hpFilterBtn');
+        const hpStatusBadge = document.getElementById('hpStatusBadge');
+        const hpRemoteVid = document.getElementById('hpRemoteVid');
+        const hpLocalVid = document.getElementById('hpLocalVid');
 
+        const holoScreenTheater = document.getElementById('holoScreenTheater');
+        const hstVideo = document.getElementById('hstVideo');
+        const hstTitle = document.getElementById('hstTitle');
+        const hstMinBtn = document.getElementById('hstMinBtn');
+        const hstFullBtn = document.getElementById('hstFullBtn');
+        const hstCloseBtn = document.getElementById('hstCloseBtn');
+
+        let hpLocalCamStream = null;
+        let hpLocalScreenStream = null;
+        let hpCamCall = null;
+        let hpScreenCall = null;
+        let hpFacingMode = 'user';
+        let hpFilterIdx = 0;
+        const hpFilters = ['', 'vid-filter-nv', 'vid-filter-thermal', 'vid-filter-matrix'];
+        const hpFilterNames = ['NORMAL', 'NIGHT-VISION', 'THERMAL IR', 'MATRIX'];
+
+        window.cartelLocalPeer = null;
+        window.cartelRemotePeerId = null;
+        window.cartelActiveConn = null;
+        let pendingIncomingMode = null;
+
+        // Auto-Hook into PeerJS Ghost-Link instances
+        function installHoloPeerHooks() {
+            if (!window.Peer || !window.Peer.prototype || window.Peer.prototype._holoPatched) return;
+            window.Peer.prototype._holoPatched = true;
+
+            const origConnect = window.Peer.prototype.connect;
+            window.Peer.prototype.connect = function(peerId) {
+                window.cartelLocalPeer = this;
+                window.cartelRemotePeerId = peerId;
+                ensurePeerCallListener(this);
+                const c = origConnect.apply(this, arguments);
+                if (c && c.on) {
+                    c.on('open', function() {
+                        window.cartelActiveConn = c;
+                        window.cartelRemotePeerId = c.peer;
+                        hookConnData(c);
+                    });
+                }
+                return c;
+            };
+
+            const origOn = window.Peer.prototype.on;
+            window.Peer.prototype.on = function(event, cb) {
+                window.cartelLocalPeer = this;
+                if (event === 'connection') {
+                    const wrappedConn = function(conn) {
+                        window.cartelActiveConn = conn;
+                        window.cartelRemotePeerId = conn.peer;
+                        ensurePeerCallListener(this);
+                        hookConnData(conn);
+                        return cb.apply(this, arguments);
+                    };
+                    return origOn.call(this, event, wrappedConn);
+                }
+                if (event === 'call') {
+                    this._hasCustomCallWrapper = true;
+                    const wrappedCall = function(call) {
+                        const mode = (call && call.metadata && call.metadata.mode) ? call.metadata.mode : pendingIncomingMode;
+                        if (mode === 'holocam' || mode === 'screen') {
+                            pendingIncomingMode = null;
+                            handleHoloIncomingCall(call, mode);
+                            return;
+                        }
+                        return cb.apply(this, arguments);
+                    };
+                    return origOn.call(this, event, wrappedCall);
+                }
+                return origOn.apply(this, arguments);
+            };
+        }
+        installHoloPeerHooks();
+        setTimeout(installHoloPeerHooks, 1500);
+
+        function ensurePeerCallListener(p) {
+            if (!p || p._holoDirectCallListener) return;
+            p._holoDirectCallListener = true;
+            p.on('call', function(call) {
+                const mode = (call && call.metadata && call.metadata.mode) ? call.metadata.mode : pendingIncomingMode;
+                if (mode === 'holocam' || mode === 'screen') {
+                    pendingIncomingMode = null;
+                    handleHoloIncomingCall(call, mode);
+                }
+            });
+        }
+
+        function hookConnData(conn) {
+            if (!conn || conn._holoDataHooked) return;
+            conn._holoDataHooked = true;
+            conn.on('data', function(data) {
+                if (data && data.type === 'HOLO_SIGNAL') {
+                    pendingIncomingMode = data.mode;
+                    if (data.mode === 'stop_cam' && hpRemoteVid) {
+                        hpRemoteVid.srcObject = null;
+                        if (hpStatusBadge) hpStatusBadge.innerText = 'PARTNER CAM OFFLINE';
+                    }
+                    if (data.mode === 'stop_screen' && holoScreenTheater) {
+                        if (hstVideo) hstVideo.srcObject = null;
+                        holoScreenTheater.classList.remove('open');
+                    }
+                }
+            });
+        }
+
+        function resolveActiveGhostPeer() {
+            if (!window.cartelLocalPeer) {
+                if (typeof ghostPeer !== 'undefined' && ghostPeer) window.cartelLocalPeer = ghostPeer;
+                else if (typeof peer !== 'undefined' && peer) window.cartelLocalPeer = peer;
+                else if (typeof myPeer !== 'undefined' && myPeer) window.cartelLocalPeer = myPeer;
+            }
+            if (!window.cartelActiveConn) {
+                if (typeof ghostConn !== 'undefined' && ghostConn) window.cartelActiveConn = ghostConn;
+                else if (typeof conn !== 'undefined' && conn) window.cartelActiveConn = conn;
+            }
+            if (window.cartelActiveConn && window.cartelActiveConn.peer) {
+                window.cartelRemotePeerId = window.cartelActiveConn.peer;
+                hookConnData(window.cartelActiveConn);
+            }
+            if (window.cartelLocalPeer) ensurePeerCallListener(window.cartelLocalPeer);
+        }
+
+        function sendHoloSignal(modeStr) {
+            resolveActiveGhostPeer();
+            if (window.cartelActiveConn && window.cartelActiveConn.open) {
+                try { window.cartelActiveConn.send({ type: 'HOLO_SIGNAL', mode: modeStr }); } catch (e) {}
+            }
+        }
+
+        function handleHoloIncomingCall(call, mode) {
+            playSynth(550, 1450, 0.14, 'triangle');
+            call.on('stream', function(remoteStream) {
+                if (mode === 'screen') {
+                    if (hstVideo && holoScreenTheater) {
+                        hstVideo.srcObject = remoteStream;
+                        hstTitle.innerText = '\uD83D\uDDA5 60FPS PARTNER SCREEN TELEPORT (LIVE)';
+                        holoScreenTheater.classList.add('open');
+                    }
+                } else {
+                    if (holoPodDock) holoPodDock.classList.add('open');
+                    if (hpRemoteVid) hpRemoteVid.srcObject = remoteStream;
+                    if (hpStatusBadge) hpStatusBadge.innerText = '\uD83D\uDFE2 PARTNER HOLO-CAM LINKED';
+                }
+            });
+            try {
+                if (mode === 'holocam' && hpLocalCamStream) {
+                    call.answer(hpLocalCamStream);
+                } else {
+                    call.answer();
+                }
+            } catch (err) {}
+        }
+
+        // Launcher & Close
+        if (holoPodLauncher && holoPodDock) {
+            holoPodLauncher.addEventListener('click', function() {
+                playSynth(500, 1350, 0.1, 'triangle');
+                holoPodDock.classList.toggle('open');
+                holoPodLauncher.classList.toggle('active', holoPodDock.classList.contains('open'));
+            });
+        }
+        if (holoPodClose) {
+            holoPodClose.addEventListener('click', function() {
+                playSynth(600, 300, 0.08, 'sawtooth');
+                holoPodDock.classList.remove('open');
+                if (holoPodLauncher) holoPodLauncher.classList.remove('active');
+            });
+        }
+
+        // Draggable Holo-Pod Header
+        if (holoPodHdr && holoPodDock) {
+            let isDrag = false, startX = 0, startY = 0, origLeft = 0, origTop = 0;
+            function dragStart(e) {
+                if (e.target.tagName === 'BUTTON') return;
+                isDrag = true;
+                const rect = holoPodDock.getBoundingClientRect();
+                origLeft = rect.left;
+                origTop = rect.top;
+                startX = e.touches ? e.touches[0].clientX : e.clientX;
+                startY = e.touches ? e.touches[0].clientY : e.clientY;
+                holoPodDock.style.right = 'auto';
+                holoPodDock.style.left = origLeft + 'px';
+                holoPodDock.style.top = origTop + 'px';
+            }
+            function dragMove(e) {
+                if (!isDrag) return;
+                const cx = e.touches ? e.touches[0].clientX : e.clientX;
+                const cy = e.touches ? e.touches[0].clientY : e.clientY;
+                holoPodDock.style.left = Math.max(5, origLeft + (cx - startX)) + 'px';
+                holoPodDock.style.top = Math.max(5, origTop + (cy - startY)) + 'px';
+            }
+            function dragEnd() { isDrag = false; }
+            holoPodHdr.addEventListener('mousedown', dragStart);
+            window.addEventListener('mousemove', dragMove);
+            window.addEventListener('mouseup', dragEnd);
+            holoPodHdr.addEventListener('touchstart', dragStart, { passive: true });
+            window.addEventListener('touchmove', dragMove, { passive: true });
+            window.addEventListener('touchend', dragEnd);
+        }
+
+        // 1. HOLO-CAM TOGGLE
+        async function startHoloCam() {
+            try {
+                if (hpLocalCamStream) {
+                    hpLocalCamStream.getTracks().forEach(function(t) { t.stop(); });
+                }
+                hpLocalCamStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: hpFacingMode, width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
+                    audio: true
+                });
+                if (hpLocalVid) hpLocalVid.srcObject = hpLocalCamStream;
+                if (!hpRemoteVid.srcObject && hpRemoteVid) {
+                    hpRemoteVid.srcObject = hpLocalCamStream;
+                    hpRemoteVid.muted = true;
+                }
+                hpCamBtn.classList.add('active');
+                hpCamBtn.innerText = '\uD83D\uDFE2 CAM: ON';
+                if (hpStatusBadge) hpStatusBadge.innerText = '\uD83D\uDFE2 HOLO-CAM TRANSMITTING';
+
+                resolveActiveGhostPeer();
+                if (window.cartelLocalPeer && window.cartelRemotePeerId) {
+                    sendHoloSignal('holocam');
+                    hpCamCall = window.cartelLocalPeer.call(window.cartelRemotePeerId, hpLocalCamStream, { metadata: { mode: 'holocam' } });
+                    if (hpCamCall) {
+                        hpCamCall.on('stream', function(remStream) {
+                            if (hpRemoteVid) {
+                                hpRemoteVid.muted = false;
+                                hpRemoteVid.srcObject = remStream;
+                            }
+                            if (hpStatusBadge) hpStatusBadge.innerText = '\uD83D\uDFE2 2-WAY HOLO-CAM LOCKED';
+                        });
+                    }
+                }
+            } catch (err) {
+                if (hpStatusBadge) hpStatusBadge.innerText = 'CAM BLOCKED: CHECK PERMISSIONS';
+            }
+        }
+
+        function stopHoloCam() {
+            if (hpLocalCamStream) {
+                hpLocalCamStream.getTracks().forEach(function(t) { t.stop(); });
+                hpLocalCamStream = null;
+            }
+            if (hpLocalVid) hpLocalVid.srcObject = null;
+            if (hpRemoteVid && hpRemoteVid.muted) hpRemoteVid.srcObject = null;
+            if (hpCamCall) { try { hpCamCall.close(); } catch (e) {} hpCamCall = null; }
+            hpCamBtn.classList.remove('active');
+            hpCamBtn.innerText = '\uD83D\uDCF7 HOLO-CAM';
+            if (hpStatusBadge) hpStatusBadge.innerText = 'HOLO-CAM STANDBY';
+            sendHoloSignal('stop_cam');
+        }
+
+        if (hpCamBtn) {
+            hpCamBtn.addEventListener('click', function() {
+                playSynth(600, 1400, 0.1, 'triangle');
+                if (!hpLocalCamStream) startHoloCam();
+                else stopHoloCam();
+            });
+        }
+
+        // Flip Front/Back Camera (Ideal for Phone Desk/Notebook View)
+        if (hpFlipBtn) {
+            hpFlipBtn.addEventListener('click', function() {
+                playSynth(750, 1500, 0.08, 'sine');
+                hpFacingMode = (hpFacingMode === 'user') ? 'environment' : 'user';
+                if (hpLocalVid) hpLocalVid.style.transform = (hpFacingMode === 'user') ? 'scaleX(-1)' : 'none';
+                if (hpLocalCamStream) startHoloCam();
+            });
+        }
+
+        // Cycle Cyber Optics Filters
+        if (hpFilterBtn) {
+            hpFilterBtn.addEventListener('click', function() {
+                playSynth(800, 1600, 0.07, 'sine');
+                hpFilterIdx = (hpFilterIdx + 1) % hpFilters.length;
+                const cls = hpFilters[hpFilterIdx];
+                [hpRemoteVid, hpLocalVid, hstVideo].forEach(function(v) {
+                    if (!v) return;
+                    hpFilters.forEach(function(f) { if (f) v.classList.remove(f); });
+                    if (cls) v.classList.add(cls);
+                });
+                if (hpStatusBadge) hpStatusBadge.innerText = 'OPTICS FILTER: ' + hpFilterNames[hpFilterIdx];
+            });
+        }
+
+        // 2. 60FPS SCREEN TELEPORTER ENGINE
+        async function startScreenTeleport() {
+            try {
+                if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+                    hpLocalScreenStream = await navigator.mediaDevices.getDisplayMedia({
+                        video: { frameRate: { ideal: 60, max: 60 }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+                        audio: true
+                    });
+                } else {
+                    // Fallback for mobile browsers: beam high-res rear camera at 60fps
+                    hpLocalScreenStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 60 } },
+                        audio: true
+                    });
+                }
+
+                hpScreenBtn.classList.add('active');
+                hpScreenBtn.innerText = '\uD83D\uDFE2 CASTING 60FPS';
+                if (hpStatusBadge) hpStatusBadge.innerText = '\uD83D\uDDA5 BEAMING 60FPS SCREEN STREAM';
+
+                if (hstVideo && holoScreenTheater) {
+                    hstVideo.srcObject = hpLocalScreenStream;
+                    hstVideo.muted = true;
+                    hstTitle.innerText = '\uD83D\uDDA5 LOCAL 60FPS SCREEN TELEPORT PREVIEW (BEAMING)';
+                    holoScreenTheater.classList.add('open');
+                    holoScreenTheater.classList.add('minimized');
+                }
+
+                const vidTrack = hpLocalScreenStream.getVideoTracks()[0];
+                if (vidTrack) {
+                    vidTrack.onended = function() { stopScreenTeleport(); };
+                }
+
+                resolveActiveGhostPeer();
+                if (window.cartelLocalPeer && window.cartelRemotePeerId) {
+                    sendHoloSignal('screen');
+                    hpScreenCall = window.cartelLocalPeer.call(window.cartelRemotePeerId, hpLocalScreenStream, { metadata: { mode: 'screen' } });
+                }
+            } catch (err) {
+                if (hpStatusBadge) hpStatusBadge.innerText = 'SCREEN CAST CANCELLED';
+            }
+        }
+
+        function stopScreenTeleport() {
+            if (hpLocalScreenStream) {
+                hpLocalScreenStream.getTracks().forEach(function(t) { t.stop(); });
+                hpLocalScreenStream = null;
+            }
+            if (hpScreenCall) { try { hpScreenCall.close(); } catch (e) {} hpScreenCall = null; }
+            hpScreenBtn.classList.remove('active');
+            hpScreenBtn.innerText = '\uD83D\uDDA5 CAST 60FPS SCREEN';
+            if (holoScreenTheater) holoScreenTheater.classList.remove('open');
+            if (hpStatusBadge) hpStatusBadge.innerText = 'SCREEN TELEPORTER STANDBY';
+            sendHoloSignal('stop_screen');
+        }
+
+        if (hpScreenBtn) {
+            hpScreenBtn.addEventListener('click', function() {
+                playSynth(500, 1550, 0.12, 'triangle');
+                if (!hpLocalScreenStream) startScreenTeleport();
+                else stopScreenTeleport();
+            });
+        }
+
+        if (hstMinBtn && holoScreenTheater) {
+            hstMinBtn.addEventListener('click', function() {
+                playSynth(650, 1200, 0.08, 'sine');
+                holoScreenTheater.classList.toggle('minimized');
+            });
+        }
+        if (hstFullBtn && hstVideo) {
+            hstFullBtn.addEventListener('click', function() {
+                if (hstVideo.requestFullscreen) hstVideo.requestFullscreen();
+                else if (hstVideo.webkitRequestFullscreen) hstVideo.webkitRequestFullscreen();
+            });
+        }
+        if (hstCloseBtn && holoScreenTheater) {
+            hstCloseBtn.addEventListener('click', function() {
+                playSynth(600, 300, 0.08, 'sawtooth');
+                holoScreenTheater.classList.remove('open');
+                if (hpLocalScreenStream) stopScreenTeleport();
+            });
+        }
     </script>
 </body>
 </html>
