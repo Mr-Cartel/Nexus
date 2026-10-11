@@ -2771,29 +2771,29 @@
             });
         }
 // ============================================================================
-        // MASTER ALL-IN-ONE HOLO-POD & MOBILE/PC SCREEN SHARE (Z-INDEX 999999 + DATA STREAM)
+        // VERIFIED MASTER HOLO-POD & 2-WAY SIMULTANEOUS CAM + SCREEN SHARE ENGINE
         // ============================================================================
         (function() {
-            // 1. Auto-Inject High Z-Index CSS so windows always appear ON TOP of Ghost-Link War Room
+            // 1. High Z-Index CSS so Holo-Pod & Screen Theater always float ABOVE Ghost-Link War Room
             if (!document.getElementById('holoMasterCss')) {
                 const st = document.createElement('style');
                 st.id = 'holoMasterCss';
                 st.innerHTML = [
-                    '.holopod-dock { position: fixed !important; top: 70px; right: 20px; width: 330px; max-width: 92vw; background: rgba(10, 10, 16, 0.97); border: 2px solid var(--core, #bc13fe); border-radius: 12px; box-shadow: 0 0 40px rgba(188, 19, 254, 0.6); z-index: 999999 !important; display: none; flex-direction: column; overflow: hidden; }',
+                    '.holopod-dock { position: fixed !important; top: 70px; right: 20px; width: 350px; max-width: 94vw; background: rgba(10, 10, 16, 0.97); border: 2px solid var(--core, #bc13fe); border-radius: 12px; box-shadow: 0 0 40px rgba(188, 19, 254, 0.6); z-index: 999999 !important; display: none; flex-direction: column; overflow: hidden; }',
                     '.holopod-dock.open { display: flex !important; }',
                     '.holopod-hdr { background: #161020; border-bottom: 1px solid var(--core, #bc13fe); padding: 9px 12px; cursor: move; display: flex; justify-content: space-between; align-items: center; font-size: 0.8em; font-weight: bold; color: var(--core, #bc13fe); user-select: none; }',
-                    '.holopod-controls { display: flex; gap: 6px; padding: 8px; background: #0c0912; border-bottom: 1px solid #222; flex-wrap: wrap; justify-content: center; }',
-                    '.hp-btn { background: #191224; color: var(--core, #bc13fe); border: 1px solid var(--core, #bc13fe); border-radius: 6px; padding: 6px 10px; font-family: Courier New, monospace; font-size: 0.76em; font-weight: bold; cursor: pointer; transition: 0.2s; }',
+                    '.holopod-controls { display: flex; gap: 5px; padding: 8px; background: #0c0912; border-bottom: 1px solid #222; flex-wrap: wrap; justify-content: center; }',
+                    '.hp-btn { background: #191224; color: var(--core, #bc13fe); border: 1px solid var(--core, #bc13fe); border-radius: 6px; padding: 6px 9px; font-family: Courier New, monospace; font-size: 0.74em; font-weight: bold; cursor: pointer; transition: 0.2s; }',
                     '.hp-btn:hover, .hp-btn.active { background: var(--core, #bc13fe); color: #000; box-shadow: 0 0 12px var(--core, #bc13fe); }',
                     '.hp-btn.danger { color: #ff0044; border-color: #ff0044; }',
                     '.hp-btn.danger:hover { background: #ff0044; color: #fff; }',
-                    '.holopod-stage { position: relative; width: 100%; height: 220px; background: #050508; display: flex; align-items: center; justify-content: center; overflow: hidden; }',
-                    '.holopod-remote-vid { width: 100%; height: 100%; object-fit: cover; display: block; }',
-                    '.holopod-local-vid { position: absolute; bottom: 8px; right: 8px; width: 92px; height: 70px; object-fit: cover; border: 2px solid var(--core, #bc13fe); border-radius: 6px; background: #000; z-index: 3; transform: scaleX(-1); }',
-                    '.holopod-status { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.82); border: 1px solid var(--core, #bc13fe); color: var(--core, #bc13fe); padding: 3px 8px; border-radius: 4px; font-size: 0.68em; font-weight: bold; z-index: 4; }',
+                    '.holopod-stage { position: relative; width: 100%; height: 230px; background: #050508; display: flex; align-items: center; justify-content: center; overflow: hidden; }',
+                    '.holopod-remote-vid, .holopod-remote-img { width: 100%; height: 100%; object-fit: cover; display: block; }',
+                    '.holopod-local-vid { position: absolute; bottom: 8px; right: 8px; width: 96px; height: 72px; object-fit: cover; border: 2px solid var(--core, #bc13fe); border-radius: 6px; background: #000; z-index: 5; transform: scaleX(-1); }',
+                    '.holopod-status { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.82); border: 1px solid var(--core, #bc13fe); color: var(--core, #bc13fe); padding: 3px 8px; border-radius: 4px; font-size: 0.68em; font-weight: bold; z-index: 6; pointer-events: none; }',
                     '.holo-screen-theater { position: fixed !important; top: 7%; left: 5%; width: 90%; height: 84%; background: rgba(6, 6, 12, 0.98); border: 2px solid var(--core, #bc13fe); border-radius: 12px; box-shadow: 0 0 60px rgba(188, 19, 254, 0.75); z-index: 999998 !important; display: none; flex-direction: column; overflow: hidden; }',
                     '.holo-screen-theater.open { display: flex !important; }',
-                    '.holo-screen-theater.minimized { top: auto !important; bottom: 18px !important; right: 18px !important; left: auto !important; width: 310px !important; height: 210px !important; }',
+                    '.holo-screen-theater.minimized { top: auto !important; bottom: 18px !important; right: 18px !important; left: auto !important; width: 320px !important; height: 215px !important; }',
                     '.hst-stage { width: 100%; flex-grow: 1; background: #040407; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; min-height: 0; }',
                     '.hst-video, .hst-img { width: 100%; height: 100%; object-fit: contain; display: block; }',
                     '.vid-filter-nv { filter: sepia(100%) hue-rotate(130deg) saturate(300%) contrast(130%); }',
@@ -2803,27 +2803,29 @@
                 document.head.appendChild(st);
             }
 
-            // 2. Auto-Build HTML Modals if missing so they are guaranteed to exist
-            let oldDock = document.getElementById('holoPodDock');
+            // 2. Build Clean Holo-Pod & Screen Theater Windows (Preserving all 4 Holo-Pod buttons!)
+            const oldDock = document.getElementById('holoPodDock');
             if (oldDock) oldDock.remove();
-            let oldTheater = document.getElementById('holoScreenTheater');
+            const oldTheater = document.getElementById('holoScreenTheater');
             if (oldTheater) oldTheater.remove();
 
             const dockWrapper = document.createElement('div');
             dockWrapper.innerHTML = [
                 '<div id="holoPodDock" class="holopod-dock">',
                 '  <div id="holoPodHdr" class="holopod-hdr">',
-                '    <span>&#127909; HOLO-POD FACECAM &amp; OPTICS</span>',
+                '    <span>&#127909; HOLO-POD 2-WAY FACECAM &amp; TELEPORTER</span>',
                 '    <button id="holoPodClose" class="hp-btn danger" style="padding:2px 7px;">&#10006;</button>',
                 '  </div>',
                 '  <div class="holopod-controls">',
-                '    <button id="hpCamBtn" class="hp-btn">&#128247; START CAM</button>',
-                '    <button id="hpFlipBtn" class="hp-btn">&#128260; FLIP FRONT/BACK</button>',
+                '    <button id="hpCamBtn" class="hp-btn">&#128247; HOLO-CAM</button>',
+                '    <button id="hpScreenBtn" class="hp-btn">&#128421; CAST 60FPS</button>',
+                '    <button id="hpFlipBtn" class="hp-btn">&#128260; FLIP</button>',
                 '    <button id="hpFilterBtn" class="hp-btn">&#127912; OPTICS</button>',
                 '  </div>',
                 '  <div class="holopod-stage">',
-                '    <div id="hpStatusBadge" class="holopod-status">STANDBY: TAP START CAM</div>',
-                '    <video id="hpRemoteVid" class="holopod-remote-vid" autoplay playsinline></video>',
+                '    <div id="hpStatusBadge" class="holopod-status">STANDBY: TAP HOLO-CAM OR CAST</div>',
+                '    <video id="hpRemoteVid" class="holopod-remote-vid" autoplay playsinline style="display:none;"></video>',
+                '    <img id="hpRemoteImg" class="holopod-remote-img" style="display:none;" alt="Partner Cam" />',
                 '    <video id="hpLocalVid" class="holopod-local-vid" autoplay muted playsinline></video>',
                 '  </div>',
                 '</div>',
@@ -2832,6 +2834,7 @@
                 '    <span id="hstTitle">&#128242; LIVE SCREEN SHARE TELEPORTER</span>',
                 '    <div style="display:flex; gap:6px;">',
                 '      <button id="hstMinBtn" class="hp-btn">&#128204; MINI / EXPAND</button>',
+                '      <button id="hstFullBtn" class="hp-btn">&#9974; FULLSCREEN</button>',
                 '      <button id="hstCloseBtn" class="hp-btn danger">&#10006; STOP / CLOSE</button>',
                 '    </div>',
                 '  </div>',
@@ -2849,10 +2852,12 @@
             const holoPodHdr = document.getElementById('holoPodHdr');
             const holoPodClose = document.getElementById('holoPodClose');
             const hpCamBtn = document.getElementById('hpCamBtn');
+            const hpScreenBtn = document.getElementById('hpScreenBtn');
             const hpFlipBtn = document.getElementById('hpFlipBtn');
             const hpFilterBtn = document.getElementById('hpFilterBtn');
             const hpStatusBadge = document.getElementById('hpStatusBadge');
             const hpRemoteVid = document.getElementById('hpRemoteVid');
+            const hpRemoteImg = document.getElementById('hpRemoteImg');
             const hpLocalVid = document.getElementById('hpLocalVid');
 
             const holoScreenTheater = document.getElementById('holoScreenTheater');
@@ -2860,9 +2865,10 @@
             const hstFrameImg = document.getElementById('hstFrameImg');
             const hstTitle = document.getElementById('hstTitle');
             const hstMinBtn = document.getElementById('hstMinBtn');
+            const hstFullBtn = document.getElementById('hstFullBtn');
             const hstCloseBtn = document.getElementById('hstCloseBtn');
 
-            // 3. Dock Clean Buttons into the Ghost-Link Bar
+            // 3. Dock HOLO-POD & SHARE SCREEN into Ghost-Link War Room Bar
             function setupMenuButtons() {
                 const oldPod = document.getElementById('holoPodLauncher');
                 if (oldPod) oldPod.remove();
@@ -2899,10 +2905,19 @@
 
             const uiBtns = setupMenuButtons();
 
-            // 4. Hook into PeerJS & Ghost-Link Data Channel
+            // 4. Non-Destructive Hook into PeerJS & DataChannel (Never breaks Voice Call, Beam PDF, or Whiteboard!)
             window.cartelPeer = null;
             window.cartelConn = null;
             window.cartelRemoteId = null;
+
+            let localCamStream = null;
+            let camFrameInterval = null;
+            let camFacing = 'user';
+            let filterIdx = 0;
+            const filters = ['', 'vid-filter-nv', 'vid-filter-thermal', 'vid-filter-matrix'];
+            const filtersNames = ['NORMAL', 'NIGHT-VISION', 'THERMAL IR', 'MATRIX'];
+            const camSnapCanvas = document.createElement('canvas');
+            const camSnapCtx = camSnapCanvas.getContext('2d');
 
             function hookConnEvents(c) {
                 if (!c || c._masterHooked) return;
@@ -2911,7 +2926,22 @@
                 window.cartelRemoteId = c.peer;
                 c.on('data', function(data) {
                     if (!data) return;
-                    if (data.type === 'HOLO_SCREEN_FRAME' && data.frame) {
+                    if (data.type === 'HOLO_CAM_FRAME' && data.frame) {
+                        if (!holoPodDock.classList.contains('open')) {
+                            holoPodDock.classList.add('open');
+                            uiBtns.podBtn.classList.add('active');
+                        }
+                        hpRemoteVid.style.display = 'none';
+                        hpRemoteImg.style.display = 'block';
+                        hpRemoteImg.src = data.frame;
+                        hpStatusBadge.innerText = localCamStream ? '\uD83D\uDFE2 2-WAY HOLO-CAM LOCKED' : '\uD83D\uDFE2 PARTNER CAM LIVE';
+                    } else if (data.type === 'HOLO_CAM_REQUEST_2WAY') {
+                        holoPodDock.classList.add('open');
+                        uiBtns.podBtn.classList.add('active');
+                        if (!localCamStream) {
+                            startLocalCamAndBeam(false);
+                        }
+                    } else if (data.type === 'HOLO_SCREEN_FRAME' && data.frame) {
                         if (!holoScreenTheater.classList.contains('open')) {
                             if (typeof playSynth === 'function') playSynth(600, 1400, 0.1, 'triangle');
                             holoScreenTheater.classList.add('open');
@@ -2928,6 +2958,8 @@
                             hstVideo.srcObject = null;
                         } else if (data.mode === 'stop_cam') {
                             hpRemoteVid.srcObject = null;
+                            hpRemoteImg.src = '';
+                            hpRemoteImg.style.display = 'none';
                             hpStatusBadge.innerText = 'PARTNER CAM STOPPED';
                         }
                     }
@@ -2938,32 +2970,7 @@
                 if (!p || p._masterPeerHooked) return;
                 p._masterPeerHooked = true;
                 window.cartelPeer = p;
-                p.on('connection', function(c) {
-                    hookConnEvents(c);
-                });
-                p.on('call', function(call) {
-                    const meta = (call && call.metadata && call.metadata.mode) ? call.metadata.mode : '';
-                    if (meta === 'holocam') {
-                        holoPodDock.classList.add('open');
-                        call.answer(localCamStream || undefined);
-                        call.on('stream', function(remStream) {
-                            hpRemoteVid.muted = false;
-                            hpRemoteVid.srcObject = remStream;
-                            hpStatusBadge.innerText = '\uD83D\uDFE2 PARTNER CAM LIVE';
-                        });
-                    } else if (meta === 'screen') {
-                        holoScreenTheater.classList.add('open');
-                        holoScreenTheater.classList.remove('minimized');
-                        call.answer();
-                        call.on('stream', function(remStream) {
-                            hstFrameImg.style.display = 'none';
-                            hstVideo.style.display = 'block';
-                            hstVideo.muted = false;
-                            hstVideo.srcObject = remStream;
-                            hstTitle.innerText = '\uD83D\uDDA5 PARTNER 60FPS DESKTOP STREAM';
-                        });
-                    }
-                });
+                p.on('connection', function(c) { hookConnEvents(c); });
             }
 
             if (window.Peer && window.Peer.prototype && !window.Peer.prototype._masterPatched) {
@@ -2999,8 +3006,7 @@
                 try { if (typeof conn !== 'undefined' && conn) hookConnEvents(conn); } catch (e) {}
                 try { if (typeof ghostConn !== 'undefined' && ghostConn) hookConnEvents(ghostConn); } catch (e) {}
                 if (window.cartelPeer && window.cartelPeer.connections) {
-                    const keys = Object.keys(window.cartelPeer.connections);
-                    keys.forEach(function(k) {
+                    Object.keys(window.cartelPeer.connections).forEach(function(k) {
                         const list = window.cartelPeer.connections[k];
                         if (list && list.length) {
                             list.forEach(function(item) {
@@ -3010,31 +3016,35 @@
                     });
                 }
             }
-            setInterval(findExistingConnection, 1200);
+            setInterval(findExistingConnection, 1000);
 
-            // 5. Draggable Holo-Pod Window
+            // 5. Draggable Holo-Pod (Mouse + Mobile Touch)
             let drag = false, dx = 0, dy = 0, dl = 0, dt = 0;
-            holoPodHdr.addEventListener('mousedown', function(e) {
+            function startDragPod(e) {
                 if (e.target.tagName === 'BUTTON') return;
                 drag = true;
                 const r = holoPodDock.getBoundingClientRect();
-                dl = r.left; dt = r.top; dx = e.clientX; dy = e.clientY;
+                dl = r.left; dt = r.top;
+                dx = e.touches ? e.touches[0].clientX : e.clientX;
+                dy = e.touches ? e.touches[0].clientY : e.clientY;
                 holoPodDock.style.right = 'auto';
                 holoPodDock.style.left = dl + 'px';
                 holoPodDock.style.top = dt + 'px';
-            });
-            window.addEventListener('mousemove', function(e) {
+            }
+            function moveDragPod(e) {
                 if (!drag) return;
-                holoPodDock.style.left = Math.max(5, dl + (e.clientX - dx)) + 'px';
-                holoPodDock.style.top = Math.max(5, dt + (e.clientY - dy)) + 'px';
-            });
-            window.addEventListener('mouseup', function() { drag = false; });
-
-            // 6. HOLO-CAM Facecam Logic
-            let localCamStream = null;
-            let camFacing = 'user';
-            let filterIdx = 0;
-            const filters = ['', 'vid-filter-nv', 'vid-filter-thermal', 'vid-filter-matrix'];
+                const cx = e.touches ? e.touches[0].clientX : e.clientX;
+                const cy = e.touches ? e.touches[0].clientY : e.clientY;
+                holoPodDock.style.left = Math.max(5, dl + (cx - dx)) + 'px';
+                holoPodDock.style.top = Math.max(5, dt + (cy - dy)) + 'px';
+            }
+            function endDragPod() { drag = false; }
+            holoPodHdr.addEventListener('mousedown', startDragPod);
+            window.addEventListener('mousemove', moveDragPod);
+            window.addEventListener('mouseup', endDragPod);
+            holoPodHdr.addEventListener('touchstart', startDragPod, { passive: true });
+            window.addEventListener('touchmove', moveDragPod, { passive: true });
+            window.addEventListener('touchend', endDragPod);
 
             uiBtns.podBtn.addEventListener('click', function() {
                 if (typeof playSynth === 'function') playSynth(550, 1350, 0.1, 'triangle');
@@ -3046,93 +3056,96 @@
                 uiBtns.podBtn.classList.remove('active');
             });
 
-            async function toggleHoloCam() {
+            // 6. 2-WAY SIMULTANEOUS HOLO-CAM ENGINE
+            async function startLocalCamAndBeam(triggerPartner) {
                 findExistingConnection();
-                if (!localCamStream) {
-                    try {
-                        localCamStream = await navigator.mediaDevices.getUserMedia({
-                            video: { facingMode: camFacing, width: { ideal: 640 }, height: { ideal: 480 } },
-                            audio: true
-                        });
-                        hpLocalVid.srcObject = localCamStream;
-                        if (!hpRemoteVid.srcObject) {
-                            hpRemoteVid.muted = true;
-                            hpRemoteVid.srcObject = localCamStream;
-                        }
-                        hpCamBtn.classList.add('active');
-                        hpCamBtn.innerHTML = '&#128994; CAM ON (STOP)';
-                        hpStatusBadge.innerText = 'HOLO-CAM LIVE';
-                        if (window.cartelPeer && window.cartelRemoteId) {
-                            const call = window.cartelPeer.call(window.cartelRemoteId, localCamStream, { metadata: { mode: 'holocam' } });
-                            if (call) {
-                                call.on('stream', function(rs) {
-                                    hpRemoteVid.muted = false;
-                                    hpRemoteVid.srcObject = rs;
-                                    hpStatusBadge.innerText = '2-WAY HOLO-CAM LOCKED';
-                                });
-                            }
-                        }
-                    } catch (e) {
-                        hpStatusBadge.innerText = 'ALLOW CAMERA PERMISSION';
+                try {
+                    localCamStream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: camFacing, width: { ideal: 320 }, height: { ideal: 240 } },
+                        audio: false
+                    });
+                    hpLocalVid.srcObject = localCamStream;
+                    hpCamBtn.classList.add('active');
+                    hpCamBtn.innerHTML = '&#128994; CAM: ON';
+                    hpStatusBadge.innerText = '\uD83D\uDFE2 BEAMING 2-WAY CAM...';
+
+                    if (triggerPartner && window.cartelConn && window.cartelConn.open) {
+                        window.cartelConn.send({ type: 'HOLO_CAM_REQUEST_2WAY' });
                     }
-                } else {
-                    localCamStream.getTracks().forEach(function(t) { t.stop(); });
-                    localCamStream = null;
-                    hpLocalVid.srcObject = null;
-                    hpCamBtn.classList.remove('active');
-                    hpCamBtn.innerHTML = '&#128247; START CAM';
-                    hpStatusBadge.innerText = 'CAM STANDBY';
-                    if (window.cartelConn && window.cartelConn.open) {
-                        window.cartelConn.send({ type: 'HOLO_SIGNAL', mode: 'stop_cam' });
-                    }
+
+                    if (camFrameInterval) clearInterval(camFrameInterval);
+                    camFrameInterval = setInterval(function() {
+                        if (!localCamStream || !hpLocalVid.videoWidth) return;
+                        findExistingConnection();
+                        camSnapCanvas.width = 280;
+                        camSnapCanvas.height = 210;
+                        camSnapCtx.drawImage(hpLocalVid, 0, 0, 280, 210);
+                        const frameData = camSnapCanvas.toDataURL('image/jpeg', 0.55);
+                        if (window.cartelConn && window.cartelConn.open) {
+                            window.cartelConn.send({ type: 'HOLO_CAM_FRAME', frame: frameData });
+                        }
+                    }, 95);
+                } catch (e) {
+                    hpStatusBadge.innerText = 'ALLOW CAMERA PERMISSION';
                 }
             }
-            hpCamBtn.addEventListener('click', toggleHoloCam);
-            hpFlipBtn.addEventListener('click', function() {
-                camFacing = (camFacing === 'user') ? 'environment' : 'user';
-                hpLocalVid.style.transform = (camFacing === 'user') ? 'scaleX(-1)' : 'none';
+
+            function stopLocalCam() {
+                if (camFrameInterval) { clearInterval(camFrameInterval); camFrameInterval = null; }
                 if (localCamStream) {
                     localCamStream.getTracks().forEach(function(t) { t.stop(); });
                     localCamStream = null;
-                    toggleHoloCam();
+                }
+                hpLocalVid.srcObject = null;
+                hpCamBtn.classList.remove('active');
+                hpCamBtn.innerHTML = '&#128247; HOLO-CAM';
+                hpStatusBadge.innerText = 'CAM STANDBY';
+                if (window.cartelConn && window.cartelConn.open) {
+                    window.cartelConn.send({ type: 'HOLO_SIGNAL', mode: 'stop_cam' });
+                }
+            }
+
+            hpCamBtn.addEventListener('click', function() {
+                if (typeof playSynth === 'function') playSynth(600, 1400, 0.1, 'triangle');
+                if (!localCamStream) startLocalCamAndBeam(true);
+                else stopLocalCam();
+            });
+
+            hpFlipBtn.addEventListener('click', function() {
+                if (typeof playSynth === 'function') playSynth(750, 1500, 0.08, 'sine');
+                camFacing = (camFacing === 'user') ? 'environment' : 'user';
+                hpLocalVid.style.transform = (camFacing === 'user') ? 'scaleX(-1)' : 'none';
+                if (localCamStream) {
+                    stopLocalCam();
+                    startLocalCamAndBeam(false);
                 }
             });
+
             hpFilterBtn.addEventListener('click', function() {
+                if (typeof playSynth === 'function') playSynth(800, 1600, 0.07, 'sine');
                 filterIdx = (filterIdx + 1) % filters.length;
                 const f = filters[filterIdx];
-                [hpRemoteVid, hpLocalVid, hstVideo, hstFrameImg].forEach(function(el) {
+                [hpRemoteVid, hpRemoteImg, hpLocalVid, hstVideo, hstFrameImg].forEach(function(el) {
                     filters.forEach(function(c) { if (c) el.classList.remove(c); });
                     if (f) el.classList.add(f);
                 });
+                hpStatusBadge.innerText = 'OPTICS: ' + filtersNames[filterIdx];
             });
 
-            // 7. UNIVERSAL SCREEN SHARE (PC 60FPS + MOBILE LIVE WAR-ROOM & VAULT DATA STREAMER)
+            // 7. UNIVERSAL SCREEN SHARE (WORKS FROM BOTH SHARE SCREEN BUTTON & HOLO-POD CAST 60FPS BUTTON)
             let isSharingScreen = false;
             let frameTimer = null;
             let desktopStream = null;
             let touchX = -100, touchY = -100, touchDown = false;
 
             window.addEventListener('touchstart', function(e) {
-                if (e.touches && e.touches[0]) {
-                    touchX = e.touches[0].clientX;
-                    touchY = e.touches[0].clientY;
-                    touchDown = true;
-                }
+                if (e.touches && e.touches[0]) { touchX = e.touches[0].clientX; touchY = e.touches[0].clientY; touchDown = true; }
             }, { passive: true });
             window.addEventListener('touchmove', function(e) {
-                if (e.touches && e.touches[0]) {
-                    touchX = e.touches[0].clientX;
-                    touchY = e.touches[0].clientY;
-                    touchDown = true;
-                }
+                if (e.touches && e.touches[0]) { touchX = e.touches[0].clientX; touchY = e.touches[0].clientY; touchDown = true; }
             }, { passive: true });
-            window.addEventListener('touchend', function() {
-                setTimeout(function() { touchDown = false; }, 350);
-            }, { passive: true });
-            window.addEventListener('mousemove', function(e) {
-                touchX = e.clientX;
-                touchY = e.clientY;
-            });
+            window.addEventListener('touchend', function() { setTimeout(function() { touchDown = false; }, 350); }, { passive: true });
+            window.addEventListener('mousemove', function(e) { touchX = e.clientX; touchY = e.clientY; });
 
             const shareCanvas = document.createElement('canvas');
             const shareCtx = shareCanvas.getContext('2d');
@@ -3142,22 +3155,18 @@
                 shareCanvas.width = isPort ? 480 : 800;
                 shareCanvas.height = isPort ? 760 : 450;
                 const cw = shareCanvas.width, ch = shareCanvas.height;
-                const sx = cw / Math.max(1, window.innerWidth);
-                const sy = ch / Math.max(1, window.innerHeight);
+                const sx = cw / Math.max(1, window.innerWidth), sy = ch / Math.max(1, window.innerHeight);
                 const core = getComputedStyle(document.documentElement).getPropertyValue('--core').trim() || '#bc13fe';
 
                 shareCtx.fillStyle = '#07050c';
                 shareCtx.fillRect(0, 0, cw, ch);
-
                 shareCtx.strokeStyle = core;
                 shareCtx.lineWidth = 3;
                 shareCtx.strokeRect(4, 4, cw - 8, ch - 8);
-
                 shareCtx.fillStyle = core;
                 shareCtx.font = 'bold 15px Courier New';
                 shareCtx.fillText('LIVE MOBILE SCREEN // THE BINARY CARTEL', 16, 28);
 
-                // Find biggest visible canvas (Ghost-Link War Room Blackboard or Cyber-Lab Canvas)
                 const allCanvases = Array.from(document.querySelectorAll('canvas')).filter(function(c) {
                     if (c.id === 'matrixCanvas') return false;
                     const r = c.getBoundingClientRect();
@@ -3167,15 +3176,11 @@
                 if (allCanvases.length > 0) {
                     const mainC = allCanvases[allCanvases.length - 1];
                     shareCtx.fillStyle = '#000';
-                    shareCtx.fillRect(16, 44, cw - 32, ch - 135);
+                    shareCtx.fillRect(16, 44, cw - 32, ch - 115);
                     shareCtx.strokeStyle = core;
-                    shareCtx.lineWidth = 1.5;
-                    shareCtx.strokeRect(16, 44, cw - 32, ch - 135);
-                    try {
-                        shareCtx.drawImage(mainC, 18, 46, cw - 36, ch - 139);
-                    } catch (e) {}
+                    shareCtx.strokeRect(16, 44, cw - 32, ch - 115);
+                    try { shareCtx.drawImage(mainC, 18, 46, cw - 36, ch - 119); } catch (e) {}
                 } else {
-                    // Draw visible Vault Cards
                     const cards = document.querySelectorAll('#vaultGrid a, .card, .vault-card');
                     cards.forEach(function(card) {
                         const r = card.getBoundingClientRect();
@@ -3193,19 +3198,14 @@
                     });
                 }
 
-                // Draw status footer
                 shareCtx.fillStyle = '#120d1a';
-                shareCtx.fillRect(16, ch - 78, cw - 32, 62);
+                shareCtx.fillRect(16, ch - 62, cw - 32, 46);
                 shareCtx.strokeStyle = core;
-                shareCtx.strokeRect(16, ch - 78, cw - 32, 62);
+                shareCtx.strokeRect(16, ch - 62, cw - 32, 46);
                 shareCtx.fillStyle = '#00ffcc';
-                shareCtx.font = 'bold 12px Courier New';
-                shareCtx.fillText('TRANSMITTING LIVE MOBILE VIEWPORT + TOUCH LASER', 26, ch - 52);
-                shareCtx.fillStyle = '#ccc';
-                shareCtx.font = '11px Courier New';
-                shareCtx.fillText('ScrollY: ' + Math.round(window.scrollY) + 'px | Touch: (' + Math.round(touchX) + ', ' + Math.round(touchY) + ')', 26, ch - 30);
+                shareCtx.font = 'bold 11px Courier New';
+                shareCtx.fillText('LIVE VIEWPORT + TOUCH LASER (' + Math.round(touchX) + ', ' + Math.round(touchY) + ')', 24, ch - 34);
 
-                // Draw Live Finger Touch Laser Pointer
                 if (touchX >= 0 && touchY >= 0) {
                     const lx = touchX * sx, ly = touchY * sy;
                     shareCtx.beginPath();
@@ -3216,65 +3216,57 @@
                     shareCtx.strokeStyle = '#fff';
                     shareCtx.stroke();
                 }
-
                 return shareCanvas.toDataURL('image/jpeg', 0.55);
+            }
+
+            function syncShareButtonsState(active) {
+                uiBtns.shareBtn.classList.toggle('active', active);
+                uiBtns.shareBtn.innerHTML = active ? '&#128994; STOP SHARING' : '&#128242; SHARE SCREEN';
+                if (hpScreenBtn) {
+                    hpScreenBtn.classList.toggle('active', active);
+                    hpScreenBtn.innerHTML = active ? '&#128994; CASTING' : '&#128421; CAST 60FPS';
+                }
             }
 
             async function startShareScreen() {
                 findExistingConnection();
                 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-                // On Desktop PC: try native 60FPS getDisplayMedia first
                 if (!isMobile && navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
                     try {
-                        desktopStream = await navigator.mediaDevices.getDisplayMedia({
-                            video: { frameRate: { ideal: 60, max: 60 } },
-                            audio: true
-                        });
+                        desktopStream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 60 } }, audio: true });
                         isSharingScreen = true;
-                        uiBtns.shareBtn.classList.add('active');
-                        uiBtns.shareBtn.innerHTML = '&#128994; STOP SHARING';
-
+                        syncShareButtonsState(true);
                         holoScreenTheater.classList.add('open');
                         holoScreenTheater.classList.add('minimized');
                         hstFrameImg.style.display = 'none';
                         hstVideo.style.display = 'block';
                         hstVideo.muted = true;
                         hstVideo.srcObject = desktopStream;
-                        hstTitle.innerText = '\uD83D\uDDA5 CASTING PC SCREEN (LIVE)';
+                        hstTitle.innerText = '\uD83D\uDDA5 CASTING 60FPS PC SCREEN (LIVE)';
 
                         const vt = desktopStream.getVideoTracks()[0];
                         if (vt) vt.onended = stopShareScreen;
 
-                        if (window.cartelPeer && window.cartelRemoteId) {
-                            window.cartelPeer.call(window.cartelRemoteId, desktopStream, { metadata: { mode: 'screen' } });
-                        }
-
-                        // Also beam frames over DataChannel so Mobile Phones always receive the PC screen!
                         frameTimer = setInterval(function() {
                             if (!isSharingScreen || !hstVideo.videoWidth) return;
-                            shareCanvas.width = 720;
-                            shareCanvas.height = 405;
-                            shareCtx.drawImage(hstVideo, 0, 0, 720, 405);
+                            shareCanvas.width = 640; shareCanvas.height = 360;
+                            shareCtx.drawImage(hstVideo, 0, 0, 640, 360);
                             const jpg = shareCanvas.toDataURL('image/jpeg', 0.5);
                             if (window.cartelConn && window.cartelConn.open) {
                                 window.cartelConn.send({ type: 'HOLO_SCREEN_FRAME', frame: jpg });
                             }
-                        }, 110);
+                        }, 105);
                         return;
                     } catch (err) {}
                 }
 
-                // On Mobile Phone (or PC fallback): Instant DataChannel Live Screen Mirror
                 isSharingScreen = true;
-                uiBtns.shareBtn.classList.add('active');
-                uiBtns.shareBtn.innerHTML = '&#128994; STOP SHARING';
-
+                syncShareButtonsState(true);
                 holoScreenTheater.classList.add('open');
                 holoScreenTheater.classList.add('minimized');
                 hstVideo.style.display = 'none';
                 hstFrameImg.style.display = 'block';
-                hstTitle.innerText = '\uD83D\uDCF2 BROADCASTING MOBILE SCREEN (LIVE)';
+                hstTitle.innerText = '\uD83D\uDCF2 BROADCASTING LIVE MOBILE SCREEN';
 
                 frameTimer = setInterval(function() {
                     if (!isSharingScreen) return;
@@ -3284,21 +3276,16 @@
                     if (window.cartelConn && window.cartelConn.open) {
                         window.cartelConn.send({ type: 'HOLO_SCREEN_FRAME', frame: jpg });
                     }
-                }, 100);
+                }, 105);
             }
 
             function stopShareScreen() {
                 isSharingScreen = false;
                 if (frameTimer) { clearInterval(frameTimer); frameTimer = null; }
-                if (desktopStream) {
-                    desktopStream.getTracks().forEach(function(t) { t.stop(); });
-                    desktopStream = null;
-                }
-                hstVideo.srcObject = null;
-                hstFrameImg.src = '';
+                if (desktopStream) { desktopStream.getTracks().forEach(function(t) { t.stop(); }); desktopStream = null; }
+                hstVideo.srcObject = null; hstFrameImg.src = '';
                 holoScreenTheater.classList.remove('open');
-                uiBtns.shareBtn.classList.remove('active');
-                uiBtns.shareBtn.innerHTML = '&#128242; SHARE SCREEN';
+                syncShareButtonsState(false);
                 if (window.cartelConn && window.cartelConn.open) {
                     window.cartelConn.send({ type: 'HOLO_SIGNAL', mode: 'stop_screen' });
                 }
@@ -3309,10 +3296,20 @@
                 if (!isSharingScreen) startShareScreen();
                 else stopShareScreen();
             });
-
-            hstMinBtn.addEventListener('click', function() {
-                holoScreenTheater.classList.toggle('minimized');
-            });
+            if (hpScreenBtn) {
+                hpScreenBtn.addEventListener('click', function() {
+                    if (typeof playSynth === 'function') playSynth(600, 1500, 0.12, 'triangle');
+                    if (!isSharingScreen) startShareScreen();
+                    else stopShareScreen();
+                });
+            }
+            hstMinBtn.addEventListener('click', function() { holoScreenTheater.classList.toggle('minimized'); });
+            if (hstFullBtn) {
+                hstFullBtn.addEventListener('click', function() {
+                    if (holoScreenTheater.requestFullscreen) holoScreenTheater.requestFullscreen();
+                    else if (holoScreenTheater.webkitRequestFullscreen) holoScreenTheater.webkitRequestFullscreen();
+                });
+            }
             hstCloseBtn.addEventListener('click', function() {
                 if (isSharingScreen) stopShareScreen();
                 else holoScreenTheater.classList.remove('open');
