@@ -682,122 +682,6 @@
             }
         });
         renderRecentIntel();
-// HOLO-COCKPIT PDF CLICK INTERCEPTOR (BLOCKS CHROME DEFAULT VIEWER)
-        const holoModal = document.getElementById('holoModal');
-        const holoFrame = document.getElementById('holoFrame');
-        const holoTitle = document.getElementById('holoTitle');
-        const holoExternal = document.getElementById('holoExternal');
-        const holoSave = document.getElementById('holoSave');
-        const holoClose = document.getElementById('holoClose');
-
-        document.querySelectorAll('#vaultGrid a').forEach(function(link) {
-            link.addEventListener('click', function(e) {
-                const url = this.getAttribute('href') || '';
-                if (url.toLowerCase().indexOf('.pdf') > -1 && holoModal && holoFrame) {
-                    e.preventDefault();
-                    playSynth(600, 1400, 0.12, 'triangle');
-                    if (holoTitle) holoTitle.innerText = this.innerText.trim();
-                    if (holoExternal) holoExternal.href = url;
-                    if (holoSave) {
-                        holoSave.href = url;
-                        holoSave.setAttribute('download', '');
-                    }
-                    holoFrame.src = url;
-                    holoModal.classList.add('active');
-                }
-            });
-        });
-
-        if (holoClose && holoModal && holoFrame) {
-            holoClose.addEventListener('click', function() {
-                playSynth(700, 300, 0.1, 'sawtooth');
-                holoModal.classList.remove('active');
-                holoFrame.src = '';
-            });
-        }
-        if (holoClose) holoClose.addEventListener('click', closeHoloCockpit);
-        if (holoModal) {
-            holoModal.addEventListener('click', function(e) {
-                if (e.target === holoModal) closeHoloCockpit();
-            });
-        }
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeHoloCockpit();
-        });
-
-        if (holoSystem) {
-            holoSystem.addEventListener('click', function() {
-                playSynth(500, 1500, 0.14, 'sawtooth');
-                const fileUrl = holoExternal.href;
-                const origText = holoSystem.innerHTML;
-                holoSystem.innerText = '\uD83D\uDE80 LAUNCHING APP...';
-                setTimeout(function() { holoSystem.innerHTML = origText; }, 1800);
-
-                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-                if (isMobile) {
-                    window.open(fileUrl, '_system');
-                } else {
-                    const sysLink = document.createElement('a');
-                    sysLink.href = fileUrl;
-                    sysLink.setAttribute('download', holoSave.getAttribute('download') || 'document.pdf');
-                    document.body.appendChild(sysLink);
-                    sysLink.click();
-                    sysLink.remove();
-                }
-            });
-        }
-
-        if (holoSave) {
-            holoSave.addEventListener('click', function() {
-                playSynth(600, 1200, 0.1, 'sine');
-            });
-        }
-
-        if (holoPrint) {
-            holoPrint.addEventListener('click', function() {
-                playSynth(800, 1400, 0.1, 'sine');
-                try {
-                    holoFrame.contentWindow.focus();
-                    holoFrame.contentWindow.print();
-                } catch (err) {
-                    window.open(holoFrame.src, '_blank');
-                }
-            });
-        }
-
-        if (holoShare) {
-            holoShare.addEventListener('click', function() {
-                playSynth(900, 1600, 0.12, 'triangle');
-                const shareUrl = holoExternal.href;
-                const shareTitle = holoTitle.innerText;
-                if (navigator.share && shareUrl.indexOf('http') === 0) {
-                    navigator.share({ title: shareTitle, text: 'Binary Cartel Intel: ' + shareTitle, url: shareUrl }).catch(function() {});
-                } else if (navigator.clipboard) {
-                    navigator.clipboard.writeText(shareUrl).then(function() {
-                        const orig = holoShare.innerHTML;
-                        holoShare.innerText = '\u2714 LINK COPIED!';
-                        setTimeout(function() { holoShare.innerHTML = orig; }, 1800);
-                    });
-                }
-            });
-        }
-
-        document.addEventListener('click', function(e) {
-            const link = e.target.closest('a');
-            if (!link || link.id === 'holoExternal' || link.id === 'holoSave') return;
-            const rawHref = link.getAttribute('href') || '';
-            if (rawHref.toLowerCase().endsWith('.pdf') && holoModal && holoFrame) {
-                e.preventDefault();
-                playSynth(450, 1350, 0.16, 'triangle');
-                const cleanName = link.innerText.replace(/[\uD83D\uDCC4\uD83D\uDCC2]/g, '').trim();
-                holoTitle.innerText = '\uD83D\uDCC4 ' + cleanName;
-                holoExternal.href = link.href;
-                holoSave.href = link.href;
-                holoSave.setAttribute('download', cleanName);
-                holoFrame.src = link.href;
-                holoModal.classList.add('active');
-            }
-        });
 // HYBRID DUAL-CORE JARVIS AI (COMPLETE ALL-IN-ONE ENGINE)
         const jarvisOrb = document.getElementById('jarvisOrb');
         const jarvisHud = document.getElementById('jarvisHud');
@@ -1387,7 +1271,7 @@
                 }
                 clean = clean
                     .replace(/\^/g, '**')
-                    ..replace(/(\d)([a-z(])/g, function(_, a, b) { return a + '*' + b; })
+                    .replace(/(\d)([a-z(])/g, function(_, a, b) { return a + '*' + b; })
                     .replace(/(\))(\d|[a-z(])/g, function(_, a, b) { return a + '*' + b; })
                     .replace(/x(\d|\()/g, function(_, a) { return 'x*' + a; })
                     .replace(/sin/g, 'Math.sin')
