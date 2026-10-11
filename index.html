@@ -191,6 +191,21 @@ const themes = [
         muteBtn.addEventListener('click', () => applyTheme(currentTheme));
 const bootScreen = document.getElementById('bootScreen');
         const bootText = document.getElementById('bootText');
+        if ('speechSynthesis' in window) { window.speechSynthesis.getVoices(); }
+
+        function speakJarvis() {
+            if (isMuted || !('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance("Identity verified. Welcome to the Binary Cartel.");
+            const voices = window.speechSynthesis.getVoices();
+            const preferred = voices.find(v => v.name.includes('David') || v.name.includes('Google UK English Male') || v.name.includes('Mark'));
+            if (preferred) msg.voice = preferred;
+            msg.pitch = 0.75;
+            msg.rate = 1.05;
+            msg.volume = 1;
+            window.speechSynthesis.speak(msg);
+        }
+
         function runBootSequence() {
             bootScreen.style.display = 'block';
             void bootScreen.offsetWidth;
@@ -208,8 +223,10 @@ const bootScreen = document.getElementById('bootScreen');
             setTimeout(() => {
                 bootScreen.classList.add('doors-open');
                 playSynth(180, 40, 0.55, 'sawtooth');
+                speakJarvis();
             }, 1350);
         }
+
         if (!sessionStorage.getItem('cartelBooted')) {
             sessionStorage.setItem('cartelBooted', 'true');
             window.addEventListener('load', runBootSequence);
