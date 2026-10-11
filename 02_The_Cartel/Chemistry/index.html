@@ -1,54 +1,45 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vault Interface</title>
     <style>
-        body { background-color: #0d0d0d; color: #00ffcc; font-family: 'Courier New', Courier, monospace; text-align: center; margin: 0; padding: 50px 20px; }
+        :root { --core: #00ffcc; --core-glow: rgba(0, 255, 204, 0.3); --rain-filter: hue-rotate(0deg); }
+        body { background-color: #0d0d0d; color: var(--core) !important; font-family: 'Courier New', Courier, monospace; text-align: center; margin: 0; padding: 50px 20px; }
         .header-container { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 15px; flex-wrap: wrap; }
-        h1 { font-size: 3.5em; text-shadow: 0 0 20px #00ffcc; margin: 0; text-transform: uppercase; letter-spacing: 4px; font-weight: bold;}
-        .badge { background-color: #111; border: 3px solid #00ffcc; border-radius: 12px; padding: 5px 20px; font-size: 2.8em; text-shadow: 0 0 15px #00ffcc; box-shadow: 0 0 20px #00ffcc; font-weight: bold; color: #fff;}
+        h1 { font-size: 3.5em; text-shadow: 0 0 20px var(--core) !important; margin: 0; text-transform: uppercase; letter-spacing: 4px; font-weight: bold; }
+        .badge { background-color: #111; border: 3px solid var(--core) !important; border-radius: 12px; padding: 5px 20px; font-size: 2.8em; text-shadow: 0 0 15px var(--core) !important; box-shadow: 0 0 20px var(--core) !important; font-weight: bold; color: #fff; }
         .subtitle { color: #888; font-size: 1.2em; letter-spacing: 3px; margin-bottom: 20px; text-transform: uppercase; }
-        .search-container { margin: 0 auto 30px auto; max-width: 600px; display: flex; gap: 15px; align-items: center; justify-content: center;}
+        .search-container { margin: 0 auto 30px auto; max-width: 600px; display: flex; gap: 15px; align-items: center; justify-content: center; flex-wrap: wrap; }
         .back-btn { padding: 12px 25px; background-color: #1a1a1c; color: #fff; text-decoration: none; border-radius: 8px; border: 1px solid #333; transition: 0.3s; font-weight: bold; letter-spacing: 1px; }
-        .back-btn:hover { background-color: #00ffcc; color: #000; box-shadow: 0 0 15px #00ffcc; }
-        .search-box { flex-grow: 1; padding: 12px 20px; font-size: 1.2em; background-color: #111; border: 2px solid #00ffcc; border-radius: 8px; color: #00ffcc; font-family: 'Courier New', Courier, monospace; box-shadow: 0 0 10px rgba(0, 255, 204, 0.2); outline: none; transition: 0.3s; }
-        .search-box:focus { box-shadow: 0 0 20px #00ffcc; background-color: #1a1a1c; }
+        .search-box { flex-grow: 1; padding: 12px 20px; font-size: 1.2em; background-color: #111; border: 2px solid var(--core) !important; border-radius: 8px; color: var(--core) !important; font-family: 'Courier New', Courier, monospace; box-shadow: 0 0 15px var(--core-glow) !important; outline: none; transition: 0.3s; }
+        .search-box:focus { box-shadow: 0 0 25px var(--core) !important; background-color: #1a1a1c; }
         .search-box::placeholder { color: #444; letter-spacing: 2px; }
         .dashboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; max-width: 1200px; margin: 0 auto; }
-        .card { background-color: #161618; border: 1px solid #2a2a2c; border-radius: 12px; padding: 40px 20px; font-size: 1.4em; font-weight: bold; cursor: pointer; transition: all 0.3s ease-in-out; color: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; word-break: break-word; }
-        .card:hover { background-color: #1a1a1c; border-color: #00ffcc; box-shadow: 0 0 20px rgba(0, 255, 204, 0.3); transform: translateY(-4px); color: #00ffcc; }
-        a { text-decoration: none; }
-#matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.25; pointer-events: none; }
-.mute-btn { position: fixed; top: 20px; right: 20px; background-color: #111; color: #00ffcc; border: 2px solid #00ffcc; border-radius: 8px; padding: 8px 15px; font-family: 'Courier New', Courier, monospace; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px rgba(0, 255, 204, 0.3); z-index: 100; transition: 0.3s; }
-        .mute-btn:hover { background-color: #00ffcc; color: #000; box-shadow: 0 0 20px #00ffcc; }
-:root { --core: #00ffcc; --core-glow: rgba(0, 255, 204, 0.3); --rain-filter: hue-rotate(0deg); }
-        body { color: var(--core) !important; }
-        h1 { text-shadow: 0 0 20px var(--core) !important; }
-        .badge { border-color: var(--core) !important; text-shadow: 0 0 15px var(--core) !important; box-shadow: 0 0 20px var(--core) !important; }
-        .search-box { border-color: var(--core) !important; color: var(--core) !important; box-shadow: 0 0 15px var(--core-glow) !important; }
-        .search-box:focus { box-shadow: 0 0 25px var(--core) !important; }
-        .card:hover { border-color: var(--core) !important; box-shadow: 0 0 20px var(--core-glow) !important; color: var(--core) !important; }
-        .back-btn:hover, .mute-btn:hover, .theme-btn:hover { background-color: var(--core) !important; color: #000 !important; box-shadow: 0 0 20px var(--core) !important; border-color: var(--core) !important; }
-        #matrixCanvas { filter: var(--rain-filter); transition: filter 0.4s ease; }
-        .theme-btn { position: fixed; top: 20px; right: 185px; background-color: #111; color: var(--core); border: 2px solid var(--core); border-radius: 8px; padding: 8px 15px; font-family: 'Courier New', Courier, monospace; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px var(--core-glow); z-index: 100; transition: 0.3s; }
-.emp-ring { position: fixed; border: 2px solid var(--core, #00ffcc); border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: 9999; animation: empBlast 0.55s ease-out forwards; }
-        @keyframes empBlast { 0% { width: 0px; height: 0px; opacity: 1; box-shadow: 0 0 20px var(--core, #00ffcc); } 100% { width: 150px; height: 150px; opacity: 0; } }
-        .card { position: relative; overflow: hidden; transform-style: preserve-3d; }
-        .card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), var(--core-glow, rgba(0, 255, 204, 0.25)) 0%, transparent 65%); opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+        .card { position: relative; overflow: hidden; transform-style: preserve-3d; background-color: #161618; border: 1px solid #2a2a2c; border-radius: 12px; padding: 40px 20px; font-size: 1.4em; font-weight: bold; cursor: pointer; transition: all 0.3s ease-in-out; color: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; word-break: break-word; }
+        .card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), var(--core-glow) 0%, transparent 65%); opacity: 0; transition: opacity 0.2s; pointer-events: none; }
         .card:hover::before { opacity: 1; }
-        .intel-dock { max-width: 1200px; margin: 0 auto 35px auto; padding: 15px 20px; background: rgba(17, 17, 19, 0.85); border: 1px dashed var(--core, #00ffcc); border-radius: 12px; display: none; }
-        .intel-title { font-size: 0.95em; letter-spacing: 3px; color: var(--core, #00ffcc); margin-bottom: 12px; font-weight: bold; text-transform: uppercase; }
+        .card:hover { background-color: #1a1a1c; border-color: var(--core) !important; box-shadow: 0 0 20px var(--core-glow) !important; transform: translateY(-4px); color: var(--core) !important; }
+        a { text-decoration: none; }
+        @media (max-width: 900px) { .dashboard { grid-template-columns: repeat(2, 1fr); } h1 { font-size: 2.3em; } .badge { font-size: 1.8em; } }
+        #matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.25; pointer-events: none; filter: var(--rain-filter); transition: filter 0.4s ease; }
+        .mute-btn { position: fixed; top: 20px; right: 20px; background-color: #111; color: var(--core); border: 2px solid var(--core); border-radius: 8px; padding: 8px 15px; font-family: 'Courier New', Courier, monospace; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px var(--core-glow); z-index: 100; transition: 0.3s; }
+        .theme-btn { position: fixed; top: 20px; right: 185px; background-color: #111; color: var(--core); border: 2px solid var(--core); border-radius: 8px; padding: 8px 15px; font-family: 'Courier New', Courier, monospace; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px var(--core-glow); z-index: 100; transition: 0.3s; }
+        .back-btn:hover, .mute-btn:hover, .theme-btn:hover { background-color: var(--core) !important; color: #000 !important; box-shadow: 0 0 20px var(--core) !important; border-color: var(--core) !important; }
+        .emp-ring { position: fixed; border: 2px solid var(--core); border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: 9999; animation: empBlast 0.55s ease-out forwards; }
+        @keyframes empBlast { 0% { width: 0px; height: 0px; opacity: 1; box-shadow: 0 0 20px var(--core); } 100% { width: 150px; height: 150px; opacity: 0; } }
+        .intel-dock { max-width: 1200px; margin: 0 auto 35px auto; padding: 15px 20px; background: rgba(17, 17, 19, 0.85); border: 1px dashed var(--core); border-radius: 12px; display: none; }
+        .intel-title { font-size: 0.95em; letter-spacing: 3px; color: var(--core); margin-bottom: 12px; font-weight: bold; text-transform: uppercase; }
         .intel-list { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
-        .intel-chip { background: #161618; border: 1px solid var(--core, #00ffcc); color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.95em; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 10px var(--core-glow, rgba(0, 255, 204, 0.2)); transition: 0.25s; }
-        .intel-chip:hover { background: var(--core, #00ffcc); color: #000; transform: translateY(-3px); box-shadow: 0 0 20px var(--core, #00ffcc); }
+        .intel-chip { background: #161618; border: 1px solid var(--core); color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.95em; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 10px var(--core-glow); transition: 0.25s; }
+        .intel-chip:hover { background: var(--core); color: #000; transform: translateY(-3px); box-shadow: 0 0 20px var(--core); }
     </style>
 </head>
 <body>
-<canvas id="matrixCanvas"></canvas>
-<button id="muteBtn" class="mute-btn">🔊 AUDIO: ON</button>
-<button id="themeBtn" class="theme-btn">🎨 CORE: CYAN</button>
+    <canvas id="matrixCanvas"></canvas>
+    <button id="muteBtn" class="mute-btn">ðŸ”Š AUDIO: ON</button>
+    <button id="themeBtn" class="theme-btn">ðŸŽ¨ CORE: CYAN</button>
     <div class="header-container">
         <h1>THE BINARY CARTEL</h1>
         <div class="badge">0</div>
@@ -57,11 +48,11 @@
     <div class="subtitle" id="section-title">STATUS: ACTIVE</div>
     
     <div class="search-container">
-        <a href="../index.html" class="back-btn">⬅ RETURN</a>
+        <a href="../index.html" class="back-btn">â¬… RETURN</a>
         <input type="text" id="cartelSearch" class="search-box" placeholder="> FILTER FOLDERS & FILES_">
     </div>
     <div id="recentIntelDock" class="intel-dock">
-        <div class="intel-title">⚡ RECENT INTEL // QUICK RESUME</div>
+        <div class="intel-title">âš¡ RECENT INTEL // QUICK RESUME</div>
         <div id="recentIntelList" class="intel-list"></div>
     </div>
     <div class="dashboard" id="vaultGrid">
@@ -70,8 +61,8 @@
         <a href="08_Atmospheric_and_Environmental_Chemistry/index.html"><div class="card">08_Atmospheric_and_Environmental_Chemistry</div></a>
 
     </div>
-   <script>
-        // 1. SAFE FOLDER TITLE DETECTOR (Will never crash on root URLs)
+    <script>
+        // 1. SAFE FOLDER TITLE DETECTOR
         try {
             const secTitle = document.getElementById('section-title');
             if (secTitle) {
@@ -83,34 +74,47 @@
             }
         } catch (err) {}
 
-        // 2. HIGH-GAIN WEB AUDIO SYNTH ENGINE (Default ON + Mobile Unlocked)
-        let audioCtx = null;
-        let isMuted = false;
+        // 2. ALWAYS-UNLOCKED WEB AUDIO SYNTH ENGINE
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = AudioCtx ? new AudioCtx() : null;
+        let isMuted = localStorage.getItem('cartelMute') === 'true';
         const muteBtn = document.getElementById('muteBtn');
 
-        function playSynth(startFreq, endFreq, duration, type) {
-            if (isMuted) return;
-            try {
-                const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                if (!AudioCtx) return;
-                if (!audioCtx) audioCtx = new AudioCtx();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
+        function unlockAudioEngine() {
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+        window.addEventListener('click', unlockAudioEngine);
+        window.addEventListener('touchstart', unlockAudioEngine, { passive: true });
+        window.addEventListener('keydown', unlockAudioEngine);
 
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = type || 'sine';
-                osc.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(endFreq, audioCtx.currentTime + duration);
-                gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + duration);
-            } catch (err) {}
+        function playSynth(startFreq, endFreq, duration, type) {
+            if (isMuted || !audioCtx) return;
+            const fireTone = function() {
+                try {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type || 'sine';
+                    const now = audioCtx.currentTime;
+                    osc.frequency.setValueAtTime(startFreq, now);
+                    osc.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + duration);
+                } catch (err) {}
+            };
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume().then(fireTone).catch(function() {});
+            } else {
+                fireTone();
+            }
         }
 
-        // 3. CHAMELEON CYBER-CORE THEME ENGINE & MUTE UI
+        // 3. CHAMELEON CYBER-CORE THEME ENGINE
         const themes = [
             { name: 'CYAN', hex: '#00ffcc', glow: 'rgba(0, 255, 204, 0.3)', filter: 'hue-rotate(0deg)' },
             { name: 'SITH', hex: '#ff0033', glow: 'rgba(255, 0, 51, 0.3)', filter: 'hue-rotate(180deg) saturate(1.5)' },
@@ -125,9 +129,9 @@
             document.documentElement.style.setProperty('--core', t.hex);
             document.documentElement.style.setProperty('--core-glow', t.glow);
             document.documentElement.style.setProperty('--rain-filter', t.filter);
-            if (themeBtn) themeBtn.innerText = '🎨 CORE: ' + t.name;
+            if (themeBtn) themeBtn.innerText = 'ðŸŽ¨ CORE: ' + t.name;
             if (muteBtn) {
-                muteBtn.innerText = isMuted ? '🔇 AUDIO: MUTED' : '🔊 AUDIO: ON';
+                muteBtn.innerText = isMuted ? 'ðŸ”‡ AUDIO: MUTED' : 'ðŸ”Š AUDIO: ON';
                 muteBtn.style.borderColor = isMuted ? '#ff0033' : t.hex;
                 muteBtn.style.color = isMuted ? '#ff0033' : t.hex;
             }
@@ -135,14 +139,17 @@
         updateTopButtons();
 
         if (muteBtn) {
-            muteBtn.addEventListener('click', function() {
+            muteBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
                 isMuted = !isMuted;
+                localStorage.setItem('cartelMute', isMuted);
                 updateTopButtons();
                 if (!isMuted) playSynth(880, 1320, 0.1, 'sine');
             });
         }
         if (themeBtn) {
-            themeBtn.addEventListener('click', function() {
+            themeBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
                 currentTheme = (currentTheme + 1) % themes.length;
                 localStorage.setItem('cartelTheme', currentTheme);
                 updateTopButtons();
@@ -181,7 +188,7 @@
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = '#00ffcc';
                 ctx.font = '16px Courier New';
-                drops.forEach((y, i) => {
+                drops.forEach(function(y, i) {
                     const text = Math.random() > 0.5 ? '1' : '0';
                     ctx.fillText(text, i * 20, y * 20);
                     if (y * 20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
@@ -192,65 +199,7 @@
             window.addEventListener('resize', function() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
         }
 
-        // 6. DIRECT SYNCHRONOUS JARVIS VOICE & BLAST DOORS (Zero setTimeout Block)
-        const bootScreen = document.getElementById('bootScreen');
-        const bootText = document.getElementById('bootText');
-
-        function speakJarvisDirect() {
-            if (isMuted || !('speechSynthesis' in window)) return;
-            try {
-                if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
-                const msg = new SpeechSynthesisUtterance("Biometrics verified. Welcome to the Binary Cartel.");
-                msg.lang = 'en-US';
-                msg.pitch = 0.7;
-                msg.rate = 1.0;
-                msg.volume = 1.0;
-                window.speechSynthesis.speak(msg);
-            } catch (err) {}
-        }
-
-        function runBootSequence() {
-            if (!bootScreen || !bootText) return;
-            speakJarvisDirect();
-            bootScreen.style.cursor = 'default';
-            bootScreen.style.display = 'block';
-            void bootScreen.offsetWidth;
-            bootScreen.classList.remove('doors-open');
-            bootText.innerText = '🔒 DECRYPTING BINARY CARTEL...';
-            playSynth(300, 600, 0.1, 'sawtooth');
-            setTimeout(function() {
-                bootText.innerText = '🧬 BIOMETRICS VERIFIED...';
-                playSynth(600, 900, 0.1, 'sawtooth');
-            }, 400);
-            setTimeout(function() {
-                bootText.innerText = '🔓 ACCESS GRANTED';
-                playSynth(900, 1500, 0.14, 'triangle');
-            }, 800);
-            setTimeout(function() {
-                bootScreen.classList.add('doors-open');
-                playSynth(180, 40, 0.55, 'sawtooth');
-            }, 1150);
-        }
-
-        if (bootScreen && bootText) {
-            if (!sessionStorage.getItem('cartelBooted')) {
-                bootText.innerText = '🖐️ TAP SCREEN TO VERIFY BIOMETRICS';
-                bootScreen.style.cursor = 'pointer';
-                bootScreen.addEventListener('click', function initiateUnlock() {
-                    bootScreen.removeEventListener('click', initiateUnlock);
-                    sessionStorage.setItem('cartelBooted', 'true');
-                    runBootSequence();
-                });
-            } else {
-                bootScreen.style.display = 'none';
-            }
-            document.querySelectorAll('.badge').forEach(function(b) {
-                b.style.cursor = 'pointer';
-                b.addEventListener('click', runBootSequence);
-            });
-        }
-
-        // 7. 3D MAGNETIC CARDS, HOVER SYNTH & EMP SHOCKWAVE
+        // 6. 3D MAGNETIC CARDS, HOVER SYNTH & EMP SHOCKWAVE
         document.addEventListener('click', function(e) {
             const ring = document.createElement('div');
             ring.className = 'emp-ring';
@@ -281,7 +230,7 @@
             btn.addEventListener('click', function() { playSynth(800, 300, 0.15, 'sawtooth'); });
         });
 
-        // 8. RECENT INTEL QUICK-LAUNCH DOCK
+        // 7. RECENT INTEL QUICK-LAUNCH DOCK
         function renderRecentIntel() {
             const dock = document.getElementById('recentIntelDock');
             const list = document.getElementById('recentIntelList');
@@ -294,7 +243,7 @@
                 a.href = item.url;
                 a.target = '_blank';
                 a.className = 'intel-chip';
-                a.innerText = '📄 ' + item.name;
+                a.innerText = 'ðŸ“„ ' + item.name;
                 a.addEventListener('mouseenter', function() { playSynth(950, 1450, 0.05, 'sine'); });
                 list.appendChild(a);
             });
