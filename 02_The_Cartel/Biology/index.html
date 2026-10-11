@@ -21,10 +21,13 @@
         .card:hover { background-color: #1a1a1c; border-color: #00ffcc; box-shadow: 0 0 20px rgba(0, 255, 204, 0.3); transform: translateY(-4px); color: #00ffcc; }
         a { text-decoration: none; }
 #matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.25; pointer-events: none; }
+.mute-btn { position: fixed; top: 20px; right: 20px; background-color: #111; color: #00ffcc; border: 2px solid #00ffcc; border-radius: 8px; padding: 8px 15px; font-family: 'Courier New', Courier, monospace; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px rgba(0, 255, 204, 0.3); z-index: 100; transition: 0.3s; }
+        .mute-btn:hover { background-color: #00ffcc; color: #000; box-shadow: 0 0 20px #00ffcc; }
     </style>
 </head>
 <body>
 <canvas id="matrixCanvas"></canvas>
+<button id="muteBtn" class="mute-btn">🔊 AUDIO: ON</button>
     <div class="header-container">
         <h1>THE BINARY CARTEL</h1>
         <div class="badge">0</div>
@@ -88,6 +91,47 @@ const canvas = document.getElementById('matrixCanvas');
         }
         setInterval(drawMatrix, 50);
         window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let isMuted = localStorage.getItem('cartelMute') === 'true';
+        const muteBtn = document.getElementById('muteBtn');
+        function updateMuteUI() {
+            muteBtn.innerText = isMuted ? '🔇 AUDIO: MUTED' : '🔊 AUDIO: ON';
+            muteBtn.style.borderColor = isMuted ? '#ff0033' : '#00ffcc';
+            muteBtn.style.color = isMuted ? '#ff0033' : '#00ffcc';
+        }
+        updateMuteUI();
+        muteBtn.addEventListener('click', () => {
+            isMuted = !isMuted;
+            localStorage.setItem('cartelMute', isMuted);
+            updateMuteUI();
+            if (!isMuted) playSynth(880, 1320, 0.08, 'sine');
+        });
+        function playSynth(startFreq, endFreq, duration, type) {
+            if (isMuted) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type || 'sine';
+            osc.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(endFreq, audioCtx.currentTime + duration);
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', () => playSynth(900, 1400, 0.04, 'sine'));
+            card.addEventListener('click', () => playSynth(500, 1200, 0.12, 'triangle'));
+        });
+        document.querySelectorAll('.back-btn').forEach(btn => {
+            btn.addEventListener('mouseenter', () => playSynth(700, 500, 0.04, 'sine'));
+            btn.addEventListener('click', () => playSynth(800, 300, 0.15, 'sawtooth'));
+        });
+        document.getElementById('cartelSearch').addEventListener('keydown', () => {
+            playSynth(1600, 1200, 0.025, 'triangle');
+        });
     </script>
 </body>
 </html>
