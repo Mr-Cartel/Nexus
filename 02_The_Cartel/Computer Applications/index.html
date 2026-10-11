@@ -65,10 +65,221 @@
         .jarvis-input { flex-grow: 1; background: #141417; border: 1px solid var(--core); color: var(--core); padding: 9px 12px; border-radius: 8px; font-family: 'Courier New', Courier, monospace; font-size: 0.9em; outline: none; }
         .jarvis-send { background: var(--core); color: #000; border: none; border-radius: 8px; padding: 9px 14px; font-family: 'Courier New', Courier, monospace; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .jarvis-send:hover { box-shadow: 0 0 15px var(--core); }
+.cyberlab-orb { position: fixed; bottom: 25px; left: 25px; background: #111; color: var(--core); border: 2px solid var(--core); border-radius: 50px; padding: 12px 22px; font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 1em; cursor: pointer; box-shadow: 0 0 20px var(--core-glow), inset 0 0 10px var(--core-glow); z-index: 9400; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+        .cyberlab-orb:hover { background: var(--core); color: #000; box-shadow: 0 0 30px var(--core); transform: scale(1.05); }
+        .cyberlab-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(4, 4, 7, 0.9); backdrop-filter: blur(8px); z-index: 9600; display: none; align-items: center; justify-content: center; }
+        .cyberlab-modal.open { display: flex; }
+        .cyberlab-win { width: 96%; height: 92%; max-width: 1440px; background: #0a0a0d; border: 2px solid var(--core); border-radius: 12px; box-shadow: 0 0 45px var(--core-glow); display: flex; flex-direction: column; overflow: hidden; text-align: left; }
+        .cyberlab-nav { background: #121216; border-bottom: 2px solid var(--core); padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .cyberlab-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+        .cl-tab { background: #18181d; color: #aaa; border: 1px solid #333; padding: 8px 13px; border-radius: 6px; font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 0.82em; cursor: pointer; transition: 0.2s; }
+        .cl-tab.active, .cl-tab:hover { background: var(--core); color: #000; border-color: var(--core); box-shadow: 0 0 12px var(--core); }
+        .cl-close { background: #1a1114; color: #ff0033; border: 1px solid #ff0033; padding: 8px 14px; border-radius: 6px; font-family: 'Courier New', Courier, monospace; font-weight: bold; cursor: pointer; }
+        .cl-close:hover { background: #ff0033; color: #fff; box-shadow: 0 0 15px #ff0033; }
+        .cl-body { flex-grow: 1; padding: 16px; overflow-y: auto; display: none; gap: 16px; flex-wrap: wrap; align-content: flex-start; }
+        .cl-body.active { display: flex; }
+        .cl-panel { background: #111116; border: 1px solid var(--core); border-radius: 10px; padding: 14px; flex: 1; min-width: 300px; box-shadow: inset 0 0 15px rgba(0,0,0,0.8); }
+        .cl-title { color: var(--core); font-weight: bold; font-size: 0.95em; letter-spacing: 2px; margin-bottom: 10px; text-shadow: 0 0 8px var(--core); border-bottom: 1px solid #282830; padding-bottom: 6px; }
+        .cl-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; font-size: 0.84em; color: #ccc; }
+        .cl-input, .cl-select { background: #181820; color: var(--core); border: 1px solid var(--core); padding: 7px 10px; border-radius: 6px; font-family: 'Courier New', Courier, monospace; font-size: 0.9em; outline: none; }
+        .cl-btn { background: #181820; color: var(--core); border: 1px solid var(--core); padding: 7px 12px; border-radius: 6px; font-family: 'Courier New', Courier, monospace; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 0.85em; }
+        .cl-btn:hover, .cl-btn.active { background: var(--core); color: #000; box-shadow: 0 0 12px var(--core); }
+        .cl-canvas { width: 100%; background: #070709; border: 1px solid #2a2a35; border-radius: 8px; display: block; cursor: crosshair; }
+        .cl-output { background: #08080b; border: 1px solid var(--core); padding: 10px 12px; border-radius: 8px; color: var(--core); font-weight: bold; min-height: 38px; margin-top: 8px; word-break: break-word; line-height: 1.45; font-size: 0.88em; }
+        .swatch { width: 25px; height: 25px; border-radius: 50%; cursor: pointer; border: 2px solid #444; display: inline-block; }
+        .swatch.active { border-color: #fff; transform: scale(1.18); }
+        .ptable-wrap { overflow-x: auto; padding-bottom: 6px; }
+        .ptable-grid { display: grid; grid-template-columns: repeat(18, minmax(38px, 1fr)); gap: 4px; min-width: 720px; }
+        .pt-cell { background: #15151c; border: 1px solid #2e2e3d; border-radius: 4px; padding: 3px 2px; text-align: center; cursor: pointer; transition: 0.15s; user-select: none; }
+        .pt-cell:hover, .pt-cell.active { background: var(--core); color: #000 !important; border-color: #fff; box-shadow: 0 0 12px var(--core); transform: scale(1.12); z-index: 5; }
+        .pt-num { font-size: 0.62em; opacity: 0.75; display: block; line-height: 1; }
+        .pt-sym { font-size: 0.92em; font-weight: bold; display: block; line-height: 1.15; }
+        .pt-name { font-size: 0.52em; opacity: 0.8; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     </style>
 </head>
 <body>
     <canvas id="matrixCanvas"></canvas>
+<button id="cyberLabOrb" class="cyberlab-orb">&#129514; CYBER-LAB</button>
+    <div id="cyberLabModal" class="cyberlab-modal">
+        <div class="cyberlab-win">
+            <div class="cyberlab-nav">
+                <div class="cyberlab-tabs">
+                    <button class="cl-tab active" data-tab="clChem">&#9883; PERIODIC TABLE &amp; CHEM</button>
+                    <button class="cl-tab" data-tab="clMath">&#128200; EQUATION GRAPHER &amp; MATH</button>
+                    <button class="cl-tab" data-tab="clOptics">&#128294; OPTICS BENCH</button>
+                    <button class="cl-tab" data-tab="clSlate">&#9997; HOLO-SLATE</button>
+                    <button class="cl-tab" data-tab="clNeuro">&#127911; NEURO-WAVE</button>
+                </div>
+                <button id="cyberLabClose" class="cl-close">&#10006; CLOSE</button>
+            </div>
+
+            <!-- TAB 1: FULL 118-ELEMENT PERIODIC TABLE, BOHR REACTOR & CHEM BALANCER -->
+            <div id="clChem" class="cl-body active">
+                <div class="cl-panel" style="flex: 2.2; min-width: 620px;">
+                    <div class="cl-title">&#9883; INTERACTIVE 118-ELEMENT PERIODIC TABLE (CLICK ANY ELEMENT)</div>
+                    <div class="cl-row">
+                        <input type="text" id="ptSearch" class="cl-input" placeholder="Search element (e.g. Gold, Au, 79, Iron)..." style="flex:1;">
+                        <button class="cl-btn pt-filter active" data-cat="all">ALL (118)</button>
+                        <button class="cl-btn pt-filter" data-cat="metal">METALS</button>
+                        <button class="cl-btn pt-filter" data-cat="nonmetal">NON-METALS</button>
+                        <button class="cl-btn pt-filter" data-cat="noble">NOBLE GASES</button>
+                    </div>
+                    <div class="ptable-wrap">
+                        <div id="ptableGrid" class="ptable-grid"></div>
+                    </div>
+                    <div id="bohrInfo" class="cl-output">CLICK ANY ELEMENT TILE ABOVE TO INSPECT ATOMIC STRUCTURE</div>
+                </div>
+
+                <div class="cl-panel" style="flex: 1; min-width: 310px;">
+                    <div class="cl-title">&#127744; LIVE QUANTUM BOHR REACTOR</div>
+                    <canvas id="bohrCanvas" class="cl-canvas" width="360" height="250"></canvas>
+
+                    <div class="cl-title" style="margin-top: 14px;">&#9879; CHEMICAL EQUATION BALANCER</div>
+                    <div class="cl-row">
+                        <input type="text" id="chemEqInput" class="cl-input" value="Fe + H2O -> Fe3O4 + H2" style="flex:1;">
+                        <button id="chemBalBtn" class="cl-btn">&#9889; BALANCE</button>
+                    </div>
+                    <div class="cl-row">
+                        <button class="cl-btn chem-preset" data-eq="NH3 + O2 -> NO + H2O">NH3+O2</button>
+                        <button class="cl-btn chem-preset" data-eq="C3H8 + O2 -> CO2 + H2O">C3H8+O2</button>
+                        <button class="cl-btn chem-preset" data-eq="KMnO4 + HCl -> KCl + MnCl2 + H2O + Cl2">KMnO4+HCl</button>
+                    </div>
+                    <div id="chemBalOut" class="cl-output">BALANCED OUTPUT READY</div>
+                </div>
+            </div>
+
+            <!-- TAB 2: SMART EQUATION GRAPHER & MATH DESTRUCTOR -->
+            <div id="clMath" class="cl-body">
+                <div class="cl-panel" style="flex: 1.7; min-width: 480px;">
+                    <div class="cl-title">&#128200; REAL-TIME EQUATION GRAPHER (TYPE ANY FORMULA TO PLOT)</div>
+                    <div class="cl-row">
+                        <span style="color:#00ffcc;font-weight:bold;">Y1 =</span>
+                        <input type="text" id="mathF1" class="cl-input" value="x^2 - 4" placeholder="e.g. x^2 - 4" style="flex:1;min-width:110px;">
+                        <span style="color:#ff0055;font-weight:bold;">Y2 =</span>
+                        <input type="text" id="mathF2" class="cl-input" value="2x + 1" placeholder="Optional 2nd curve" style="flex:1;min-width:110px;">
+                        <span style="color:#ffcc00;font-weight:bold;">Y3 =</span>
+                        <input type="text" id="mathF3" class="cl-input" value="" placeholder="Optional 3rd curve" style="flex:1;min-width:110px;">
+                    </div>
+                    <div class="cl-row">
+                        <button id="mathPlotBtn" class="cl-btn active">&#9889; DRAW GRAPH</button>
+                        <button class="cl-btn math-preset" data-f1="x^2 - 4*x + 3" data-f2="x - 1">PARABOLA + LINE</button>
+                        <button class="cl-btn math-preset" data-f1="sin(x)*3" data-f2="cos(x)*3">SINE &amp; COSINE</button>
+                        <button class="cl-btn math-preset" data-f1="x^3 - 3*x" data-f2="">CUBIC WAVE</button>
+                        <button class="cl-btn math-preset" data-f1="1/x" data-f2="">HYPERBOLA</button>
+                        <label>SCALE:</label>
+                        <input type="range" id="mathZoom" min="15" max="85" value="35" style="width:90px;">
+                    </div>
+                    <canvas id="mathCanvas" class="cl-canvas" width="720" height="380"></canvas>
+                    <div id="mathCoords" class="cl-output">RADAR LOCK: Move cursor over graph to trace exact (X, Y) coordinates</div>
+                </div>
+
+                <div class="cl-panel" style="flex: 1; min-width: 300px;">
+                    <div class="cl-title">&#127919; QUADRATIC &amp; LINEAR DESTRUCTOR</div>
+                    <div class="cl-row"><b>1. QUADRATIC (a&#183;x&#178; + b&#183;x + c = 0):</b></div>
+                    <div class="cl-row">
+                        a:<input type="number" id="qA" class="cl-input" value="1" style="width:55px;">
+                        b:<input type="number" id="qB" class="cl-input" value="-5" style="width:55px;">
+                        c:<input type="number" id="qC" class="cl-input" value="6" style="width:55px;">
+                        <button id="qSolveBtn" class="cl-btn">SOLVE &amp; PLOT</button>
+                    </div>
+                    <div id="qOut" class="cl-output">Roots: x1 = 3, x2 = 2 | D = 1</div>
+
+                    <div class="cl-row" style="margin-top:14px;"><b>2. 2-VAR LINEAR (a&#183;x + b&#183;y = c):</b></div>
+                    <div class="cl-row">
+                        Eq1: <input type="number" id="lA1" class="cl-input" value="2" style="width:48px;">x +
+                        <input type="number" id="lB1" class="cl-input" value="3" style="width:48px;">y =
+                        <input type="number" id="lC1" class="cl-input" value="13" style="width:52px;">
+                    </div>
+                    <div class="cl-row">
+                        Eq2: <input type="number" id="lA2" class="cl-input" value="5" style="width:48px;">x +
+                        <input type="number" id="lB2" class="cl-input" value="-2" style="width:48px;">y =
+                        <input type="number" id="lC2" class="cl-input" value="4" style="width:52px;">
+                        <button id="lSolveBtn" class="cl-btn">SOLVE &amp; PLOT</button>
+                    </div>
+                    <div id="lOut" class="cl-output">Solution: x = 2, y = 3</div>
+                </div>
+            </div>
+
+            <!-- TAB 3: LASER OPTICS BENCH -->
+            <div id="clOptics" class="cl-body">
+                <div class="cl-panel" style="flex: 2; min-width: 500px;">
+                    <div class="cl-title">&#128294; REAL-TIME LASER RAY-TRACING BENCH</div>
+                    <div class="cl-row">
+                        <label>OPTIC ELEMENT:</label>
+                        <select id="optType" class="cl-select">
+                            <option value="convex">CONVEX LENS (CONVERGING)</option>
+                            <option value="concave">CONCAVE LENS (DIVERGING)</option>
+                            <option value="mirror">CONCAVE / PLANE MIRROR</option>
+                            <option value="prism">GLASS PRISM (DISPERSION)</option>
+                        </select>
+                        <label>MODE:</label>
+                        <select id="optMode" class="cl-select">
+                            <option value="array">5-LASER BEAM ARRAY</option>
+                            <option value="single">SINGLE SNIPER BEAM</option>
+                        </select>
+                    </div>
+                    <div class="cl-row">
+                        <label>BEAM HEIGHT:</label>
+                        <input type="range" id="optY" min="-120" max="120" value="-50">
+                        <label>BEAM ANGLE:</label>
+                        <input type="range" id="optAng" min="-30" max="30" value="0">
+                        <label>FOCAL LENGTH:</label>
+                        <input type="range" id="optFocal" min="60" max="220" value="130">
+                    </div>
+                    <canvas id="opticsCanvas" class="cl-canvas" width="860" height="390"></canvas>
+                    <div id="opticsTelemetry" class="cl-output">TELEMETRY: READY</div>
+                </div>
+            </div>
+
+            <!-- TAB 4: HOLO-SLATE GLASS WHITEBOARD -->
+            <div id="clSlate" class="cl-body">
+                <div class="cl-panel" style="width: 100%;">
+                    <div class="cl-title">&#9997; HOLO-SLATE NEON DIAGRAM &amp; ROUGH WORK STUDIO</div>
+                    <div class="cl-row">
+                        <button class="cl-btn slate-tool active" data-tool="pen">&#9999; PEN</button>
+                        <button class="cl-btn slate-tool" data-tool="line">&#128207; LINE</button>
+                        <button class="cl-btn slate-tool" data-tool="rect">&#9645; BOX</button>
+                        <button class="cl-btn slate-tool" data-tool="circle">&#11093; CIRCLE</button>
+                        <button class="cl-btn slate-tool" data-tool="erase">&#129529; ERASER</button>
+                        <span class="swatch active" data-col="#00ffcc" style="background:#00ffcc;"></span>
+                        <span class="swatch" data-col="#ff0033" style="background:#ff0033;"></span>
+                        <span class="swatch" data-col="#ffcc00" style="background:#ffcc00;"></span>
+                        <span class="swatch" data-col="#bc13fe" style="background:#bc13fe;"></span>
+                        <span class="swatch" data-col="#00ff66" style="background:#00ff66;"></span>
+                        <span class="swatch" data-col="#ffffff" style="background:#ffffff;"></span>
+                        <label>SIZE:</label>
+                        <input type="range" id="slateSize" min="2" max="20" value="4" style="width:80px;">
+                        <button id="slateClear" class="cl-btn">&#128465; CLEAR</button>
+                        <button id="slateSave" class="cl-btn">&#128190; SNAPSHOT PNG</button>
+                    </div>
+                    <canvas id="slateCanvas" class="cl-canvas" width="960" height="420"></canvas>
+                </div>
+            </div>
+
+            <!-- TAB 5: NEURO-WAVE 40HZ SYNTH & OSCILLOSCOPE -->
+            <div id="clNeuro" class="cl-body">
+                <div class="cl-panel" style="width: 100%;">
+                    <div class="cl-title">&#127911; NEURO-WAVE BINAURAL SYNTHESIZER &amp; LIVE OSCILLOSCOPE</div>
+                    <div class="cl-row">
+                        <button id="neuroToggle" class="cl-btn">&#9654; ENGAGE NEURO-SYNTH</button>
+                        <button class="cl-btn neuro-mode active" data-beat="40">40Hz GAMMA (HYPER-FOCUS)</button>
+                        <button class="cl-btn neuro-mode" data-beat="14">14Hz BETA (EXAM ALERT)</button>
+                        <button class="cl-btn neuro-mode" data-beat="10">10Hz ALPHA (DEEP CALM)</button>
+                        <label>GAIN:</label>
+                        <input type="range" id="neuroVol" min="1" max="40" value="15" style="width:100px;">
+                    </div>
+                    <canvas id="neuroCanvas" class="cl-canvas" width="880" height="260"></canvas>
+                    <div class="cl-row" style="margin-top:15px; justify-content:space-between;">
+                        <div id="neuroTimerDisplay" style="font-size:1.8em; font-weight:bold; color:var(--core); letter-spacing:3px;">&#9201; 00:00:00</div>
+                        <div>
+                            <button id="swStart" class="cl-btn">&#9654; START / PAUSE TIMER</button>
+                            <button id="swReset" class="cl-btn">&#128260; RESET</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 <button id="jarvisOrb" class="jarvis-orb">&#129302; JARVIS AI</button>
     <div id="jarvisHud" class="jarvis-hud">
         <div class="jarvis-top">
@@ -729,6 +940,766 @@
             recognition.onend = function() {
                 jarvisMicBtn.classList.remove('listening');
             };
+        }
+// ============================================================================
+        // CYBER-LAB 5-IN-1 WORKBENCH (118 PERIODIC TABLE, GRAPHER, OPTICS, SLATE, NEURO)
+        // ============================================================================
+        const cyberLabOrb = document.getElementById('cyberLabOrb');
+        const cyberLabModal = document.getElementById('cyberLabModal');
+        const cyberLabClose = document.getElementById('cyberLabClose');
+
+        if (cyberLabOrb && cyberLabModal) {
+            cyberLabOrb.addEventListener('click', function() {
+                playSynth(450, 1300, 0.14, 'triangle');
+                cyberLabModal.classList.add('open');
+                drawOpticsBench();
+                drawMathRadar();
+            });
+        }
+        if (cyberLabClose) {
+            cyberLabClose.addEventListener('click', function() {
+                playSynth(700, 280, 0.12, 'sawtooth');
+                cyberLabModal.classList.remove('open');
+            });
+        }
+
+        document.querySelectorAll('.cl-tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                playSynth(700, 1400, 0.07, 'sine');
+                document.querySelectorAll('.cl-tab').forEach(function(t) { t.classList.remove('active'); });
+                document.querySelectorAll('.cl-body').forEach(function(b) { b.classList.remove('active'); });
+                tab.classList.add('active');
+                const target = document.getElementById(tab.getAttribute('data-tab'));
+                if (target) target.classList.add('active');
+                drawOpticsBench();
+                drawMathRadar();
+            });
+        });
+
+        // 1. FULL 118-ELEMENT INTERACTIVE PERIODIC TABLE & BOHR REACTOR
+        const ELEMENTS_118 = 'H:Hydrogen|He:Helium|Li:Lithium|Be:Beryllium|B:Boron|C:Carbon|N:Nitrogen|O:Oxygen|F:Fluorine|Ne:Neon|Na:Sodium|Mg:Magnesium|Al:Aluminium|Si:Silicon|P:Phosphorus|S:Sulfur|Cl:Chlorine|Ar:Argon|K:Potassium|Ca:Calcium|Sc:Scandium|Ti:Titanium|V:Vanadium|Cr:Chromium|Mn:Manganese|Fe:Iron|Co:Cobalt|Ni:Nickel|Cu:Copper|Zn:Zinc|Ga:Gallium|Ge:Germanium|As:Arsenic|Se:Selenium|Br:Bromine|Kr:Krypton|Rb:Rubidium|Sr:Strontium|Y:Yttrium|Zr:Zirconium|Nb:Niobium|Mo:Molybdenum|Tc:Technetium|Ru:Ruthenium|Rh:Rhodium|Pd:Palladium|Ag:Silver|Cd:Cadmium|In:Indium|Sn:Tin|Sb:Antimony|Te:Tellurium|I:Iodine|Xe:Xenon|Cs:Cesium|Ba:Barium|La:Lanthanum|Ce:Cerium|Pr:Praseodymium|Nd:Neodymium|Pm:Promethium|Sm:Samarium|Eu:Europium|Gd:Gadolinium|Tb:Terbium|Dy:Dysprosium|Ho:Holmium|Er:Erbium|Tm:Thulium|Yb:Ytterbium|Lu:Lutetium|Hf:Hafnium|Ta:Tantalum|W:Tungsten|Re:Rhenium|Os:Osmium|Ir:Iridium|Pt:Platinum|Au:Gold|Hg:Mercury|Tl:Thallium|Pb:Lead|Bi:Bismuth|Po:Polonium|At:Astatine|Rn:Radon|Fr:Francium|Ra:Radium|Ac:Actinium|Th:Thorium|Pa:Protactinium|U:Uranium|Np:Neptunium|Pu:Plutonium|Am:Americium|Cm:Curium|Bk:Berkelium|Cf:Californium|Es:Einsteinium|Fm:Fermium|Md:Mendelevium|No:Nobelium|Lr:Lawrencium|Rf:Rutherfordium|Db:Dubnium|Sg:Seaborgium|Bh:Bohrium|Hs:Hassium|Mt:Meitnerium|Ds:Darmstadtium|Rg:Roentgenium|Cn:Copernicium|Nh:Nihonium|Fl:Flerovium|Mc:Moscovium|Lv:Livermorium|Ts:Tennessine|Og:Oganesson'.split('|');
+
+        const ptableGrid = document.getElementById('ptableGrid');
+        const ptSearch = document.getElementById('ptSearch');
+        const bohrCanvas = document.getElementById('bohrCanvas');
+        const bohrInfo = document.getElementById('bohrInfo');
+        let selectedZ = 26;
+        let bohrAngle = 0;
+
+        function getElementGridPos(z) {
+            if (z === 1) return { r: 1, c: 1 };
+            if (z === 2) return { r: 1, c: 18 };
+            if (z >= 3 && z <= 4) return { r: 2, c: z - 2 };
+            if (z >= 5 && z <= 10) return { r: 2, c: z + 8 };
+            if (z >= 11 && z <= 12) return { r: 3, c: z - 10 };
+            if (z >= 13 && z <= 18) return { r: 3, c: z };
+            if (z >= 19 && z <= 36) return { r: 4, c: z - 18 };
+            if (z >= 37 && z <= 54) return { r: 5, c: z - 36 };
+            if (z >= 55 && z <= 56) return { r: 6, c: z - 54 };
+            if (z >= 57 && z <= 71) return { r: 8, c: z - 53 };
+            if (z >= 72 && z <= 86) return { r: 6, c: z - 68 };
+            if (z >= 87 && z <= 88) return { r: 7, c: z - 86 };
+            if (z >= 89 && z <= 103) return { r: 9, c: z - 85 };
+            return { r: 7, c: z - 100 };
+        }
+
+        function getElementCategory(z) {
+            const nobles = [2, 10, 18, 36, 54, 86, 118];
+            const nonmetals = [1, 5, 6, 7, 8, 9, 14, 15, 16, 17, 32, 33, 34, 35, 51, 52, 53, 85];
+            if (nobles.indexOf(z) > -1) return { cat: 'noble', col: '#bc13fe', label: 'Noble Gas' };
+            if (nonmetals.indexOf(z) > -1) return { cat: 'nonmetal', col: '#00ff66', label: 'Non-Metal / Metalloid' };
+            return { cat: 'metal', col: '#00ffcc', label: 'Metal / Transition' };
+        }
+
+        function getElectronShells(z) {
+            const caps = [2, 8, 18, 32, 32, 18, 8];
+            const shells = [];
+            let rem = z;
+            for (let i = 0; i < caps.length && rem > 0; i++) {
+                const take = Math.min(rem, caps[i]);
+                shells.push(take);
+                rem -= take;
+            }
+            return shells;
+        }
+
+        function selectElement(z) {
+            selectedZ = z;
+            document.querySelectorAll('.pt-cell').forEach(function(cell) {
+                cell.classList.toggle('active', parseInt(cell.getAttribute('data-z'), 10) === z);
+            });
+            const elData = (ELEMENTS_118[z - 1] || 'Fe:Iron').split(':');
+            const shells = getElectronShells(z);
+            const outer = shells[shells.length - 1];
+            const valency = outer <= 4 ? outer : Math.abs(8 - outer);
+            const mass = (z === 1) ? '1.008' : (z * 2 + Math.floor(z * 0.15)).toFixed(1);
+            const catObj = getElementCategory(z);
+            if (bohrInfo) {
+                bohrInfo.innerText = 'ELEMENT [' + z + ']: ' + elData[1].toUpperCase() + ' (' + elData[0] + ') | TYPE: ' + catObj.label.toUpperCase() + ' | EST. MASS: ~' + mass + ' u | SHELLS (K,L,M...): ' + shells.join(' - ') + ' | VALENCE ELECTRONS: ' + outer + ' (VALENCY: ' + valency + ')';
+            }
+        }
+
+        function buildPeriodicTable() {
+            if (!ptableGrid) return;
+            ptableGrid.innerHTML = '';
+            for (let z = 1; z <= 118; z++) {
+                const elData = ELEMENTS_118[z - 1].split(':');
+                const pos = getElementGridPos(z);
+                const catObj = getElementCategory(z);
+                const cell = document.createElement('div');
+                cell.className = 'pt-cell' + (z === selectedZ ? ' active' : '');
+                cell.setAttribute('data-z', z);
+                cell.setAttribute('data-cat', catObj.cat);
+                cell.setAttribute('data-search', (z + ' ' + elData[0] + ' ' + elData[1]).toLowerCase());
+                cell.style.gridRow = pos.r;
+                cell.style.gridColumn = pos.c;
+                cell.style.color = catObj.col;
+                cell.innerHTML = '<span class="pt-num">' + z + '</span><span class="pt-sym">' + elData[0] + '</span><span class="pt-name">' + elData[1] + '</span>';
+                cell.addEventListener('click', function() {
+                    playSynth(600 + z * 5, 1200, 0.06, 'sine');
+                    selectElement(z);
+                });
+                ptableGrid.appendChild(cell);
+            }
+            selectElement(26);
+        }
+        buildPeriodicTable();
+
+        if (ptSearch) {
+            ptSearch.addEventListener('input', function() {
+                const q = ptSearch.value.trim().toLowerCase();
+                let firstMatch = null;
+                document.querySelectorAll('.pt-cell').forEach(function(cell) {
+                    const hay = cell.getAttribute('data-search');
+                    const match = !q || hay.indexOf(q) > -1;
+                    cell.style.opacity = match ? '1' : '0.15';
+                    if (q && match && !firstMatch) firstMatch = parseInt(cell.getAttribute('data-z'), 10);
+                });
+                if (firstMatch) selectElement(firstMatch);
+            });
+        }
+
+        document.querySelectorAll('.pt-filter').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                playSynth(700, 1300, 0.07, 'sine');
+                document.querySelectorAll('.pt-filter').forEach(function(b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                const cat = btn.getAttribute('data-cat');
+                document.querySelectorAll('.pt-cell').forEach(function(cell) {
+                    const match = (cat === 'all') || (cell.getAttribute('data-cat') === cat);
+                    cell.style.opacity = match ? '1' : '0.15';
+                });
+            });
+        });
+
+        function animateBohrAtom() {
+            if (bohrCanvas && cyberLabModal && cyberLabModal.classList.contains('open')) {
+                const ctx = bohrCanvas.getContext('2d');
+                const w = bohrCanvas.width, h = bohrCanvas.height;
+                const cx = w / 2, cy = h / 2;
+                const z = selectedZ;
+                const elData = (ELEMENTS_118[z - 1] || 'Fe:Iron').split(':');
+                const shells = getElectronShells(z);
+                const coreHex = getComputedStyle(document.documentElement).getPropertyValue('--core').trim() || '#00ffcc';
+
+                ctx.fillStyle = '#060609';
+                ctx.fillRect(0, 0, w, h);
+
+                ctx.fillStyle = '#ff0055';
+                ctx.beginPath(); ctx.arc(cx, cy, 15, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 12px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText(elData[0], cx, cy + 4);
+
+                bohrAngle += 0.025;
+                shells.forEach(function(count, idx) {
+                    const r = 26 + idx * 14;
+                    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+
+                    const speed = (idx % 2 === 0 ? 1 : -1) * (bohrAngle / (1 + idx * 0.35));
+                    for (let e = 0; e < count; e++) {
+                        const a = speed + (e * Math.PI * 2 / count);
+                        const ex = cx + Math.cos(a) * r;
+                        const ey = cy + Math.sin(a) * r;
+                        ctx.fillStyle = coreHex;
+                        ctx.beginPath(); ctx.arc(ex, ey, 3.4, 0, Math.PI * 2); ctx.fill();
+                    }
+                });
+            }
+            requestAnimationFrame(animateBohrAtom);
+        }
+        animateBohrAtom();
+
+        // Chemical Equation Balancer
+        function parseFormula(formula) {
+            const counts = {};
+            const regex = /([A-Z][a-z]*)(\d*)/g;
+            let m;
+            while ((m = regex.exec(formula)) !== null) {
+                const el = m[1];
+                const cnt = m[2] ? parseInt(m[2], 10) : 1;
+                counts[el] = (counts[el] || 0) + cnt;
+            }
+            return counts;
+        }
+
+        function balanceChemEquation(raw) {
+            const norm = raw.replace(/=/g, '->');
+            const sides = norm.split('->');
+            if (sides.length !== 2) return 'ERROR: Use "->" between reactants and products.';
+            const leftMols = sides[0].split('+').map(function(s) { return s.trim(); }).filter(Boolean);
+            const rightMols = sides[1].split('+').map(function(s) { return s.trim(); }).filter(Boolean);
+            const allMols = leftMols.concat(rightMols);
+            const nL = leftMols.length, nTotal = allMols.length;
+            const parsed = allMols.map(parseFormula);
+
+            const elSet = {};
+            parsed.forEach(function(p) { Object.keys(p).forEach(function(k) { elSet[k] = true; }); });
+            const els = Object.keys(elSet);
+
+            const maxC = 10;
+            const coeffs = new Array(nTotal).fill(1);
+
+            function checkValid(c) {
+                for (let e = 0; e < els.length; e++) {
+                    const el = els[e];
+                    let sum = 0;
+                    for (let i = 0; i < nTotal; i++) {
+                        const v = parsed[i][el] || 0;
+                        sum += (i < nL ? v * c[i] : -v * c[i]);
+                    }
+                    if (sum !== 0) return false;
+                }
+                return true;
+            }
+
+            let found = null;
+            function search(idx) {
+                if (found) return;
+                if (idx === nTotal) {
+                    if (checkValid(coeffs)) found = coeffs.slice();
+                    return;
+                }
+                for (let v = 1; v <= maxC; v++) {
+                    coeffs[idx] = v;
+                    search(idx + 1);
+                    if (found) return;
+                }
+            }
+            search(0);
+
+            if (!found) return 'COMPLEX REACTION: Check molecular formula capitalization (e.g., Fe + H2O -> Fe3O4 + H2).';
+            const lStr = leftMols.map(function(m, i) { return (found[i] > 1 ? found[i] : '') + m; }).join(' + ');
+            const rStr = rightMols.map(function(m, i) { return (found[nL + i] > 1 ? found[nL + i] : '') + m; }).join(' + ');
+            return '\u2714 BALANCED:  ' + lStr + '  \u2794  ' + rStr;
+        }
+
+        const chemBalBtn = document.getElementById('chemBalBtn');
+        const chemEqInput = document.getElementById('chemEqInput');
+        const chemBalOut = document.getElementById('chemBalOut');
+        if (chemBalBtn && chemEqInput && chemBalOut) {
+            chemBalBtn.addEventListener('click', function() {
+                playSynth(600, 1500, 0.12, 'triangle');
+                chemBalOut.innerText = balanceChemEquation(chemEqInput.value);
+            });
+            document.querySelectorAll('.chem-preset').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    chemEqInput.value = btn.getAttribute('data-eq');
+                    chemBalBtn.click();
+                });
+            });
+        }
+
+        // 2. SMART EQUATION GRAPHER & MATH DESTRUCTOR
+        const mathCanvas = document.getElementById('mathCanvas');
+        const mathF1 = document.getElementById('mathF1');
+        const mathF2 = document.getElementById('mathF2');
+        const mathF3 = document.getElementById('mathF3');
+        const mathZoom = document.getElementById('mathZoom');
+        const mathPlotBtn = document.getElementById('mathPlotBtn');
+        const mathCoords = document.getElementById('mathCoords');
+
+        function evalMathExpr(expr, xVal) {
+            if (!expr || !expr.trim()) return NaN;
+            try {
+                let clean = expr.toLowerCase().trim();
+                if (clean.indexOf('=') > -1) {
+                    const parts = clean.split('=');
+                    clean = parts[parts.length - 1];
+                }
+                clean = clean
+                    .replace(/\^/g, '**')
+                    ..replace(/(\d)([a-z(])/g, function(_, a, b) { return a + '*' + b; })
+                    .replace(/(\))(\d|[a-z(])/g, function(_, a, b) { return a + '*' + b; })
+                    .replace(/x(\d|\()/g, function(_, a) { return 'x*' + a; })
+                    .replace(/sin/g, 'Math.sin')
+                    .replace(/cos/g, 'Math.cos')
+                    .replace(/tan/g, 'Math.tan')
+                    .replace(/sqrt/g, 'Math.sqrt')
+                    .replace(/abs/g, 'Math.abs')
+                    .replace(/log/g, 'Math.log')
+                    .replace(/pi/g, 'Math.PI');
+                return Function('x', 'return (' + clean + ');')(xVal);
+            } catch (e) { return NaN; }
+        }
+
+        function drawMathRadar(mouseX) {
+            if (!mathCanvas) return;
+            const ctx = mathCanvas.getContext('2d');
+            const w = mathCanvas.width, h = mathCanvas.height;
+            const cx = w / 2, cy = h / 2;
+            const scale = parseFloat(mathZoom.value || '35');
+
+            ctx.fillStyle = '#060609';
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.strokeStyle = '#161622';
+            ctx.lineWidth = 1;
+            ctx.fillStyle = '#666';
+            ctx.font = '10px Courier New';
+            ctx.textAlign = 'center';
+
+            for (let gx = cx % scale; gx < w; gx += scale) {
+                ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke();
+                const unitX = Math.round((gx - cx) / scale);
+                if (unitX !== 0 && scale >= 22) ctx.fillText(unitX, gx, cy + 12);
+            }
+            for (let gy = cy % scale; gy < h; gy += scale) {
+                ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke();
+                const unitY = Math.round((cy - gy) / scale);
+                if (unitY !== 0 && scale >= 22) ctx.fillText(unitY, cx - 14, gy + 4);
+            }
+
+            ctx.strokeStyle = '#555';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
+
+            const funcs = [
+                { expr: mathF1.value, col: '#00ffcc' },
+                { expr: mathF2.value, col: '#ff0055' },
+                { expr: mathF3.value, col: '#ffcc00' }
+            ];
+
+            funcs.forEach(function(fn) {
+                if (!fn.expr || !fn.expr.trim()) return;
+                ctx.strokeStyle = fn.col;
+                ctx.lineWidth = 2.4;
+                ctx.beginPath();
+                let started = false;
+                for (let px = 0; px < w; px += 1.5) {
+                    const x = (px - cx) / scale;
+                    const y = evalMathExpr(fn.expr, x);
+                    if (isFinite(y) && Math.abs(y) < 1e4) {
+                        const py = cy - y * scale;
+                        if (!started) { ctx.moveTo(px, py); started = true; }
+                        else { ctx.lineTo(px, py); }
+                    } else { started = false; }
+                }
+                ctx.stroke();
+            });
+
+            if (typeof mouseX === 'number') {
+                const xVal = (mouseX - cx) / scale;
+                const y1 = evalMathExpr(mathF1.value, xVal);
+                const y2 = evalMathExpr(mathF2.value, xVal);
+                ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(mouseX, 0); ctx.lineTo(mouseX, h); ctx.stroke();
+                let msg = 'X = ' + xVal.toFixed(2);
+                if (isFinite(y1)) {
+                    const py1 = cy - y1 * scale;
+                    ctx.fillStyle = '#00ffcc';
+                    ctx.beginPath(); ctx.arc(mouseX, py1, 5, 0, Math.PI * 2); ctx.fill();
+                    msg += ' | Y1 = ' + y1.toFixed(3);
+                }
+                if (isFinite(y2)) {
+                    const py2 = cy - y2 * scale;
+                    ctx.fillStyle = '#ff0055';
+                    ctx.beginPath(); ctx.arc(mouseX, py2, 5, 0, Math.PI * 2); ctx.fill();
+                    msg += ' | Y2 = ' + y2.toFixed(3);
+                }
+                if (mathCoords) mathCoords.innerText = 'RADAR TRACE: ' + msg;
+            }
+        }
+
+        [mathF1, mathF2, mathF3, mathZoom].forEach(function(el) {
+            if (el) el.addEventListener('input', function() { drawMathRadar(); });
+        });
+        if (mathPlotBtn) mathPlotBtn.addEventListener('click', function() { playSynth(600, 1300, 0.09, 'sine'); drawMathRadar(); });
+        document.querySelectorAll('.math-preset').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                playSynth(650, 1400, 0.08, 'triangle');
+                mathF1.value = btn.getAttribute('data-f1') || '';
+                mathF2.value = btn.getAttribute('data-f2') || '';
+                mathF3.value = '';
+                drawMathRadar();
+            });
+        });
+        if (mathCanvas) {
+            mathCanvas.addEventListener('mousemove', function(e) {
+                const r = mathCanvas.getBoundingClientRect();
+                const mx = (e.clientX - r.left) * (mathCanvas.width / r.width);
+                drawMathRadar(mx);
+            });
+        }
+
+        const qSolveBtn = document.getElementById('qSolveBtn');
+        if (qSolveBtn) {
+            qSolveBtn.addEventListener('click', function() {
+                playSynth(700, 1400, 0.1, 'triangle');
+                const a = parseFloat(document.getElementById('qA').value || '1');
+                const b = parseFloat(document.getElementById('qB').value || '0');
+                const c = parseFloat(document.getElementById('qC').value || '0');
+                const d = b * b - 4 * a * c;
+                const qOut = document.getElementById('qOut');
+                mathF1.value = a + '*x^2 + (' + b + ')*x + (' + c + ')';
+                drawMathRadar();
+                if (d >= 0) {
+                    const r1 = ((-b + Math.sqrt(d)) / (2 * a)).toFixed(3);
+                    const r2 = ((-b - Math.sqrt(d)) / (2 * a)).toFixed(3);
+                    qOut.innerText = 'REAL ROOTS: x1 = ' + r1 + ', x2 = ' + r2 + ' | Discriminant (D) = ' + d.toFixed(2);
+                } else {
+                    const re = (-b / (2 * a)).toFixed(2);
+                    const im = (Math.sqrt(-d) / (2 * a)).toFixed(2);
+                    qOut.innerText = 'COMPLEX ROOTS: ' + re + ' \u00B1 ' + im + 'i | D = ' + d.toFixed(2);
+                }
+            });
+        }
+
+        const lSolveBtn = document.getElementById('lSolveBtn');
+        if (lSolveBtn) {
+            lSolveBtn.addEventListener('click', function() {
+                playSynth(700, 1400, 0.1, 'triangle');
+                const a1 = parseFloat(document.getElementById('lA1').value), b1 = parseFloat(document.getElementById('lB1').value), c1 = parseFloat(document.getElementById('lC1').value);
+                const a2 = parseFloat(document.getElementById('lA2').value), b2 = parseFloat(document.getElementById('lB2').value), c2 = parseFloat(document.getElementById('lC2').value);
+                const det = a1 * b2 - a2 * b1;
+                const lOut = document.getElementById('lOut');
+                if (b1 !== 0) mathF1.value = '(' + c1 + ' - (' + a1 + ')*x)/(' + b1 + ')';
+                if (b2 !== 0) mathF2.value = '(' + c2 + ' - (' + a2 + ')*x)/(' + b2 + ')';
+                drawMathRadar();
+                if (det === 0) {
+                    lOut.innerText = 'NO UNIQUE SOLUTION (Parallel or Coincident Lines, Det = 0)';
+                } else {
+                    const x = ((c1 * b2 - c2 * b1) / det).toFixed(3);
+                    const y = ((a1 * c2 - a2 * c1) / det).toFixed(3);
+                    lOut.innerText = '\u2714 INTERSECTION:  x = ' + x + ' ,  y = ' + y + '  (Plotted on Graph!)';
+                }
+            });
+        }
+
+        // 3. LASER OPTICS RAY-TRACING ENGINE
+        const optCanvas = document.getElementById('opticsCanvas');
+        const optType = document.getElementById('optType');
+        const optMode = document.getElementById('optMode');
+        const optY = document.getElementById('optY');
+        const optAng = document.getElementById('optAng');
+        const optFocal = document.getElementById('optFocal');
+        const optTelem = document.getElementById('opticsTelemetry');
+
+        function drawOpticsBench() {
+            if (!optCanvas) return;
+            const ctx = optCanvas.getContext('2d');
+            const w = optCanvas.width, h = optCanvas.height;
+            const cx = w / 2, cy = h / 2;
+            const coreHex = getComputedStyle(document.documentElement).getPropertyValue('--core').trim() || '#00ffcc';
+
+            ctx.fillStyle = '#060609';
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.strokeStyle = '#15151e';
+            ctx.lineWidth = 1;
+            for (let gx = 0; gx < w; gx += 40) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke(); }
+            for (let gy = 0; gy < h; gy += 40) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke(); }
+
+            ctx.strokeStyle = '#444';
+            ctx.setLineDash([6, 6]);
+            ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
+            ctx.setLineDash([]);
+
+            const type = optType.value;
+            const f = parseFloat(optFocal.value);
+            const baseAng = parseFloat(optAng.value) * Math.PI / 180;
+            const startYOff = parseFloat(optY.value);
+
+            ctx.fillStyle = coreHex;
+            ctx.font = 'bold 12px Courier New';
+            [-2 * f, -f, f, 2 * f].forEach(function(dx, i) {
+                const lbl = (i === 0) ? '2F' : (i === 1) ? 'F' : (i === 2) ? "F'" : "2F'";
+                ctx.beginPath(); ctx.arc(cx + dx, cy, 4, 0, Math.PI * 2); ctx.fill();
+                ctx.fillText(lbl, cx + dx - 8, cy + 20);
+            });
+
+            ctx.strokeStyle = coreHex;
+            ctx.lineWidth = 3;
+            ctx.fillStyle = 'rgba(0, 255, 204, 0.12)';
+            ctx.beginPath();
+            if (type === 'convex') {
+                ctx.ellipse(cx, cy, 18, 145, 0, 0, Math.PI * 2);
+                ctx.fill(); ctx.stroke();
+            } else if (type === 'concave') {
+                ctx.moveTo(cx - 22, cy - 140);
+                ctx.quadraticCurveTo(cx - 4, cy, cx - 22, cy + 140);
+                ctx.lineTo(cx + 22, cy + 140);
+                ctx.quadraticCurveTo(cx + 4, cy, cx + 22, cy - 140);
+                ctx.closePath(); ctx.fill(); ctx.stroke();
+            } else if (type === 'mirror') {
+                ctx.moveTo(cx, cy - 145); ctx.lineTo(cx, cy + 145); ctx.stroke();
+                for (let my = cy - 140; my <= cy + 140; my += 14) {
+                    ctx.beginPath(); ctx.moveTo(cx, my); ctx.lineTo(cx + 12, my + 8); ctx.stroke();
+                }
+            } else if (type === 'prism') {
+                ctx.moveTo(cx, cy - 130); ctx.lineTo(cx - 110, cy + 110); ctx.lineTo(cx + 110, cy + 110);
+                ctx.closePath(); ctx.fill(); ctx.stroke();
+            }
+
+            const offsets = (optMode.value === 'array') ? [-80, -40, 0, 40, 80] : [0];
+            offsets.forEach(function(dy) {
+                const y0 = cy + startYOff + dy;
+                const x0 = 30;
+                const hitY = y0 + (cx - x0) * Math.tan(baseAng);
+
+                ctx.strokeStyle = '#ff0055';
+                ctx.lineWidth = 2.2;
+                ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(cx, hitY); ctx.stroke();
+
+                const hRel = hitY - cy;
+                let outSlope = 0;
+                ctx.strokeStyle = coreHex;
+                if (type === 'convex') {
+                    outSlope = Math.tan(baseAng) - (hRel / f);
+                    ctx.beginPath(); ctx.moveTo(cx, hitY); ctx.lineTo(w, hitY + (w - cx) * outSlope); ctx.stroke();
+                } else if (type === 'concave') {
+                    outSlope = Math.tan(baseAng) + (hRel / f);
+                    ctx.beginPath(); ctx.moveTo(cx, hitY); ctx.lineTo(w, hitY + (w - cx) * outSlope); ctx.stroke();
+                    ctx.setLineDash([4, 4]); ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+                    ctx.beginPath(); ctx.moveTo(cx, hitY); ctx.lineTo(0, hitY - cx * outSlope); ctx.stroke();
+                    ctx.setLineDash([]);
+                } else if (type === 'mirror') {
+                    outSlope = -Math.tan(baseAng) - (hRel / (f * 2));
+                    ctx.beginPath(); ctx.moveTo(cx, hitY); ctx.lineTo(0, hitY + cx * outSlope); ctx.stroke();
+                } else if (type === 'prism') {
+                    const dev1 = Math.tan(baseAng) + (140 / f) * 0.42;
+                    const dev2 = Math.tan(baseAng) + (140 / f) * 0.58;
+                    ctx.strokeStyle = '#ff0033';
+                    ctx.beginPath(); ctx.moveTo(cx, hitY); ctx.lineTo(w, hitY + (w - cx) * dev1); ctx.stroke();
+                    ctx.strokeStyle = '#00ffcc';
+                    ctx.beginPath(); ctx.moveTo(cx, hitY); ctx.lineTo(w, hitY + (w - cx) * dev2); ctx.stroke();
+                }
+            });
+
+            if (optTelem) {
+                const pwr = (100 / f).toFixed(2);
+                optTelem.innerText = 'OPTIC: ' + type.toUpperCase() + ' | FOCAL LENGTH (f): ' + f + 'mm | OPTICAL POWER: ' + (type === 'concave' ? '-' : '+') + pwr + ' D | INCIDENT ANGLE: ' + optAng.value + '\u00B0';
+            }
+        }
+        [optType, optMode, optY, optAng, optFocal].forEach(function(el) {
+            if (el) el.addEventListener('input', drawOpticsBench);
+        });
+
+        // 4. HOLO-SLATE GLASS WHITEBOARD ENGINE
+        const slateCanvas = document.getElementById('slateCanvas');
+        if (slateCanvas) {
+            const sCtx = slateCanvas.getContext('2d');
+            let sTool = 'pen', sColor = '#00ffcc', sDrawing = false, sx = 0, sy = 0, snapImg = null;
+
+            sCtx.fillStyle = '#070709';
+            sCtx.fillRect(0, 0, slateCanvas.width, slateCanvas.height);
+
+            document.querySelectorAll('.slate-tool').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.slate-tool').forEach(function(b) { b.classList.remove('active'); });
+                    btn.classList.add('active');
+                    sTool = btn.getAttribute('data-tool');
+                });
+            });
+            document.querySelectorAll('.swatch').forEach(function(sw) {
+                sw.addEventListener('click', function() {
+                    document.querySelectorAll('.swatch').forEach(function(s) { s.classList.remove('active'); });
+                    sw.classList.add('active');
+                    sColor = sw.getAttribute('data-col');
+                });
+            });
+
+            function getSlatePos(e) {
+                const r = slateCanvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return {
+                    x: (clientX - r.left) * (slateCanvas.width / r.width),
+                    y: (clientY - r.top) * (slateCanvas.height / r.height)
+                };
+            }
+
+            function startSlate(e) {
+                e.preventDefault();
+                sDrawing = true;
+                const p = getSlatePos(e);
+                sx = p.x; sy = p.y;
+                snapImg = sCtx.getImageData(0, 0, slateCanvas.width, slateCanvas.height);
+                sCtx.beginPath();
+                sCtx.moveTo(sx, sy);
+            }
+
+            function moveSlate(e) {
+                if (!sDrawing) return;
+                e.preventDefault();
+                const p = getSlatePos(e);
+                const sz = parseFloat(document.getElementById('slateSize').value || '4');
+                sCtx.lineWidth = sTool === 'erase' ? sz * 4 : sz;
+                sCtx.lineCap = 'round';
+                sCtx.strokeStyle = sTool === 'erase' ? '#070709' : sColor;
+
+                if (sTool === 'pen' || sTool === 'erase') {
+                    sCtx.lineTo(p.x, p.y);
+                    sCtx.stroke();
+                } else {
+                    sCtx.putImageData(snapImg, 0, 0);
+                    sCtx.beginPath();
+                    if (sTool === 'line') {
+                        sCtx.moveTo(sx, sy); sCtx.lineTo(p.x, p.y);
+                    } else if (sTool === 'rect') {
+                        sCtx.strokeRect(sx, sy, p.x - sx, p.y - sy);
+                    } else if (sTool === 'circle') {
+                        const rad = Math.hypot(p.x - sx, p.y - sy);
+                        sCtx.arc(sx, sy, rad, 0, Math.PI * 2);
+                    }
+                    sCtx.stroke();
+                }
+            }
+
+            function endSlate() { sDrawing = false; }
+
+            slateCanvas.addEventListener('mousedown', startSlate);
+            slateCanvas.addEventListener('mousemove', moveSlate);
+            window.addEventListener('mouseup', endSlate);
+            slateCanvas.addEventListener('touchstart', startSlate, { passive: false });
+            slateCanvas.addEventListener('touchmove', moveSlate, { passive: false });
+            window.addEventListener('touchend', endSlate);
+
+            document.getElementById('slateClear').addEventListener('click', function() {
+                playSynth(500, 250, 0.1, 'sawtooth');
+                sCtx.fillStyle = '#070709';
+                sCtx.fillRect(0, 0, slateCanvas.width, slateCanvas.height);
+            });
+            document.getElementById('slateSave').addEventListener('click', function() {
+                playSynth(700, 1500, 0.12, 'triangle');
+                const a = document.createElement('a');
+                a.download = 'cartel_holoslate.png';
+                a.href = slateCanvas.toDataURL('image/png');
+                a.click();
+            });
+        }
+
+        // 5. NEURO-WAVE 40HZ BINAURAL SYNTHESIZER & LIVE OSCILLOSCOPE
+        let neuroOscL = null, neuroOscR = null, neuroGain = null, neuroRunning = false, neuroBeat = 40, neuroPhase = 0;
+        const neuroToggle = document.getElementById('neuroToggle');
+        const neuroVol = document.getElementById('neuroVol');
+        const neuroCanvas = document.getElementById('neuroCanvas');
+
+        function updateNeuroFreqs() {
+            if (neuroOscL && neuroOscR) {
+                neuroOscL.frequency.setValueAtTime(200, audioCtx.currentTime);
+                neuroOscR.frequency.setValueAtTime(200 + neuroBeat, audioCtx.currentTime);
+            }
+            if (neuroGain && neuroVol) {
+                neuroGain.gain.setValueAtTime(parseFloat(neuroVol.value) / 200, audioCtx.currentTime);
+            }
+        }
+
+        if (neuroToggle) {
+            neuroToggle.addEventListener('click', function() {
+                if (!neuroRunning) {
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                    neuroOscL = audioCtx.createOscillator();
+                    neuroOscR = audioCtx.createOscillator();
+                    neuroGain = audioCtx.createGain();
+                    neuroOscL.type = 'sine';
+                    neuroOscR.type = 'sine';
+                    updateNeuroFreqs();
+                    neuroOscL.connect(neuroGain);
+                    neuroOscR.connect(neuroGain);
+                    neuroGain.connect(audioCtx.destination);
+                    neuroOscL.start();
+                    neuroOscR.start();
+                    neuroRunning = true;
+                    neuroToggle.innerText = '\u23F9 STOP NEURO-SYNTH';
+                    neuroToggle.classList.add('active');
+                } else {
+                    if (neuroOscL) neuroOscL.stop();
+                    if (neuroOscR) neuroOscR.stop();
+                    neuroRunning = false;
+                    neuroToggle.innerText = '\u25B6 ENGAGE NEURO-SYNTH';
+                    neuroToggle.classList.remove('active');
+                }
+            });
+        }
+        if (neuroVol) neuroVol.addEventListener('input', updateNeuroFreqs);
+        document.querySelectorAll('.neuro-mode').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.neuro-mode').forEach(function(b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                neuroBeat = parseFloat(btn.getAttribute('data-beat'));
+                updateNeuroFreqs();
+            });
+        });
+
+        function renderNeuroScope() {
+            if (neuroCanvas && cyberLabModal && cyberLabModal.classList.contains('open')) {
+                const ctx = neuroCanvas.getContext('2d');
+                const w = neuroCanvas.width, h = neuroCanvas.height;
+                const coreHex = getComputedStyle(document.documentElement).getPropertyValue('--core').trim() || '#00ffcc';
+                ctx.fillStyle = 'rgba(6, 6, 9, 0.28)';
+                ctx.fillRect(0, 0, w, h);
+
+                neuroPhase += neuroRunning ? (neuroBeat * 0.005) : 0.03;
+                ctx.strokeStyle = coreHex;
+                ctx.lineWidth = 2.4;
+                ctx.beginPath();
+                for (let x = 0; x < w; x += 3) {
+                    const amp = neuroRunning ? (parseFloat(neuroVol.value) * 2.5) : 18;
+                    const y = (h / 2) + Math.sin(x * 0.03 + neuroPhase) * Math.cos(x * 0.006 * (neuroBeat / 10) - neuroPhase) * amp;
+                    if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+            requestAnimationFrame(renderNeuroScope);
+        }
+        renderNeuroScope();
+
+        let swSeconds = 0, swInterval = null;
+        const swDisplay = document.getElementById('neuroTimerDisplay');
+        const swStart = document.getElementById('swStart');
+        const swReset = document.getElementById('swReset');
+        function formatSw(s) {
+            const hrs = String(Math.floor(s / 3600)).padStart(2, '0');
+            const mins = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+            const secs = String(s % 60).padStart(2, '0');
+            return '\u23F1 ' + hrs + ':' + mins + ':' + secs;
+        }
+        if (swStart) {
+            swStart.addEventListener('click', function() {
+                playSynth(600, 1200, 0.08, 'sine');
+                if (swInterval) {
+                    clearInterval(swInterval);
+                    swInterval = null;
+                } else {
+                    swInterval = setInterval(function() {
+                        swSeconds++;
+                        if (swDisplay) swDisplay.innerText = formatSw(swSeconds);
+                    }, 1000);
+                }
+            });
+        }
+        if (swReset) {
+            swReset.addEventListener('click', function() {
+                playSynth(500, 300, 0.08, 'sawtooth');
+                if (swInterval) { clearInterval(swInterval); swInterval = null; }
+                swSeconds = 0;
+                if (swDisplay) swDisplay.innerText = formatSw(0);
+            });
         }
     </script>
 </body>
