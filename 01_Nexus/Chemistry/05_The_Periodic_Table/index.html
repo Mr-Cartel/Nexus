@@ -95,10 +95,88 @@
         .pt-num { font-size: 0.62em; opacity: 0.75; display: block; line-height: 1; }
         .pt-sym { font-size: 0.92em; font-weight: bold; display: block; line-height: 1.15; }
         .pt-name { font-size: 0.52em; opacity: 0.8; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ghostlink-orb { position: fixed; bottom: 85px; left: 25px; background: #111; color: var(--core); border: 2px solid var(--core); border-radius: 50px; padding: 10px 20px; font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 0.95em; cursor: pointer; box-shadow: 0 0 20px var(--core-glow), inset 0 0 10px var(--core-glow); z-index: 9400; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+        .ghostlink-orb:hover { background: var(--core); color: #000; box-shadow: 0 0 30px var(--core); transform: scale(1.05); }
+        .ghost-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(4, 4, 7, 0.92); backdrop-filter: blur(8px); z-index: 9650; display: none; align-items: center; justify-content: center; }
+        .ghost-modal.open { display: flex; }
+        .ghost-win { width: 96%; height: 90%; max-width: 1380px; background: #0a0a0e; border: 2px solid var(--core); border-radius: 12px; box-shadow: 0 0 45px var(--core-glow); display: flex; flex-direction: column; overflow: hidden; text-align: left; }
+        .ghost-top { background: #121217; border-bottom: 2px solid var(--core); padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .ghost-status { font-weight: bold; font-size: 0.9em; color: #ff0055; letter-spacing: 1px; padding: 4px 10px; border: 1px solid #ff0055; border-radius: 6px; background: rgba(255,0,85,0.1); }
+        .ghost-status.online { color: #00ff66; border-color: #00ff66; background: rgba(0,255,102,0.12); box-shadow: 0 0 12px rgba(0,255,102,0.3); }
+        .ghost-body { flex-grow: 1; padding: 14px; display: flex; gap: 14px; overflow-y: auto; flex-wrap: wrap; }
+        .ghost-board-panel { flex: 2.2; min-width: 480px; background: #111116; border: 1px solid var(--core); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 10px; position: relative; }
+        .ghost-comms-panel { flex: 1; min-width: 290px; background: #111116; border: 1px solid var(--core); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+        .ghost-canvas-wrap { position: relative; width: 100%; flex-grow: 1; background: #060609; border: 1px solid #2a2a35; border-radius: 8px; overflow: hidden; }
+        .ghost-canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
+        .ghost-laser { position: absolute; pointer-events: none; color: #ff0055; font-size: 0.72em; font-weight: bold; transform: translate(-50%, -50%); display: none; text-shadow: 0 0 8px #ff0055; white-space: nowrap; z-index: 10; }
+        .ghost-chat-log { flex-grow: 1; height: 220px; background: #08080b; border: 1px solid #252530; border-radius: 8px; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; font-size: 0.86em; }
+        .ghost-msg-me { color: var(--core); text-align: right; }
+        .ghost-msg-peer { color: #ffcc00; text-align: left; }
+        .ghost-msg-sys { color: #888; font-style: italic; font-size: 0.85em; text-align: center; }
     </style>
 </head>
 <body>
     <canvas id="matrixCanvas"></canvas>
+<button id="ghostLinkOrb" class="ghostlink-orb">&#128225; GHOST-LINK</button>
+    <div id="ghostLinkModal" class="ghost-modal">
+        <div class="ghost-win">
+            <div class="ghost-top">
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <span style="color:var(--core); font-weight:bold; letter-spacing:2px;">&#128225; GHOST-LINK // CO-OP WAR ROOM</span>
+                    <span id="ghostStatus" class="ghost-status">&#128308; OFFLINE</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <button id="ghostHostBtn" class="cl-btn">&#128225; HOST ROOM</button>
+                    <input type="text" id="ghostCodeInput" class="cl-input" placeholder="4-Digit Code..." maxlength="4" style="width:125px; text-align:center; font-weight:bold;">
+                    <button id="ghostJoinBtn" class="cl-btn">&#128279; JOIN ROOM</button>
+                    <button id="ghostCloseBtn" class="cl-close">&#10006; EXIT</button>
+                </div>
+            </div>
+
+            <div class="ghost-body">
+                <!-- LEFT: SHARED REAL-TIME BLACKBOARD -->
+                <div class="ghost-board-panel">
+                    <div class="cl-row" style="margin-bottom:0; justify-content:space-between;">
+                        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                            <button class="cl-btn g-tool active" data-gtool="pen">&#9999; PEN</button>
+                            <button class="cl-btn g-tool" data-gtool="erase">&#129529; ERASE</button>
+                            <span class="swatch g-swatch active" data-gcol="#00ffcc" style="background:#00ffcc;"></span>
+                            <span class="swatch g-swatch" data-gcol="#ff0033" style="background:#ff0033;"></span>
+                            <span class="swatch g-swatch" data-gcol="#ffcc00" style="background:#ffcc00;"></span>
+                            <span class="swatch g-swatch" data-gcol="#00ff66" style="background:#00ff66;"></span>
+                            <span class="swatch g-swatch" data-gcol="#ffffff" style="background:#ffffff;"></span>
+                            <button id="ghostClearBtn" class="cl-btn">&#128465; CLEAR</button>
+                        </div>
+                        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                            <input type="text" id="ghostPdfInput" class="cl-input" placeholder="PDF keyword to beam..." style="width:165px;">
+                            <button id="ghostBeamPdfBtn" class="cl-btn">&#128640; BEAM PDF</button>
+                        </div>
+                    </div>
+
+                    <div class="ghost-canvas-wrap">
+                        <canvas id="ghostCanvas" class="ghost-canvas" width="820" height="430"></canvas>
+                        <div id="ghostPartnerLaser" class="ghost-laser">&#127919; PARTNER</div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: TACTICAL P2P CHAT & TELEMETRY -->
+                <div class="ghost-comms-panel">
+                    <div class="cl-title">&#128172; ENCRYPTED P2P COMMS</div>
+                    <div id="ghostRoomBanner" class="cl-output" style="margin-top:0; text-align:center; font-size:0.95em;">
+                        Click <b>HOST ROOM</b> to get a 4-digit code, or enter your friend's code and click <b>JOIN ROOM</b>.
+                    </div>
+                    <div id="ghostChatLog" class="ghost-chat-log">
+                        <div class="ghost-msg-sys">Zero-server WebRTC tunnel ready.</div>
+                    </div>
+                    <div class="cl-row" style="margin-bottom:0;">
+                        <input type="text" id="ghostChatInput" class="cl-input" placeholder="Transmit message..." style="flex:1;">
+                        <button id="ghostSendBtn" class="cl-btn">&#9889;</button>
+                        <button id="ghostPingBtn" class="cl-btn" title="Send Radar Audio Ping">&#128266;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 <button id="cyberLabOrb" class="cyberlab-orb">&#129514; CYBER-LAB</button>
     <div id="cyberLabModal" class="cyberlab-modal">
         <div class="cyberlab-win">
@@ -1697,6 +1775,300 @@
                 if (swInterval) { clearInterval(swInterval); swInterval = null; }
                 swSeconds = 0;
                 if (swDisplay) swDisplay.innerText = formatSw(0);
+            });
+        }
+// ============================================================================
+        // GHOST-LINK LIVE MULTIPLAYER CO-OP ENGINE (ZERO-SERVER WEBRTC P2P)
+        // ============================================================================
+        (function loadPeerJsLibrary() {
+            if (window.Peer) return;
+            const sc = document.createElement('script');
+            sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js';
+            sc.async = true;
+            document.head.appendChild(sc);
+        })();
+
+        const ghostLinkOrb = document.getElementById('ghostLinkOrb');
+        const ghostLinkModal = document.getElementById('ghostLinkModal');
+        const ghostCloseBtn = document.getElementById('ghostCloseBtn');
+        const ghostHostBtn = document.getElementById('ghostHostBtn');
+        const ghostJoinBtn = document.getElementById('ghostJoinBtn');
+        const ghostCodeInput = document.getElementById('ghostCodeInput');
+        const ghostStatus = document.getElementById('ghostStatus');
+        const ghostRoomBanner = document.getElementById('ghostRoomBanner');
+        const ghostChatLog = document.getElementById('ghostChatLog');
+        const ghostChatInput = document.getElementById('ghostChatInput');
+        const ghostSendBtn = document.getElementById('ghostSendBtn');
+        const ghostPingBtn = document.getElementById('ghostPingBtn');
+        const ghostCanvas = document.getElementById('ghostCanvas');
+        const ghostPartnerLaser = document.getElementById('ghostPartnerLaser');
+        const ghostClearBtn = document.getElementById('ghostClearBtn');
+        const ghostPdfInput = document.getElementById('ghostPdfInput');
+        const ghostBeamPdfBtn = document.getElementById('ghostBeamPdfBtn');
+
+        let ghostPeer = null;
+        let ghostConn = null;
+        let gTool = 'pen';
+        let gColor = '#00ffcc';
+        let gDrawing = false;
+        let gLastX = 0;
+        let gLastY = 0;
+
+        if (ghostLinkOrb && ghostLinkModal) {
+            ghostLinkOrb.addEventListener('click', function() {
+                playSynth(520, 1450, 0.14, 'triangle');
+                ghostLinkModal.classList.add('open');
+            });
+        }
+        if (ghostCloseBtn) {
+            ghostCloseBtn.addEventListener('click', function() {
+                playSynth(700, 280, 0.12, 'sawtooth');
+                ghostLinkModal.classList.remove('open');
+            });
+        }
+
+        function addGhostChat(text, type) {
+            if (!ghostChatLog) return;
+            const d = document.createElement('div');
+            d.className = type === 'me' ? 'ghost-msg-me' : (type === 'peer' ? 'ghost-msg-peer' : 'ghost-msg-sys');
+            d.innerText = text;
+            ghostChatLog.appendChild(d);
+            ghostChatLog.scrollTop = ghostChatLog.scrollHeight;
+        }
+
+        function setGhostStatus(online, text) {
+            if (!ghostStatus) return;
+            ghostStatus.innerText = text;
+            ghostStatus.classList.toggle('online', online);
+        }
+
+        function sendGhostPacket(obj) {
+            if (ghostConn && ghostConn.open) {
+                try { ghostConn.send(obj); } catch (e) {}
+            }
+        }
+
+        function drawGhostSegment(x0, y0, x1, y1, col, isErase) {
+            if (!ghostCanvas) return;
+            const ctx = ghostCanvas.getContext('2d');
+            ctx.beginPath();
+            ctx.moveTo(x0, y0);
+            ctx.lineTo(x1, y1);
+            ctx.strokeStyle = isErase ? '#060609' : col;
+            ctx.lineWidth = isErase ? 20 : 3.5;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+        }
+
+        function clearGhostBoard() {
+            if (!ghostCanvas) return;
+            const ctx = ghostCanvas.getContext('2d');
+            ctx.fillStyle = '#060609';
+            ctx.fillRect(0, 0, ghostCanvas.width, ghostCanvas.height);
+        }
+        clearGhostBoard();
+
+        function wireGhostConnection(conn) {
+            ghostConn = conn;
+            conn.on('open', function() {
+                playSynth(600, 1600, 0.2, 'sine');
+                setGhostStatus(true, '\uD83D\uDFE2 LINK ACTIVE (P2P)');
+                addGhostChat('\u26A1 Partner connected! Co-Op Blackboard & PDF Beam live.', 'sys');
+            });
+            conn.on('data', function(data) {
+                if (!data || !data.type) return;
+                if (data.type === 'draw') {
+                    drawGhostSegment(data.x0, data.y0, data.x1, data.y1, data.col, data.erase);
+                } else if (data.type === 'clear') {
+                    clearGhostBoard();
+                    addGhostChat('Partner cleared the blackboard.', 'sys');
+                } else if (data.type === 'laser') {
+                    if (ghostPartnerLaser) {
+                        ghostPartnerLaser.style.display = 'block';
+                        ghostPartnerLaser.style.left = (data.rx * 100) + '%';
+                        ghostPartnerLaser.style.top = (data.ry * 100) + '%';
+                    }
+                } else if (data.type === 'chat') {
+                    playSynth(800, 1200, 0.06, 'sine');
+                    addGhostChat('PARTNER: ' + data.msg, 'peer');
+                } else if (data.type === 'ping') {
+                    playSynth(400, 1700, 0.25, 'triangle');
+                    addGhostChat('\uD83D\uDD0A PARTNER SENT A RADAR PING!', 'peer');
+                } else if (data.type === 'beam_pdf') {
+                    playSynth(500, 1500, 0.2, 'sine');
+                    addGhostChat('\uD83D\uDE80 Partner beamed PDF: ' + data.query, 'sys');
+                    if (typeof executeVaultFileOpen === 'function') {
+                        executeVaultFileOpen(data.query);
+                    }
+                }
+            });
+            conn.on('close', function() {
+                setGhostStatus(false, '\uD83D\uDD34 DISCONNECTED');
+                addGhostChat('Partner disconnected.', 'sys');
+            });
+        }
+
+        if (ghostHostBtn) {
+            ghostHostBtn.addEventListener('click', function() {
+                if (!window.Peer) {
+                    addGhostChat('Loading PeerJS network engine... try again in 2 seconds.', 'sys');
+                    return;
+                }
+                if (ghostPeer) ghostPeer.destroy();
+                const code = String(Math.floor(1000 + Math.random() * 9000));
+                const fullId = 'cartel-nexus-coop-' + code;
+                setGhostStatus(false, '\uD83D\uDFE1 WAITING: ' + code);
+                ghostRoomBanner.innerHTML = 'ROOM CODE: <b style="font-size:1.35em;letter-spacing:3px;color:#fff;">' + code + '</b><br>Tell your partner to enter this 4-digit code and click JOIN ROOM!';
+                ghostPeer = new Peer(fullId);
+                ghostPeer.on('open', function() {
+                    playSynth(600, 1300, 0.12, 'triangle');
+                    addGhostChat('Room [' + code + '] created. Waiting for partner...', 'sys');
+                });
+                ghostPeer.on('connection', function(conn) {
+                    wireGhostConnection(conn);
+                });
+                ghostPeer.on('error', function(err) {
+                    addGhostChat('Network notice: ' + err.type, 'sys');
+                });
+            });
+        }
+
+        if (ghostJoinBtn) {
+            ghostJoinBtn.addEventListener('click', function() {
+                if (!window.Peer) {
+                    addGhostChat('Loading PeerJS network engine... try again in 2 seconds.', 'sys');
+                    return;
+                }
+                const code = (ghostCodeInput.value || '').trim();
+                if (code.length < 4) {
+                    addGhostChat('Enter your partner\'s 4-digit room code first!', 'sys');
+                    return;
+                }
+                if (ghostPeer) ghostPeer.destroy();
+                setGhostStatus(false, '\uD83D\uDFE1 LINKING...');
+                ghostPeer = new Peer();
+                ghostPeer.on('open', function() {
+                    const conn = ghostPeer.connect('cartel-nexus-coop-' + code);
+                    wireGhostConnection(conn);
+                    ghostRoomBanner.innerHTML = 'LINKED TO ROOM: <b style="font-size:1.2em;color:#fff;">' + code + '</b>';
+                });
+                ghostPeer.on('error', function(err) {
+                    setGhostStatus(false, '\uD83D\uDD34 LINK FAILED');
+                    addGhostChat('Could not find Room [' + code + ']. Check code & retry.', 'sys');
+                });
+            });
+        }
+
+        // Co-Op Blackboard Drawing & Laser Sync
+        document.querySelectorAll('.g-tool').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.g-tool').forEach(function(b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                gTool = btn.getAttribute('data-gtool');
+            });
+        });
+        document.querySelectorAll('.g-swatch').forEach(function(sw) {
+            sw.addEventListener('click', function() {
+                document.querySelectorAll('.g-swatch').forEach(function(s) { s.classList.remove('active'); });
+                sw.classList.add('active');
+                gColor = sw.getAttribute('data-gcol');
+            });
+        });
+
+        if (ghostCanvas) {
+            function getGhostPos(e) {
+                const r = ghostCanvas.getBoundingClientRect();
+                const cx = e.touches ? e.touches[0].clientX : e.clientX;
+                const cy = e.touches ? e.touches[0].clientY : e.clientY;
+                return {
+                    x: (cx - r.left) * (ghostCanvas.width / r.width),
+                    y: (cy - r.top) * (ghostCanvas.height / r.height),
+                    rx: (cx - r.left) / r.width,
+                    ry: (cy - r.top) / r.height
+                };
+            }
+            function startGDraw(e) {
+                e.preventDefault();
+                gDrawing = true;
+                const p = getGhostPos(e);
+                gLastX = p.x;
+                gLastY = p.y;
+            }
+            function moveGDraw(e) {
+                const p = getGhostPos(e);
+                sendGhostPacket({ type: 'laser', rx: p.rx, ry: p.ry });
+                if (!gDrawing) return;
+                e.preventDefault();
+                const isErase = (gTool === 'erase');
+                drawGhostSegment(gLastX, gLastY, p.x, p.y, gColor, isErase);
+                sendGhostPacket({
+                    type: 'draw',
+                    x0: gLastX,
+                    y0: gLastY,
+                    x1: p.x,
+                    y1: p.y,
+                    col: gColor,
+                    erase: isErase
+                });
+                gLastX = p.x;
+                gLastY = p.y;
+            }
+            function endGDraw() { gDrawing = false; }
+
+            ghostCanvas.addEventListener('mousedown', startGDraw);
+            ghostCanvas.addEventListener('mousemove', moveGDraw);
+            window.addEventListener('mouseup', endGDraw);
+            ghostCanvas.addEventListener('touchstart', startGDraw, { passive: false });
+            ghostCanvas.addEventListener('touchmove', moveGDraw, { passive: false });
+            window.addEventListener('touchend', endGDraw);
+        }
+
+        if (ghostClearBtn) {
+            ghostClearBtn.addEventListener('click', function() {
+                playSynth(500, 260, 0.1, 'sawtooth');
+                clearGhostBoard();
+                sendGhostPacket({ type: 'clear' });
+            });
+        }
+
+        // Chat, Radar Ping & PDF Teleporter
+        function transmitGhostChat() {
+            const msg = (ghostChatInput.value || '').trim();
+            if (!msg) return;
+            ghostChatInput.value = '';
+            addGhostChat('YOU: ' + msg, 'me');
+            sendGhostPacket({ type: 'chat', msg: msg });
+            playSynth(600, 1100, 0.05, 'sine');
+        }
+        if (ghostSendBtn) ghostSendBtn.addEventListener('click', transmitGhostChat);
+        if (ghostChatInput) {
+            ghostChatInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') transmitGhostChat();
+            });
+        }
+        if (ghostPingBtn) {
+            ghostPingBtn.addEventListener('click', function() {
+                playSynth(400, 1700, 0.2, 'triangle');
+                addGhostChat('\uD83D\uDD0A Radar Ping transmitted!', 'sys');
+                sendGhostPacket({ type: 'ping' });
+            });
+        }
+        if (ghostBeamPdfBtn) {
+            ghostBeamPdfBtn.addEventListener('click', function() {
+                let q = (ghostPdfInput.value || '').trim();
+                if (!q && typeof holoTitle !== 'undefined' && holoTitle && holoTitle.innerText) {
+                    q = holoTitle.innerText.replace(/[^\w\s.-]/g, '').trim();
+                }
+                if (!q) {
+                    addGhostChat('Type a PDF name (e.g. Rocks or Physics) in the Beam box first!', 'sys');
+                    return;
+                }
+                playSynth(550, 1550, 0.18, 'triangle');
+                addGhostChat('\uD83D\uDE80 Beaming PDF [' + q + '] to partner & opening locally...', 'sys');
+                sendGhostPacket({ type: 'beam_pdf', query: q });
+                if (typeof executeVaultFileOpen === 'function') {
+                    executeVaultFileOpen(q);
+                }
             });
         }
     </script>
