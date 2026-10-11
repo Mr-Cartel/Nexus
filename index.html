@@ -191,25 +191,37 @@ const themes = [
         muteBtn.addEventListener('click', () => applyTheme(currentTheme));
 const bootScreen = document.getElementById('bootScreen');
         const bootText = document.getElementById('bootText');
-        if ('speechSynthesis' in window) { window.speechSynthesis.getVoices(); }
+        let cartelVoices = [];
+        if ('speechSynthesis' in window) {
+            cartelVoices = window.speechSynthesis.getVoices();
+            window.speechSynthesis.onvoiceschanged = () => {
+                cartelVoices = window.speechSynthesis.getVoices();
+            };
+        }
 
         function speakJarvis() {
             if (isMuted || !('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel();
             const msg = new SpeechSynthesisUtterance("Identity verified. Welcome to the Binary Cartel.");
-            const voices = window.speechSynthesis.getVoices();
-            const preferred = voices.find(v => v.name.includes('David') || v.name.includes('Google UK English Male') || v.name.includes('Mark'));
+            const preferred = cartelVoices.find(v => v.name.includes('David') || v.name.includes('Mark') || v.name.includes('Google UK English Male') || v.name.includes('Male'));
             if (preferred) msg.voice = preferred;
             msg.pitch = 0.75;
             msg.rate = 1.05;
             msg.volume = 1;
             window.speechSynthesis.speak(msg);
+            window.speechSynthesis.resume();
         }
 
         function runBootSequence() {
+            bootScreen.style.cursor = 'default';
             bootScreen.style.display = 'block';
             void bootScreen.offsetWidth;
             bootScreen.classList.remove('doors-open');
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            if ('speechSynthesis' in window) {
+                const unlock = new SpeechSynthesisUtterance(' ');
+                unlock.volume = 0;
+                window.speechSynthesis.speak(unlock);
+            }
             bootText.innerText = '🔒 DECRYPTING BINARY CARTEL...';
             playSynth(300, 600, 0.08, 'sawtooth');
             setTimeout(() => {
@@ -228,11 +240,17 @@ const bootScreen = document.getElementById('bootScreen');
         }
 
         if (!sessionStorage.getItem('cartelBooted')) {
-            sessionStorage.setItem('cartelBooted', 'true');
-            window.addEventListener('load', runBootSequence);
+            bootText.innerText = '🖐️ TOUCH SCREEN TO VERIFY BIOMETRICS';
+            bootScreen.style.cursor = 'pointer';
+            bootScreen.addEventListener('click', function initiateUnlock() {
+                bootScreen.removeEventListener('click', initiateUnlock);
+                sessionStorage.setItem('cartelBooted', 'true');
+                runBootSequence();
+            });
         } else {
             bootScreen.style.display = 'none';
         }
+
         document.querySelectorAll('.badge').forEach(b => {
             b.style.cursor = 'pointer';
             b.addEventListener('click', runBootSequence);
