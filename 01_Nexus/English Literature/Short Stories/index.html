@@ -70,89 +70,57 @@
         <a href="03_The_Model_Millionaire/index.html"><div class="card">03_The_Model_Millionaire</div></a>
 
     </div>
-    <script>
-        let path = window.location.pathname;
-        let parts = path.split('/').filter(p => p !== "");
-        let target = parts[parts.length - 1].includes('.html') ? parts[parts.length - 2] : parts[parts.length - 1];
-        if (!target || target === "") target = "MASTER VAULT";
-        let folder = decodeURI(target).replace(/_/g, ' ');
-        document.getElementById('section-title').innerText = "DIRECTORY: " + folder + " | STATUS: ONLINE";
-
-        document.getElementById('cartelSearch').addEventListener('keyup', function() {
-            let filter = this.value.toUpperCase();
-            let grid = document.getElementById('vaultGrid');
-            let links = grid.getElementsByTagName('a');
-            for (let i = 0; i < links.length; i++) {
-                let card = links[i].getElementsByClassName('card')[0];
-                let text = card.textContent || card.innerText;
-                if (text.toUpperCase().indexOf(filter) > -1) {
-                    links[i].style.display = "";
-                } else {
-                    links[i].style.display = "none";
-                }
-            }
-        });
-const canvas = document.getElementById('matrixCanvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        const drops = Array(Math.floor(canvas.width / 20)).fill(1);
-        function drawMatrix() {
-            ctx.fillStyle = 'rgba(13, 13, 13, 0.08)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#00ffcc';
-            ctx.font = '16px Courier New';
-            drops.forEach((y, i) => {
-                const text = Math.random() > 0.5 ? '1' : '0';
-                ctx.fillText(text, i * 20, y * 20);
-                if (y * 20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                drops[i]++;
-            });
+   <script>
+        // 1. AUTO-DETECT FOLDER TITLE (For Subfolders)
+        const secTitle = document.getElementById('section-title');
+        if (secTitle) {
+            let path = window.location.pathname;
+            let parts = path.split('/').filter(p => p !== "");
+            let target = parts[parts.length - 1].includes('.html') ? parts[parts.length - 2] : parts[parts.length - 1];
+            if (!target || target === "") target = "MASTER VAULT";
+            let folder = decodeURI(target).replace(/_/g, ' ');
+            secTitle.innerText = "DIRECTORY: " + folder + " | STATUS: ONLINE";
         }
-        setInterval(drawMatrix, 50);
-        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // 2. UNIVERSAL WEB AUDIO SYNTH ENGINE (Mobile + PC Unlocked)
+        let audioCtx = null;
         let isMuted = localStorage.getItem('cartelMute') === 'true';
         const muteBtn = document.getElementById('muteBtn');
-        function updateMuteUI() {
-            muteBtn.innerText = isMuted ? '🔇 AUDIO: MUTED' : '🔊 AUDIO: ON';
-            muteBtn.style.borderColor = isMuted ? '#ff0033' : '#00ffcc';
-            muteBtn.style.color = isMuted ? '#ff0033' : '#00ffcc';
+
+        function getAudioCtx() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) audioCtx = new AudioContextClass();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
         }
-        updateMuteUI();
-        muteBtn.addEventListener('click', () => {
-            isMuted = !isMuted;
-            localStorage.setItem('cartelMute', isMuted);
-            updateMuteUI();
-            if (!isMuted) playSynth(880, 1320, 0.08, 'sine');
-        });
+        document.addEventListener('click', getAudioCtx);
+        document.addEventListener('touchstart', getAudioCtx, { passive: true });
+
         function playSynth(startFreq, endFreq, duration, type) {
             if (isMuted) return;
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type || 'sine';
-            osc.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(endFreq, audioCtx.currentTime + duration);
-            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + duration);
+            try {
+                const ctx = getAudioCtx();
+                if (!ctx) return;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = type || 'sine';
+                osc.frequency.setValueAtTime(startFreq, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(endFreq, ctx.currentTime + duration);
+                gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + duration);
+            } catch (e) {}
         }
-        document.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('mouseenter', () => playSynth(900, 1400, 0.04, 'sine'));
-            card.addEventListener('click', () => playSynth(500, 1200, 0.12, 'triangle'));
-        });
-        document.querySelectorAll('.back-btn').forEach(btn => {
-            btn.addEventListener('mouseenter', () => playSynth(700, 500, 0.04, 'sine'));
-            btn.addEventListener('click', () => playSynth(800, 300, 0.15, 'sawtooth'));
-        });
-        document.getElementById('cartelSearch').addEventListener('keydown', () => {
-            playSynth(1600, 1200, 0.025, 'triangle');
-        });
-const themes = [
+
+        // 3. CHAMELEON CYBER-CORE THEME ENGINE & MUTE UI
+        const themes = [
             { name: 'CYAN', hex: '#00ffcc', glow: 'rgba(0, 255, 204, 0.3)', filter: 'hue-rotate(0deg)' },
             { name: 'SITH', hex: '#ff0033', glow: 'rgba(255, 0, 51, 0.3)', filter: 'hue-rotate(180deg) saturate(1.5)' },
             { name: 'GOLD', hex: '#ffcc00', glow: 'rgba(255, 204, 0, 0.3)', filter: 'hue-rotate(240deg) saturate(1.5)' },
@@ -160,26 +128,148 @@ const themes = [
         ];
         let currentTheme = parseInt(localStorage.getItem('cartelTheme')) || 0;
         const themeBtn = document.getElementById('themeBtn');
-        function applyTheme(index) {
-            const t = themes[index];
+
+        function updateTopButtons() {
+            const t = themes[currentTheme];
             document.documentElement.style.setProperty('--core', t.hex);
             document.documentElement.style.setProperty('--core-glow', t.glow);
             document.documentElement.style.setProperty('--rain-filter', t.filter);
-            themeBtn.innerText = '🎨 CORE: ' + t.name;
-            if (!isMuted) {
-                muteBtn.style.borderColor = t.hex;
-                muteBtn.style.color = t.hex;
+            if (themeBtn) themeBtn.innerText = '🎨 CORE: ' + t.name;
+            if (muteBtn) {
+                muteBtn.innerText = isMuted ? '🔇 AUDIO: MUTED' : '🔊 AUDIO: ON';
+                muteBtn.style.borderColor = isMuted ? '#ff0033' : t.hex;
+                muteBtn.style.color = isMuted ? '#ff0033' : t.hex;
             }
         }
-        applyTheme(currentTheme);
-        themeBtn.addEventListener('click', () => {
-            currentTheme = (currentTheme + 1) % themes.length;
-            localStorage.setItem('cartelTheme', currentTheme);
-            applyTheme(currentTheme);
-            playSynth(400, 1600, 0.15, 'sawtooth');
-        });
-        muteBtn.addEventListener('click', () => applyTheme(currentTheme));
-document.addEventListener('click', function(e) {
+        updateTopButtons();
+
+        if (muteBtn) {
+            muteBtn.addEventListener('click', () => {
+                isMuted = !isMuted;
+                localStorage.setItem('cartelMute', isMuted);
+                updateTopButtons();
+                if (!isMuted) playSynth(880, 1320, 0.08, 'sine');
+            });
+        }
+        if (themeBtn) {
+            themeBtn.addEventListener('click', () => {
+                currentTheme = (currentTheme + 1) % themes.length;
+                localStorage.setItem('cartelTheme', currentTheme);
+                updateTopButtons();
+                playSynth(400, 1600, 0.15, 'sawtooth');
+            });
+        }
+
+        // 4. CARTEL SEARCH TERMINAL
+        const searchBox = document.getElementById('cartelSearch');
+        if (searchBox) {
+            searchBox.addEventListener('keyup', function() {
+                let filter = this.value.toUpperCase();
+                let grid = document.getElementById('vaultGrid');
+                let links = grid.getElementsByTagName('a');
+                for (let i = 0; i < links.length; i++) {
+                    let card = links[i].getElementsByClassName('card')[0];
+                    let text = card.textContent || card.innerText;
+                    links[i].style.display = text.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+                }
+            });
+            searchBox.addEventListener('keydown', () => playSynth(1600, 1200, 0.025, 'triangle'));
+        }
+
+        // 5. MATRIX BINARY RAIN CANVAS
+        const canvas = document.getElementById('matrixCanvas');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const drops = Array(Math.floor(canvas.width / 20)).fill(1);
+            function drawMatrix() {
+                ctx.fillStyle = 'rgba(13, 13, 13, 0.08)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#00ffcc';
+                ctx.font = '16px Courier New';
+                drops.forEach((y, i) => {
+                    const text = Math.random() > 0.5 ? '1' : '0';
+                    ctx.fillText(text, i * 20, y * 20);
+                    if (y * 20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i]++;
+                });
+            }
+            setInterval(drawMatrix, 50);
+            window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+        }
+
+        // 6. JARVIS VOICE & BLAST-DOOR BIOMETRIC BOOT SEQUENCE
+        const bootScreen = document.getElementById('bootScreen');
+        const bootText = document.getElementById('bootText');
+        let cartelVoices = [];
+        if ('speechSynthesis' in window) {
+            cartelVoices = window.speechSynthesis.getVoices();
+            window.speechSynthesis.onvoiceschanged = () => {
+                cartelVoices = window.speechSynthesis.getVoices();
+            };
+        }
+
+        function speakJarvis() {
+            if (isMuted || !('speechSynthesis' in window)) return;
+            try {
+                window.speechSynthesis.cancel();
+                setTimeout(() => {
+                    const msg = new SpeechSynthesisUtterance("Biometrics verified. Welcome to the Binary Cartel.");
+                    const preferred = cartelVoices.find(v => v.name.includes('David') || v.name.includes('Mark') || v.name.includes('Male'));
+                    if (preferred) msg.voice = preferred;
+                    msg.pitch = 0.75;
+                    msg.rate = 1.0;
+                    msg.volume = 1;
+                    window.speechSynthesis.speak(msg);
+                }, 50);
+            } catch (e) {}
+        }
+
+        function runBootSequence() {
+            if (!bootScreen || !bootText) return;
+            getAudioCtx();
+            speakJarvis();
+            bootScreen.style.cursor = 'default';
+            bootScreen.style.display = 'block';
+            void bootScreen.offsetWidth;
+            bootScreen.classList.remove('doors-open');
+            bootText.innerText = '🔒 DECRYPTING BINARY CARTEL...';
+            playSynth(300, 600, 0.08, 'sawtooth');
+            setTimeout(() => {
+                bootText.innerText = '🧬 BIOMETRICS VERIFIED...';
+                playSynth(600, 900, 0.08, 'sawtooth');
+            }, 400);
+            setTimeout(() => {
+                bootText.innerText = '🔓 ACCESS GRANTED';
+                playSynth(900, 1500, 0.12, 'triangle');
+            }, 800);
+            setTimeout(() => {
+                bootScreen.classList.add('doors-open');
+                playSynth(180, 40, 0.55, 'sawtooth');
+            }, 1150);
+        }
+
+        if (bootScreen && bootText) {
+            if (!sessionStorage.getItem('cartelBooted')) {
+                bootText.innerText = '🖐️ TAP SCREEN TO VERIFY BIOMETRICS';
+                bootScreen.style.cursor = 'pointer';
+                bootScreen.addEventListener('click', function initiateUnlock() {
+                    bootScreen.removeEventListener('click', initiateUnlock);
+                    sessionStorage.setItem('cartelBooted', 'true');
+                    runBootSequence();
+                });
+            } else {
+                bootScreen.style.display = 'none';
+            }
+            document.querySelectorAll('.badge').forEach(b => {
+                b.style.cursor = 'pointer';
+                b.addEventListener('click', runBootSequence);
+            });
+        }
+
+        // 7. 3D MAGNETIC CARDS, HOVER SYNTH & EMP SHOCKWAVE
+        document.addEventListener('click', function(e) {
             const ring = document.createElement('div');
             ring.className = 'emp-ring';
             ring.style.left = e.clientX + 'px';
@@ -189,23 +279,27 @@ document.addEventListener('click', function(e) {
         });
 
         document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', () => playSynth(900, 1400, 0.04, 'sine'));
+            card.addEventListener('click', () => playSynth(500, 1200, 0.12, 'triangle'));
             card.addEventListener('mousemove', function(e) {
                 const rect = card.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                const rotateX = ((y - centerY) / centerY) * -10;
-                const rotateY = ((x - centerX) / centerX) * 10;
+                const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -10;
+                const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 10;
                 card.style.transform = 'perspective(600px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) scale(1.03)';
                 card.style.setProperty('--mx', x + 'px');
                 card.style.setProperty('--my', y + 'px');
             });
-            card.addEventListener('mouseleave', function() {
-                card.style.transform = '';
-            });
+            card.addEventListener('mouseleave', () => { card.style.transform = ''; });
         });
 
+        document.querySelectorAll('.back-btn').forEach(btn => {
+            btn.addEventListener('mouseenter', () => playSynth(700, 500, 0.04, 'sine'));
+            btn.addEventListener('click', () => playSynth(800, 300, 0.15, 'sawtooth'));
+        });
+
+        // 8. RECENT INTEL QUICK-LAUNCH DOCK
         function renderRecentIntel() {
             const dock = document.getElementById('recentIntelDock');
             const list = document.getElementById('recentIntelList');
