@@ -46,10 +46,48 @@
         .holo-close { border-color: #ff0033; color: #ff0033; }
         .holo-close:hover { background: #ff0033 !important; color: #fff !important; box-shadow: 0 0 15px #ff0033 !important; }
         .holo-frame { width: 100%; flex-grow: 1; border: none; background: #161618; }
+.jarvis-orb { position: fixed; bottom: 25px; right: 25px; background: #111; color: var(--core); border: 2px solid var(--core); border-radius: 50px; padding: 12px 22px; font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 1em; cursor: pointer; box-shadow: 0 0 20px var(--core-glow), inset 0 0 10px var(--core-glow); z-index: 9400; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+        .jarvis-orb:hover { background: var(--core); color: #000; box-shadow: 0 0 30px var(--core); transform: scale(1.05); }
+        .jarvis-hud { position: fixed; bottom: 85px; right: 25px; width: 380px; max-width: calc(100vw - 50px); background: rgba(11, 11, 14, 0.96); border: 2px solid var(--core); border-radius: 12px; box-shadow: 0 0 35px var(--core-glow); z-index: 9400; display: none; flex-direction: column; overflow: hidden; backdrop-filter: blur(8px); text-align: left; }
+        .jarvis-hud.open { display: flex; }
+        .jarvis-top { background: #141418; border-bottom: 1px solid var(--core); padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .jarvis-brand { font-weight: bold; font-size: 0.85em; letter-spacing: 2px; color: var(--core); text-shadow: 0 0 8px var(--core); }
+        .jarvis-top-btns { display: flex; gap: 6px; }
+        .jarvis-mini-btn { background: #1a1a1f; color: var(--core); border: 1px solid var(--core); border-radius: 5px; padding: 4px 8px; font-family: 'Courier New', Courier, monospace; font-size: 0.75em; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .jarvis-mini-btn:hover { background: var(--core); color: #000; }
+        .jarvis-log { padding: 14px; height: 170px; overflow-y: auto; font-size: 0.9em; line-height: 1.45; color: #e0e0e0; border-bottom: 1px solid #222; display: flex; flex-direction: column; gap: 10px; }
+        .jarvis-msg-ai { color: var(--core); text-shadow: 0 0 6px var(--core-glow); }
+        .jarvis-msg-user { color: #fff; opacity: 0.85; text-align: right; font-style: italic; }
+        .jarvis-bar { display: flex; padding: 10px; gap: 8px; background: #0e0e11; align-items: center; }
+        .jarvis-mic { background: #16161a; color: var(--core); border: 1px solid var(--core); border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 1.1em; transition: 0.2s; }
+        .jarvis-mic.listening { background: #ff0033; color: #fff; border-color: #ff0033; box-shadow: 0 0 20px #ff0033; animation: pulseMic 1s infinite; }
+        @keyframes pulseMic { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .jarvis-input { flex-grow: 1; background: #141417; border: 1px solid var(--core); color: var(--core); padding: 9px 12px; border-radius: 8px; font-family: 'Courier New', Courier, monospace; font-size: 0.9em; outline: none; }
+        .jarvis-send { background: var(--core); color: #000; border: none; border-radius: 8px; padding: 9px 14px; font-family: 'Courier New', Courier, monospace; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .jarvis-send:hover { box-shadow: 0 0 15px var(--core); }
     </style>
 </head>
 <body>
     <canvas id="matrixCanvas"></canvas>
+<button id="jarvisOrb" class="jarvis-orb">&#129302; JARVIS AI</button>
+    <div id="jarvisHud" class="jarvis-hud">
+        <div class="jarvis-top">
+            <span class="jarvis-brand">&#9889; JARVIS // AI</span>
+            <div class="jarvis-top-btns">
+                <button id="jarvisVoiceBtn" class="jarvis-mini-btn">&#128266; VOICE: ON</button>
+                <button id="jarvisKeyBtn" class="jarvis-mini-btn">&#128273; CORE: FREE</button>
+                <button id="jarvisCloseBtn" class="jarvis-mini-btn">&#10006;</button>
+            </div>
+        </div>
+        <div id="jarvisLog" class="jarvis-log">
+            <div class="jarvis-msg-ai">ONLINE. Type in the chat bar below or tap &#127897; to speak. Click &#128266; VOICE anytime for silent text-only mode.</div>
+        </div>
+        <div class="jarvis-bar">
+            <button id="jarvisMicBtn" class="jarvis-mic" title="Optional Voice Input">&#127897;</button>
+            <input type="text" id="jarvisInput" class="jarvis-input" placeholder="Type here to chat...">
+            <button id="jarvisSendBtn" class="jarvis-send">&#9889;</button>
+        </div>
+    </div>
 <div id="holoModal" class="holo-modal">
         <div class="holo-window">
             <div class="holo-header">
@@ -394,6 +432,280 @@
                 holoModal.classList.add('active');
             }
         });
+// HYBRID DUAL-CORE JARVIS AI (WITH SILENT CHAT BAR & VOICE MUTE TOGGLE)
+        const jarvisOrb = document.getElementById('jarvisOrb');
+        const jarvisHud = document.getElementById('jarvisHud');
+        const jarvisCloseBtn = document.getElementById('jarvisCloseBtn');
+        const jarvisVoiceBtn = document.getElementById('jarvisVoiceBtn');
+        const jarvisKeyBtn = document.getElementById('jarvisKeyBtn');
+        const jarvisLog = document.getElementById('jarvisLog');
+        const jarvisMicBtn = document.getElementById('jarvisMicBtn');
+        const jarvisInput = document.getElementById('jarvisInput');
+        const jarvisSendBtn = document.getElementById('jarvisSendBtn');
+
+        let jarvisVoiceMuted = localStorage.getItem('cartelJarvisMute') === 'true';
+
+        function updateJarvisHeaderBtns() {
+            if (jarvisKeyBtn) {
+                const hasKey = !!localStorage.getItem('cartelGeminiKey');
+                jarvisKeyBtn.innerText = hasKey ? '\uD83D\uDC8E CORE: GEMINI' : '\uD83D\uDD11 CORE: FREE';
+            }
+            if (jarvisVoiceBtn) {
+                jarvisVoiceBtn.innerText = jarvisVoiceMuted ? '\uD83D\uDD07 VOICE: OFF' : '\uD83D\uDD0A VOICE: ON';
+                jarvisVoiceBtn.style.borderColor = jarvisVoiceMuted ? '#ff0033' : '';
+                jarvisVoiceBtn.style.color = jarvisVoiceMuted ? '#ff0033' : '';
+            }
+        }
+        updateJarvisHeaderBtns();
+
+        if (jarvisVoiceBtn) {
+            jarvisVoiceBtn.addEventListener('click', function() {
+                jarvisVoiceMuted = !jarvisVoiceMuted;
+                localStorage.setItem('cartelJarvisMute', jarvisVoiceMuted);
+                if (jarvisVoiceMuted && 'speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                }
+                updateJarvisHeaderBtns();
+                playSynth(700, 1200, 0.08, 'sine');
+            });
+        }
+
+        if (jarvisOrb && jarvisHud) {
+            jarvisOrb.addEventListener('click', function() {
+                playSynth(600, 1400, 0.12, 'triangle');
+                jarvisHud.classList.toggle('open');
+                if (jarvisHud.classList.contains('open') && jarvisInput) jarvisInput.focus();
+            });
+        }
+        if (jarvisCloseBtn) {
+            jarvisCloseBtn.addEventListener('click', function() {
+                playSynth(700, 300, 0.1, 'sawtooth');
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+                jarvisHud.classList.remove('open');
+            });
+        }
+        if (jarvisKeyBtn) {
+            jarvisKeyBtn.addEventListener('click', function() {
+                const current = localStorage.getItem('cartelGeminiKey') || '';
+                const inputKey = prompt('Optional: Paste a Google Gemini API Key for Gemini 2.5 Flash Turbo (or leave blank to keep using Free Zero-Key AI):', current);
+                if (inputKey !== null) {
+                    const clean = inputKey.trim();
+                    if (clean) {
+                        localStorage.setItem('cartelGeminiKey', clean);
+                    } else {
+                        localStorage.removeItem('cartelGeminiKey');
+                    }
+                    updateJarvisHeaderBtns();
+                    playSynth(800, 1600, 0.12, 'sine');
+                }
+            });
+        }
+
+        function speakJarvisReply(text) {
+            if (isMuted || jarvisVoiceMuted || !('speechSynthesis' in window)) return;
+            try {
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.resume();
+                window.jarvisReplyUtterance = new SpeechSynthesisUtterance(text);
+                window.jarvisReplyUtterance.lang = 'en-US';
+                window.jarvisReplyUtterance.pitch = 0.75;
+                window.jarvisReplyUtterance.rate = 1.05;
+                window.speechSynthesis.speak(window.jarvisReplyUtterance);
+            } catch (err) {}
+        }
+
+        function appendJarvisMsg(text, isUser) {
+            if (!jarvisLog) return;
+            const div = document.createElement('div');
+            div.className = isUser ? 'jarvis-msg-user' : 'jarvis-msg-ai';
+            div.innerText = (isUser ? '> ' : '\u26A1 ') + text;
+            jarvisLog.appendChild(div);
+            jarvisLog.scrollTop = jarvisLog.scrollHeight;
+        }
+
+        function getVaultContextList() {
+            let items = [];
+            if (window.CARTEL_INDEX && window.CARTEL_INDEX.length > 0) {
+                items = window.CARTEL_INDEX.slice(0, 80).map(function(i) { return i.name + ' (' + i.sector + ')'; });
+            } else {
+                document.querySelectorAll('#vaultGrid a').forEach(function(a) {
+                    items.push(a.innerText.trim());
+                });
+            }
+            return items.join(', ');
+        }
+
+        function executeVaultFileOpen(targetQuery) {
+            const q = targetQuery.trim().toUpperCase();
+            if (!q) return false;
+            const terms = q.split(/\s+/);
+
+            const pageLinks = Array.from(document.querySelectorAll('#vaultGrid a'));
+            for (let i = 0; i < pageLinks.length; i++) {
+                const txt = pageLinks[i].innerText.toUpperCase();
+                if (terms.every(function(t) { return txt.indexOf(t) > -1; })) {
+                    pageLinks[i].click();
+                    return true;
+                }
+            }
+
+            if (window.CARTEL_INDEX) {
+                const match = window.CARTEL_INDEX.find(function(item) {
+                    const hay = (item.name + ' ' + item.sector).toUpperCase();
+                    return terms.every(function(t) { return hay.indexOf(t) > -1; });
+                });
+                if (match && typeof holoModal !== 'undefined' && holoModal && holoFrame) {
+                    holoTitle.innerText = '\uD83D\uDCC4 ' + match.name;
+                    holoExternal.href = match.url;
+                    if (typeof holoSave !== 'undefined' && holoSave) {
+                        holoSave.href = match.url;
+                        holoSave.setAttribute('download', match.name);
+                    }
+                    holoFrame.src = match.url;
+                    holoModal.classList.add('active');
+                    return true;
+                } else if (match) {
+                    window.open(match.url, '_blank');
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function processJarvisActions(rawReply) {
+            let clean = rawReply;
+
+            const themeMatch = clean.match(/\[THEME:(CYAN|SITH|GOLD|PHANTOM)\]/i);
+            if (themeMatch) {
+                const tName = themeMatch[1].toUpperCase();
+                const idx = themes.findIndex(function(t) { return t.name === tName; });
+                if (idx > -1) {
+                    currentTheme = idx;
+                    localStorage.setItem('cartelTheme', currentTheme);
+                    updateTopButtons();
+                }
+            }
+
+            if (/\[AUDIO:MUTE\]/i.test(clean)) {
+                jarvisVoiceMuted = true;
+                localStorage.setItem('cartelJarvisMute', true);
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+                updateJarvisHeaderBtns();
+            } else if (/\[AUDIO:UNMUTE\]/i.test(clean)) {
+                jarvisVoiceMuted = false;
+                localStorage.setItem('cartelJarvisMute', false);
+                updateJarvisHeaderBtns();
+            }
+
+            if (/\[ACTION:BACK\]/i.test(clean)) {
+                const backBtn = document.querySelector('.back-btn');
+                if (backBtn) setTimeout(function() { backBtn.click(); }, 600);
+            }
+
+            const openMatch = clean.match(/\[OPEN:([^\]]+)\]/i);
+            if (openMatch) {
+                executeVaultFileOpen(openMatch[1]);
+            }
+
+            clean = clean.replace(/\[[A-Z]+:[^\]]+\]/gi, '').trim();
+            return clean || 'Command executed.';
+        }
+
+        async function askJarvisBrain(userText) {
+            const sysPrompt = 'You are JARVIS, the tactical cyberpunk AI mainframe of The Binary Cartel study vault. Keep responses concise (1 to 3 sentences), sharp, and helpful. ' +
+                'If the user asks to change theme, include one tag: [THEME:CYAN], [THEME:SITH], [THEME:GOLD], or [THEME:PHANTOM]. ' +
+                'If the user asks to mute or silence your voice, include [AUDIO:MUTE]. If they ask to unmute voice, include [AUDIO:UNMUTE]. ' +
+                'If the user asks to go back/return, include [ACTION:BACK]. ' +
+                'If the user asks to open a folder or PDF, include [OPEN:keyword] matching their request. ' +
+                'Available vault items: ' + getVaultContextList();
+
+            const gemKey = localStorage.getItem('cartelGeminiKey');
+            if (gemKey) {
+                try {
+                    const gUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + encodeURIComponent(gemKey);
+                    const gRes = await fetch(gUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            systemInstruction: { parts: [{ text: sysPrompt }] },
+                            contents: [{ parts: [{ text: userText }] }]
+                        })
+                    });
+                    if (gRes.ok) {
+                        const gData = await gRes.json();
+                        const reply = gData.candidates && gData.candidates[0] && gData.candidates[0].content && gData.candidates[0].content.parts[0].text;
+                        if (reply) return reply;
+                    }
+                } catch (err) {}
+            }
+
+            const pRes = await fetch('https://text.pollinations.ai/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: [
+                        { role: 'system', content: sysPrompt },
+                        { role: 'user', content: userText }
+                    ],
+                    model: 'openai'
+                })
+            });
+            return await pRes.text();
+        }
+
+        async function handleJarvisCommand(rawText) {
+            const text = (rawText || '').trim();
+            if (!text) return;
+            if (jarvisInput) jarvisInput.value = '';
+            appendJarvisMsg(text, true);
+            playSynth(500, 1200, 0.08, 'sine');
+
+            try {
+                const rawReply = await askJarvisBrain(text);
+                const cleanReply = processJarvisActions(rawReply);
+                appendJarvisMsg(cleanReply, false);
+                speakJarvisReply(cleanReply);
+            } catch (err) {
+                appendJarvisMsg('Mainframe link interrupted. Try again.', false);
+            }
+        }
+
+        if (jarvisSendBtn) {
+            jarvisSendBtn.addEventListener('click', function() {
+                handleJarvisCommand(jarvisInput.value);
+            });
+        }
+        if (jarvisInput) {
+            jarvisInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') handleJarvisCommand(jarvisInput.value);
+            });
+        }
+
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRec && jarvisMicBtn) {
+            const recognition = new SpeechRec();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+
+            jarvisMicBtn.addEventListener('click', function() {
+                try {
+                    playSynth(800, 1500, 0.1, 'triangle');
+                    jarvisMicBtn.classList.add('listening');
+                    recognition.start();
+                } catch (err) {}
+            });
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                jarvisMicBtn.classList.remove('listening');
+                handleJarvisCommand(transcript);
+            };
+            recognition.onerror = function() {
+                jarvisMicBtn.classList.remove('listening');
+            };
+            recognition.onend = function() {
+                jarvisMicBtn.classList.remove('listening');
+            };
+        }
     </script>
 </body>
 </html>
