@@ -179,6 +179,8 @@ const themes = [
 const bootScreen = document.getElementById('bootScreen');
         const bootText = document.getElementById('bootText');
         function runBootSequence() {
+            bootScreen.style.display = 'block';
+            void bootScreen.offsetWidth;
             bootScreen.classList.remove('doors-open');
             bootText.innerText = '🔒 DECRYPTING BINARY CARTEL...';
             playSynth(300, 600, 0.08, 'sawtooth');
@@ -195,7 +197,12 @@ const bootScreen = document.getElementById('bootScreen');
                 playSynth(180, 40, 0.55, 'sawtooth');
             }, 1350);
         }
-        window.addEventListener('load', runBootSequence);
+        if (!sessionStorage.getItem('cartelBooted')) {
+            sessionStorage.setItem('cartelBooted', 'true');
+            window.addEventListener('load', runBootSequence);
+        } else {
+            bootScreen.style.display = 'none';
+        }
         document.querySelectorAll('.badge').forEach(b => {
             b.style.cursor = 'pointer';
             b.addEventListener('click', runBootSequence);
