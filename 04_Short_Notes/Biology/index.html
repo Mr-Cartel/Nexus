@@ -663,24 +663,39 @@
             }
         });
         renderRecentIntel();
-// HOLO-COCKPIT IN-VAULT PDF THEATER (WITH SYSTEM APP, SAVE, PRINT & SHARE)
+// HOLO-COCKPIT PDF CLICK INTERCEPTOR (BLOCKS CHROME DEFAULT VIEWER)
         const holoModal = document.getElementById('holoModal');
         const holoFrame = document.getElementById('holoFrame');
         const holoTitle = document.getElementById('holoTitle');
-        const holoSystem = document.getElementById('holoSystem');
-        const holoSave = document.getElementById('holoSave');
-        const holoPrint = document.getElementById('holoPrint');
-        const holoShare = document.getElementById('holoShare');
         const holoExternal = document.getElementById('holoExternal');
+        const holoSave = document.getElementById('holoSave');
         const holoClose = document.getElementById('holoClose');
 
-        function closeHoloCockpit() {
-            if (!holoModal || !holoModal.classList.contains('active')) return;
-            playSynth(700, 250, 0.15, 'sawtooth');
-            holoModal.classList.remove('active');
-            setTimeout(function() { holoFrame.src = ''; }, 250);
-        }
+        document.querySelectorAll('#vaultGrid a').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                const url = this.getAttribute('href') || '';
+                if (url.toLowerCase().indexOf('.pdf') > -1 && holoModal && holoFrame) {
+                    e.preventDefault();
+                    playSynth(600, 1400, 0.12, 'triangle');
+                    if (holoTitle) holoTitle.innerText = this.innerText.trim();
+                    if (holoExternal) holoExternal.href = url;
+                    if (holoSave) {
+                        holoSave.href = url;
+                        holoSave.setAttribute('download', '');
+                    }
+                    holoFrame.src = url;
+                    holoModal.classList.add('active');
+                }
+            });
+        });
 
+        if (holoClose && holoModal && holoFrame) {
+            holoClose.addEventListener('click', function() {
+                playSynth(700, 300, 0.1, 'sawtooth');
+                holoModal.classList.remove('active');
+                holoFrame.src = '';
+            });
+        }
         if (holoClose) holoClose.addEventListener('click', closeHoloCockpit);
         if (holoModal) {
             holoModal.addEventListener('click', function(e) {
