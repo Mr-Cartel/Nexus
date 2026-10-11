@@ -311,13 +311,13 @@ $buttonsHtml
 
 Build-DirectoryUI -CurrentFolder ($basePath);
 Write-Host "Search Terminal Deployed Everywhere!";
-$allPdfs = @(Get-ChildItem -Path$basePath -Filter "*.pdf" -Recurse);
+$allPdfs = @(Get-ChildItem -Path ($basePath) -Filter "*.pdf" -Recurse);
 $indexEntries = @();
-foreach ($pdf in $allPdfs) {$relPath = $pdf.FullName.Substring($basePath.Length + 1).Replace("\", "/");
+foreach ($pdf in ($allPdfs)) {$relPath = $pdf.FullName.Substring($basePath.Length + 1).Replace("\", "/");
     $folderName =$pdf.Directory.Name.Replace("_", " ");
     $cleanName =$pdf.Name.Replace('"', '\"');
     $indexEntries += "{ name: `"$cleanName`", url: `"$relPath`", sector: `"$folderName`" }";
 }
 $jsIndex = "window.CARTEL_INDEX = [" + ($indexEntries -join ",") + "];";
-Set-Content -Path "$basePath\vault_index.js" -Value $jsIndex -Encoding UTF8;
+Set-Content -Path ("$basePath\vault_index.js") -Value ($jsIndex) -Encoding UTF8;
 Write-Host "Omniverse Deep-Warp Index Built Successfully!";
