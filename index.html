@@ -42,6 +42,10 @@
         .intel-list { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
         .intel-chip { background: #161618; border: 1px solid var(--core); color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 0.95em; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 10px var(--core-glow); transition: 0.25s; }
         .intel-chip:hover { background: var(--core); color: #000; transform: translateY(-3px); box-shadow: 0 0 20px var(--core); }
+.warp-container { max-width: 1200px; margin: 0 auto 45px auto; display: none; }
+        .warp-header { font-size: 1.05em; letter-spacing: 3px; color: var(--core); margin-bottom: 20px; font-weight: bold; text-shadow: 0 0 12px var(--core); text-transform: uppercase; }
+        .warp-card { flex-direction: column !important; gap: 8px !important; padding: 25px 15px !important; border: 1px solid var(--core) !important; box-shadow: 0 0 15px var(--core-glow) !important; }
+        .warp-sector { font-size: 0.6em; color: #aaa; letter-spacing: 2px; text-transform: uppercase; background: #0b0b0c; padding: 4px 10px; border-radius: 5px; border: 1px solid #333; }
     </style>
 </head>
 <body>
@@ -66,6 +70,10 @@
         <div class="intel-title">⚡ RECENT INTEL // QUICK RESUME</div>
         <div id="recentIntelList" class="intel-list"></div>
     </div>
+<div id="deepWarpBox" class="warp-container">
+        <div class="warp-header" id="deepWarpCount">🌌 OMNIVERSE DEEP-WARP // DIRECT PDF TELEPORT</div>
+        <div class="dashboard" id="deepWarpGrid"></div>
+    </div>
     <div class="dashboard" id="vaultGrid">
         <a href="01_Nexus/index.html"><div class="card">🏆 Sec 1: Nexus</div></a>
         <a href="02_The_Cartel/index.html"><div class="card">⚔️ Sec 2: The Cartel</div></a>
@@ -76,7 +84,7 @@
         <a href="07_Specimens/index.html"><div class="card">🎯 Sec 7: Specimens</div></a>
         <a href="08_Maintenance/index.html"><div class="card">🛠️ Sec 8: Maintenance</div></a>
     </div>
-
+<script src="vault_index.js"></script>
     <script>
         // 1. SAFE FOLDER TITLE DETECTOR
         try {
@@ -335,6 +343,55 @@
             }
         });
         renderRecentIntel();
+// 9. OMNIVERSE DEEP-WARP GLOBAL PDF TELEPORTER
+        const warpBox = document.getElementById('deepWarpBox');
+        const warpGrid = document.getElementById('deepWarpGrid');
+        const warpCount = document.getElementById('deepWarpCount');
+
+        if (searchBox && warpBox && warpGrid) {
+            searchBox.addEventListener('keyup', function() {
+                const rawQuery = this.value.trim().toUpperCase();
+                if (rawQuery.length < 2 || !window.CARTEL_INDEX) {
+                    warpBox.style.display = 'none';
+                    warpGrid.innerHTML = '';
+                    return;
+                }
+                const terms = rawQuery.split(/\s+/);
+                const matches = window.CARTEL_INDEX.filter(function(item) {
+                    const haystack = (item.name + ' ' + item.sector).toUpperCase();
+                    return terms.every(function(t) { return haystack.indexOf(t) > -1; });
+                });
+
+                if (matches.length === 0) {
+                    warpBox.style.display = 'none';
+                    warpGrid.innerHTML = '';
+                    return;
+                }
+
+                warpBox.style.display = 'block';
+                warpCount.innerText = '🌌 DEEP-WARP TELEPORTER // ' + matches.length + ' PDF(S) LOCKED';
+                warpGrid.innerHTML = '';
+
+                matches.slice(0, 24).forEach(function(item) {
+                    const a = document.createElement('a');
+                    a.href = item.url;
+                    a.target = '_blank';
+                    a.innerHTML = '<div class="card warp-card"><span class="warp-sector">📂 ' + item.sector + '</span><span>📄 ' + item.name + '</span></div>';
+                    const cardEl = a.querySelector('.card');
+                    cardEl.addEventListener('mouseenter', function() { playSynth(950, 1500, 0.05, 'sine'); });
+                    a.addEventListener('click', function() {
+                        playSynth(500, 1400, 0.14, 'triangle');
+                        let saved = JSON.parse(localStorage.getItem('cartelRecentIntel') || '[]');
+                        saved = saved.filter(function(i) { return i.name !== item.name; });
+                        saved.unshift({ name: item.name, url: a.href });
+                        if (saved.length > 3) saved = saved.slice(0, 3);
+                        localStorage.setItem('cartelRecentIntel', JSON.stringify(saved));
+                        renderRecentIntel();
+                    });
+                    warpGrid.appendChild(a);
+                });
+            });
+        }
     </script>
 </body>
 </html>

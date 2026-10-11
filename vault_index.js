@@ -1,0 +1,1 @@
+﻿window.CARTEL_INDEX = [];
