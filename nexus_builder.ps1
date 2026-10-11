@@ -465,7 +465,7 @@ $buttonsHtml
                 holoModal.classList.add('active');
             }
         });
-// HYBRID DUAL-CORE JARVIS AI (WITH SILENT CHAT BAR & VOICE MUTE TOGGLE)
+// HYBRID DUAL-CORE JARVIS AI (COMPLETE ALL-IN-ONE ENGINE)
         const jarvisOrb = document.getElementById('jarvisOrb');
         const jarvisHud = document.getElementById('jarvisHud');
         const jarvisCloseBtn = document.getElementById('jarvisCloseBtn');
@@ -474,7 +474,9 @@ $buttonsHtml
         const jarvisLog = document.getElementById('jarvisLog');
         const jarvisMicBtn = document.getElementById('jarvisMicBtn');
         const jarvisInput = document.getElementById('jarvisInput');
-        const jarvisSendBtn = document.getElementById('jarvisSendBtn');let jarvisVoiceMuted = localStorage.getItem('cartelJarvisMute') === 'true';
+        const jarvisSendBtn = document.getElementById('jarvisSendBtn');
+
+        let jarvisVoiceMuted = localStorage.getItem('cartelJarvisMute') === 'true';
         let jarvisForceFree = localStorage.getItem('cartelForceFree') === 'true';
 
         function updateJarvisHeaderBtns() {
@@ -513,6 +515,7 @@ $buttonsHtml
                 if (jarvisHud.classList.contains('open') && jarvisInput) jarvisInput.focus();
             });
         }
+
         if (jarvisCloseBtn) {
             jarvisCloseBtn.addEventListener('click', function() {
                 playSynth(700, 300, 0.1, 'sawtooth');
@@ -520,6 +523,7 @@ $buttonsHtml
                 jarvisHud.classList.remove('open');
             });
         }
+
         function promptForGeminiKey() {
             const current = localStorage.getItem('cartelGeminiKey') || '';
             const inputKey = prompt('Paste your Google Gemini API Key (or clear to remove key):', current);
@@ -536,6 +540,7 @@ $buttonsHtml
                 playSynth(800, 1600, 0.12, 'sine');
             }
         }
+
         if (jarvisKeyBtn) {
             jarvisKeyBtn.addEventListener('click', function() {
                 if (!localStorage.getItem('cartelGeminiKey')) {
@@ -550,37 +555,6 @@ $buttonsHtml
             jarvisKeyBtn.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
                 promptForGeminiKey();
-            });
-        }
-
-        if (jarvisOrb && jarvisHud) {
-            jarvisOrb.addEventListener('click', function() {
-                playSynth(600, 1400, 0.12, 'triangle');
-                jarvisHud.classList.toggle('open');
-                if (jarvisHud.classList.contains('open') && jarvisInput) jarvisInput.focus();
-            });
-        }
-        if (jarvisCloseBtn) {
-            jarvisCloseBtn.addEventListener('click', function() {
-                playSynth(700, 300, 0.1, 'sawtooth');
-                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-                jarvisHud.classList.remove('open');
-            });
-        }
-        if (jarvisKeyBtn) {
-            jarvisKeyBtn.addEventListener('click', function() {
-                const current = localStorage.getItem('cartelGeminiKey') || '';
-                const inputKey = prompt('Optional: Paste a Google Gemini API Key for Gemini 2.5 Flash Turbo (or leave blank to keep using Free Zero-Key AI):', current);
-                if (inputKey !== null) {
-                    const clean = inputKey.trim();
-                    if (clean) {
-                        localStorage.setItem('cartelGeminiKey', clean);
-                    } else {
-                        localStorage.removeItem('cartelGeminiKey');
-                    }
-                    updateJarvisHeaderBtns();
-                    playSynth(800, 1600, 0.12, 'sine');
-                }
             });
         }
 
