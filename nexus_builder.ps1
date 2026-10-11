@@ -175,6 +175,21 @@ Function Build-DirectoryUI {
         .war-right-frame { flex-grow: 1; width: 100%; height: 100%; border: none; background: #fff; }
         .war-ink-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 25; }
         .war-ink-canvas.drawing { pointer-events: auto; cursor: crosshair; }
+/* GHOST-LINK 1-ON-1 VOICE COMMS DECK */
+        .ghost-voice-bar { background: #101018; border: 1px solid var(--core); border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; box-shadow: inset 0 0 15px rgba(0, 255, 204, 0.08); }
+        .gv-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .gv-btn { background: #181822; color: var(--core); border: 1px solid var(--core); border-radius: 6px; padding: 7px 13px; font-family: 'Courier New', Courier, monospace; font-weight: bold; font-size: 0.82em; cursor: pointer; transition: 0.2s; }
+        .gv-btn:hover, .gv-btn.active { background: var(--core); color: #000; box-shadow: 0 0 12px var(--core); }
+        .gv-btn.ringing { background: #00ff66; color: #000; border-color: #fff; box-shadow: 0 0 20px #00ff66; animation: gvPulse 0.8s infinite alternate; }
+        .gv-btn.danger { color: #ff0044; border-color: #ff0044; }
+        .gv-btn.danger:hover, .gv-btn.danger.muted { background: #ff0044; color: #fff; box-shadow: 0 0 12px #ff0044; }
+        .gv-meters { display: flex; align-items: center; gap: 12px; font-size: 0.78em; color: #bbb; font-family: 'Courier New', Courier, monospace; }
+        .gv-meter-wrap { display: flex; align-items: center; gap: 6px; }
+        .gv-bar-bg { width: 70px; height: 8px; background: #1c1c26; border: 1px solid #333; border-radius: 4px; overflow: hidden; }
+        .gv-bar-fill { width: 0%; height: 100%; background: var(--core); transition: width 0.08s; box-shadow: 0 0 8px var(--core); }
+        .gv-floating-pill { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: #0c0c12; border: 2px solid #00ff66; border-radius: 40px; padding: 7px 18px; display: none; align-items: center; gap: 12px; z-index: 9900; box-shadow: 0 0 25px rgba(0, 255, 102, 0.4); font-family: 'Courier New', Courier, monospace; font-size: 0.82em; color: #00ff66; font-weight: bold; }
+        .gv-floating-pill.active { display: flex; }
+        @keyframes gvPulse { from { transform: scale(1); } to { transform: scale(1.07); } }
     </style>
 </head>
 <body>
@@ -2151,6 +2166,291 @@ $buttonsHtml
                 }
             });
         }
+// ============================================================================
+        // GHOST-LINK 1-ON-1 DUPLEX VOICE CALL ENGINE (YOU & ANUP)
+        // ============================================================================
+        (function initGhostVoiceComms() {
+            const gModal = document.getElementById('ghostLinkModal');
+            const gClear = document.getElementById('ghostClearBtn');
+            if (!gModal && !gClear) return;
+
+            // 1. Create Hidden Audio Receiver & Floating Mini Call Bar
+            const remoteAudio = document.createElement('audio');
+            remoteAudio.id = 'ghostRemoteAudio';
+            remoteAudio.autoplay = true;
+            remoteAudio.setAttribute('playsinline', 'true');
+            document.body.appendChild(remoteAudio);
+
+            const floatPill = document.createElement('div');
+            floatPill.id = 'gvFloatingPill';
+            floatPill.className = 'gv-floating-pill';
+            floatPill.innerHTML =
+                '<span id="gvPillStatus">\uD83D\uDCDE VOICE LIVE [00:00]</span>' +
+                '<button id="gvPillMute" class="gv-btn" style="padding:4px 9px;font-size:0.85em;">\uD83C\uDF99 MIC: ON</button>' +
+                '<button id="gvPillEnd" class="gv-btn danger" style="padding:4px 9px;font-size:0.85em;">\u260E END</button>';
+            document.body.appendChild(floatPill);
+
+            // 2. Mount Voice Deck Inside Ghost-Link Window
+            const voiceBar = document.createElement('div');
+            voiceBar.className = 'ghost-voice-bar';
+            voiceBar.innerHTML =
+                '<div class="gv-controls">' +
+                    '<button id="gvCallBtn" class="gv-btn">\uD83D\uDCDE START VOICE CALL</button>' +
+                    '<button id="gvMuteBtn" class="gv-btn" style="display:none;">\uD83C\uDF99 MIC: ON</button>' +
+                    '<button id="gvDeafenBtn" class="gv-btn" style="display:none;">\uD83D\uDD0A SPEAKER: ON</button>' +
+                    '<button id="gvHangupBtn" class="gv-btn danger" style="display:none;">\u260E HANG UP</button>' +
+                    '<span id="gvTimer" style="color:var(--core);font-weight:bold;font-size:0.88em;">\u23F1 STANDBY</span>' +
+                '</div>' +
+                '<div class="gv-meters">' +
+                    '<div class="gv-meter-wrap"><span>YOU:</span><div class="gv-bar-bg"><div id="gvMeterLocal" class="gv-bar-fill"></div></div></div>' +
+                    '<div class="gv-meter-wrap"><span>PARTNER:</span><div class="gv-bar-bg"><div id="gvMeterRemote" class="gv-bar-fill" style="background:#00ff66;"></div></div></div>' +
+                '</div>';
+
+            if (gClear && gClear.parentNode && gClear.parentNode.parentNode) {
+                gClear.parentNode.parentNode.insertBefore(voiceBar, gClear.parentNode);
+            } else if (gModal) {
+                gModal.appendChild(voiceBar);
+            }
+
+            const gvCallBtn = document.getElementById('gvCallBtn');
+            const gvMuteBtn = document.getElementById('gvMuteBtn');
+            const gvDeafenBtn = document.getElementById('gvDeafenBtn');
+            const gvHangupBtn = document.getElementById('gvHangupBtn');
+            const gvTimer = document.getElementById('gvTimer');
+            const gvMeterLocal = document.getElementById('gvMeterLocal');
+            const gvMeterRemote = document.getElementById('gvMeterRemote');
+            const gvPillStatus = document.getElementById('gvPillStatus');
+            const gvPillMute = document.getElementById('gvPillMute');
+            const gvPillEnd = document.getElementById('gvPillEnd');
+
+            let localStream = null;
+            let activeCall = null;
+            let pendingIncomingCall = null;
+            let micMuted = false;
+            let speakerDeafened = false;
+            let callSecs = 0;
+            let callTimerInt = null;
+            let localAnalyser = null;
+            let remoteAnalyser = null;
+
+            function formatCallTime(s) {
+                const m = String(Math.floor(s / 60)).padStart(2, '0');
+                const sec = String(s % 60).padStart(2, '0');
+                return m + ':' + sec;
+            }
+
+            async function getMicStream() {
+                if (localStream) return localStream;
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    },
+                    video: false
+                });
+                setupAudioMeter(localStream, true);
+                return localStream;
+            }
+
+            function setupAudioMeter(stream, isLocal) {
+                try {
+                    const ctx = (typeof audioCtx !== 'undefined') ? audioCtx : new (window.AudioContext || window.webkitAudioContext)();
+                    if (ctx.state === 'suspended') ctx.resume();
+                    const src = ctx.createMediaStreamSource(stream);
+                    const analyser = ctx.createAnalyser();
+                    analyser.fftSize = 256;
+                    src.connect(analyser);
+                    if (isLocal) localAnalyser = analyser;
+                    else remoteAnalyser = analyser;
+                } catch (e) {}
+            }
+
+            function animateVoiceMeters() {
+                if (localAnalyser && gvMeterLocal) {
+                    const arr = new Uint8Array(localAnalyser.frequencyBinCount);
+                    localAnalyser.getByteFrequencyData(arr);
+                    let sum = 0;
+                    for (let i = 0; i < arr.length; i++) sum += arr[i];
+                    const avg = micMuted ? 0 : Math.min(100, (sum / arr.length) * 2.2);
+                    gvMeterLocal.style.width = avg + '%';
+                }
+                if (remoteAnalyser && gvMeterRemote) {
+                    const arr2 = new Uint8Array(remoteAnalyser.frequencyBinCount);
+                    remoteAnalyser.getByteFrequencyData(arr2);
+                    let sum2 = 0;
+                    for (let j = 0; j < arr2.length; j++) sum2 += arr2[j];
+                    const avg2 = speakerDeafened ? 0 : Math.min(100, (sum2 / arr2.length) * 2.2);
+                    gvMeterRemote.style.width = avg2 + '%';
+                }
+                requestAnimationFrame(animateVoiceMeters);
+            }
+            animateVoiceMeters();
+
+            function setCallUIActive() {
+                gvCallBtn.style.display = 'none';
+                gvCallBtn.classList.remove('ringing');
+                gvMuteBtn.style.display = 'inline-block';
+                gvDeafenBtn.style.display = 'inline-block';
+                gvHangupBtn.style.display = 'inline-block';
+                floatPill.classList.add('active');
+
+                callSecs = 0;
+                if (callTimerInt) clearInterval(callTimerInt);
+                callTimerInt = setInterval(function() {
+                    callSecs++;
+                    const tStr = formatCallTime(callSecs);
+                    gvTimer.innerText = '\uD83D\uDFE2 LIVE [' + tStr + ']';
+                    gvPillStatus.innerText = '\uD83D\uDCDE VOICE LIVE [' + tStr + ']';
+                }, 1000);
+            }
+
+            function endVoiceCall(notifyPartner) {
+                if (activeCall) {
+                    try { activeCall.close(); } catch (e) {}
+                    activeCall = null;
+                }
+                pendingIncomingCall = null;
+                if (localStream) {
+                    localStream.getTracks().forEach(function(t) { t.stop(); });
+                    localStream = null;
+                }
+                localAnalyser = null;
+                remoteAnalyser = null;
+                remoteAudio.srcObject = null;
+                if (callTimerInt) { clearInterval(callTimerInt); callTimerInt = null; }
+
+                gvCallBtn.style.display = 'inline-block';
+                gvCallBtn.classList.remove('ringing');
+                gvCallBtn.innerText = '\uD83D\uDCDE START VOICE CALL';
+                gvMuteBtn.style.display = 'none';
+                gvDeafenBtn.style.display = 'none';
+                gvHangupBtn.style.display = 'none';
+                gvTimer.innerText = '\u23F1 STANDBY';
+                floatPill.classList.remove('active');
+                if (gvMeterLocal) gvMeterLocal.style.width = '0%';
+                if (gvMeterRemote) gvMeterRemote.style.width = '0%';
+
+                if (notifyPartner && typeof sendGhostPacket === 'function') {
+                    sendGhostPacket({ type: 'chat', msg: '\u260E Voice Call Ended.' });
+                }
+                if (typeof playSynth === 'function') playSynth(600, 250, 0.12, 'sawtooth');
+            }
+
+            function bindCallEvents(callObj) {
+                activeCall = callObj;
+                callObj.on('stream', function(remoteStream) {
+                    remoteAudio.srcObject = remoteStream;
+                    remoteAudio.play().catch(function() {});
+                    setupAudioMeter(remoteStream, false);
+                    setCallUIActive();
+                    if (typeof addGhostChat === 'function') {
+                        addGhostChat('\uD83C\uDF99 Duplex Voice Channel Locked! Speak freely.', 'sys');
+                    }
+                    if (typeof playSynth === 'function') playSynth(500, 1400, 0.15, 'triangle');
+                });
+                callObj.on('close', function() {
+                    endVoiceCall(false);
+                });
+                callObj.on('error', function() {
+                    endVoiceCall(false);
+                });
+            }
+
+            // 3. Auto-Hook Incoming Calls on ghostPeer
+            setInterval(function() {
+                if (typeof ghostPeer !== 'undefined' && ghostPeer && !ghostPeer._voiceHooked) {
+                    ghostPeer._voiceHooked = true;
+                    ghostPeer.on('call', async function(incomingCall) {
+                        pendingIncomingCall = incomingCall;
+                        if (typeof playSynth === 'function') playSynth(700, 1600, 0.25, 'triangle');
+                        if (typeof addGhostChat === 'function') {
+                            addGhostChat('\uD83D\uDCDE Incoming Voice Call! Connecting microphone...', 'sys');
+                        }
+                        try {
+                            const stream = await getMicStream();
+                            pendingIncomingCall = null;
+                            incomingCall.answer(stream);
+                            bindCallEvents(incomingCall);
+                        } catch (err) {
+                            // If mobile browser requires a physical button tap before granting mic
+                            gvCallBtn.innerText = '\uD83D\uDCDE TAP TO ANSWER CALL';
+                            gvCallBtn.classList.add('ringing');
+                            if (typeof addGhostChat === 'function') {
+                                addGhostChat('\uD83D\uDCF2 Tap the glowing green [TAP TO ANSWER CALL] button above!', 'sys');
+                            }
+                        }
+                    });
+                }
+            }, 400);
+
+            // 4. Outgoing Call / Answer Button Handler
+            gvCallBtn.addEventListener('click', async function() {
+                // If answering a ringing call on mobile
+                if (pendingIncomingCall) {
+                    try {
+                        const stream = await getMicStream();
+                        const callToAnswer = pendingIncomingCall;
+                        pendingIncomingCall = null;
+                        callToAnswer.answer(stream);
+                        bindCallEvents(callToAnswer);
+                    } catch (e) {
+                        alert('Microphone permission is required for voice calls. Make sure you are on your https:// link or localhost!');
+                    }
+                    return;
+                }
+
+                if (typeof ghostPeer === 'undefined' || !ghostPeer || typeof ghostConn === 'undefined' || !ghostConn || !ghostConn.open) {
+                    if (typeof addGhostChat === 'function') {
+                        addGhostChat('\u26A0 Connect to Anup using HOST or JOIN ROOM first before starting a voice call!', 'sys');
+                    }
+                    return;
+                }
+
+                try {
+                    gvTimer.innerText = '\uD83D\uDCE1 CALLING...';
+                    const stream = await getMicStream();
+                    const outCall = ghostPeer.call(ghostConn.peer, stream);
+                    bindCallEvents(outCall);
+                    if (typeof sendGhostPacket === 'function') {
+                        sendGhostPacket({ type: 'chat', msg: '\uD83D\uDCDE Incoming Voice Call from Partner!' });
+                    }
+                } catch (err) {
+                    gvTimer.innerText = '\u26A0 MIC BLOCKED';
+                    if (typeof addGhostChat === 'function') {
+                        addGhostChat('\u26A0 Mic access blocked! Open your live https:// website link and allow Microphone access.', 'sys');
+                    }
+                }
+            });
+
+            // 5. Mute Mic, Deafen Speaker & Hang Up Controls
+            function toggleMicMute() {
+                if (!localStream) return;
+                micMuted = !micMuted;
+                localStream.getAudioTracks().forEach(function(t) { t.enabled = !micMuted; });
+                const label = micMuted ? '\uD83D\uDD07 MIC: MUTED' : '\uD83C\uDF99 MIC: ON';
+                gvMuteBtn.innerText = label;
+                gvPillMute.innerText = label;
+                gvMuteBtn.classList.toggle('danger', micMuted);
+                gvMuteBtn.classList.toggle('muted', micMuted);
+                gvPillMute.classList.toggle('danger', micMuted);
+                if (typeof playSynth === 'function') playSynth(micMuted ? 400 : 800, micMuted ? 250 : 1300, 0.08, 'sine');
+            }
+
+            gvMuteBtn.addEventListener('click', toggleMicMute);
+            gvPillMute.addEventListener('click', toggleMicMute);
+
+            gvDeafenBtn.addEventListener('click', function() {
+                speakerDeafened = !speakerDeafened;
+                remoteAudio.muted = speakerDeafened;
+                gvDeafenBtn.innerText = speakerDeafened ? '\uD83D\uDD07 DEAFENED' : '\uD83D\uDD0A SPEAKER: ON';
+                gvDeafenBtn.classList.toggle('danger', speakerDeafened);
+                gvDeafenBtn.classList.toggle('muted', speakerDeafened);
+            });
+
+            gvHangupBtn.addEventListener('click', function() { endVoiceCall(true); });
+            gvPillEnd.addEventListener('click', function() { endVoiceCall(true); });
+        })();
 // 3-LINE TOP-LEFT TACTICAL MENU DRAWER TOGGLE
         const cartelHamBtn = document.getElementById('cartelHamBtn');
         const cartelHamDrop = document.getElementById('cartelHamDrop');
