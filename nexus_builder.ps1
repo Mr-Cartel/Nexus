@@ -75,8 +75,8 @@ Function Build-DirectoryUI {
 </head>
 <body>
     <canvas id="matrixCanvas"></canvas>
-    <button id="muteBtn" class="mute-btn">🔊 AUDIO: ON</button>
-    <button id="themeBtn" class="theme-btn">🎨 CORE: CYAN</button>
+    <button id="muteBtn" class="mute-btn">&#128266; AUDIO: ON</button>
+    <button id="themeBtn" class="theme-btn">&#127912; CORE: CYAN</button>
     <div class="header-container">
         <h1>THE BINARY CARTEL</h1>
         <div class="badge">0</div>
@@ -85,11 +85,11 @@ Function Build-DirectoryUI {
     <div class="subtitle" id="section-title">STATUS: ACTIVE</div>
     
     <div class="search-container">
-        <a href="../index.html" class="back-btn">⬅ RETURN</a>
+        <a href="../index.html" class="back-btn">&#11013; RETURN</a>
         <input type="text" id="cartelSearch" class="search-box" placeholder="> FILTER FOLDERS & FILES_">
     </div>
     <div id="recentIntelDock" class="intel-dock">
-        <div class="intel-title">⚡ RECENT INTEL // QUICK RESUME</div>
+        <div class="intel-title">&#9889; RECENT INTEL // QUICK RESUME</div>
         <div id="recentIntelList" class="intel-list"></div>
     </div>
     <div class="dashboard" id="vaultGrid">
@@ -158,14 +158,14 @@ $buttonsHtml
         let currentTheme = parseInt(localStorage.getItem('cartelTheme')) || 0;
         const themeBtn = document.getElementById('themeBtn');
 
-        function updateTopButtons() {
+       function updateTopButtons() {
             const t = themes[currentTheme] || themes[0];
             document.documentElement.style.setProperty('--core', t.hex);
             document.documentElement.style.setProperty('--core-glow', t.glow);
             document.documentElement.style.setProperty('--rain-filter', t.filter);
-            if (themeBtn) themeBtn.innerText = '🎨 CORE: ' + t.name;
+            if (themeBtn) themeBtn.innerText = '\uD83C\uDFA8 CORE: ' + t.name;
             if (muteBtn) {
-                muteBtn.innerText = isMuted ? '🔇 AUDIO: MUTED' : '🔊 AUDIO: ON';
+                muteBtn.innerText = isMuted ? '\uD83D\uDD07 AUDIO: MUTED' : '\uD83D\uDD0A AUDIO: ON';
                 muteBtn.style.borderColor = isMuted ? '#ff0033' : t.hex;
                 muteBtn.style.color = isMuted ? '#ff0033' : t.hex;
             }
@@ -277,7 +277,7 @@ $buttonsHtml
                 a.href = item.url;
                 a.target = '_blank';
                 a.className = 'intel-chip';
-                a.innerText = '📄 ' + item.name;
+               a.innerText = '\uD83D\uDCC4 ' + item.name;
                 a.addEventListener('mouseenter', function() { playSynth(950, 1450, 0.05, 'sine'); });
                 list.appendChild(a);
             });
