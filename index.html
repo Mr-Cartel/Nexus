@@ -32,10 +32,24 @@
         .back-btn:hover, .mute-btn:hover, .theme-btn:hover { background-color: var(--core) !important; color: #000 !important; box-shadow: 0 0 20px var(--core) !important; border-color: var(--core) !important; }
         #matrixCanvas { filter: var(--rain-filter); transition: filter 0.4s ease; }
         .theme-btn { position: fixed; top: 20px; right: 185px; background-color: #111; color: var(--core); border: 2px solid var(--core); border-radius: 8px; padding: 8px 15px; font-family: 'Courier New', Courier, monospace; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px var(--core-glow); z-index: 100; transition: 0.3s; }
+#bootScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; pointer-events: all; }
+        .blast-door-top, .blast-door-bottom { position: fixed; left: 0; width: 100%; height: 50%; background: repeating-linear-gradient(45deg, #070708, #070708 15px, #0d0d0f 15px, #0d0d0f 30px); z-index: 9998; transition: transform 0.85s cubic-bezier(0.77, 0, 0.175, 1); }
+        .blast-door-top { top: 0; border-bottom: 3px solid var(--core, #00ffcc); box-shadow: 0 5px 30px var(--core, #00ffcc); }
+        .blast-door-bottom { bottom: 0; border-top: 3px solid var(--core, #00ffcc); box-shadow: 0 -5px 30px var(--core, #00ffcc); }
+        .boot-terminal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; background-color: #0b0b0c; border: 2px solid var(--core, #00ffcc); padding: 18px 35px; border-radius: 8px; color: var(--core, #00ffcc); font-size: 1.3em; font-weight: bold; letter-spacing: 3px; box-shadow: 0 0 35px var(--core, #00ffcc); text-shadow: 0 0 10px var(--core, #00ffcc); transition: opacity 0.25s ease, transform 0.25s ease; }
+        #bootScreen.doors-open { pointer-events: none; }
+        #bootScreen.doors-open .blast-door-top { transform: translateY(-105%); }
+        #bootScreen.doors-open .blast-door-bottom { transform: translateY(105%); }
+        #bootScreen.doors-open .boot-terminal { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
     </style>
 </head>
 <body>
 <canvas id="matrixCanvas"></canvas>
+<div id="bootScreen">
+        <div class="blast-door-top"></div>
+        <div class="blast-door-bottom"></div>
+        <div class="boot-terminal" id="bootText">🔒 DECRYPTING BINARY CARTEL...</div>
+    </div>
 <button id="muteBtn" class="mute-btn">🔊 AUDIO: ON</button>
 <button id="themeBtn" class="theme-btn">🎨 CORE: CYAN</button>
     <div class="header-container">
@@ -162,6 +176,30 @@ const themes = [
             playSynth(400, 1600, 0.15, 'sawtooth');
         });
         muteBtn.addEventListener('click', () => applyTheme(currentTheme));
+const bootScreen = document.getElementById('bootScreen');
+        const bootText = document.getElementById('bootText');
+        function runBootSequence() {
+            bootScreen.classList.remove('doors-open');
+            bootText.innerText = '🔒 DECRYPTING BINARY CARTEL...';
+            playSynth(300, 600, 0.08, 'sawtooth');
+            setTimeout(() => {
+                bootText.innerText = '🧬 BIOMETRICS VERIFIED...';
+                playSynth(600, 900, 0.08, 'sawtooth');
+            }, 450);
+            setTimeout(() => {
+                bootText.innerText = '🔓 ACCESS GRANTED';
+                playSynth(900, 1500, 0.12, 'triangle');
+            }, 900);
+            setTimeout(() => {
+                bootScreen.classList.add('doors-open');
+                playSynth(180, 40, 0.55, 'sawtooth');
+            }, 1350);
+        }
+        window.addEventListener('load', runBootSequence);
+        document.querySelectorAll('.badge').forEach(b => {
+            b.style.cursor = 'pointer';
+            b.addEventListener('click', runBootSequence);
+        });
     </script>
 </body>
 </html>
