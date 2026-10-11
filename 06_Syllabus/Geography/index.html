@@ -2762,248 +2762,552 @@
             });
         }
 // ============================================================================
-        // AUTO-DOCK HOLO-POD & SHARE SCREEN INTO 3-LINES MENU (1-PASTE ALL-IN-ONE)
+        // MASTER ALL-IN-ONE HOLO-POD & MOBILE/PC SCREEN SHARE (Z-INDEX 999999 + DATA STREAM)
         // ============================================================================
         (function() {
-            let uniScreenStream = null;
-            let uniScreenCall = null;
-            let uniMirrorAnimId = null;
-            let uniTouchX = -100, uniTouchY = -100, uniTouchActive = false;
+            // 1. Auto-Inject High Z-Index CSS so windows always appear ON TOP of Ghost-Link War Room
+            if (!document.getElementById('holoMasterCss')) {
+                const st = document.createElement('style');
+                st.id = 'holoMasterCss';
+                st.innerHTML = [
+                    '.holopod-dock { position: fixed !important; top: 70px; right: 20px; width: 330px; max-width: 92vw; background: rgba(10, 10, 16, 0.97); border: 2px solid var(--core, #bc13fe); border-radius: 12px; box-shadow: 0 0 40px rgba(188, 19, 254, 0.6); z-index: 999999 !important; display: none; flex-direction: column; overflow: hidden; }',
+                    '.holopod-dock.open { display: flex !important; }',
+                    '.holopod-hdr { background: #161020; border-bottom: 1px solid var(--core, #bc13fe); padding: 9px 12px; cursor: move; display: flex; justify-content: space-between; align-items: center; font-size: 0.8em; font-weight: bold; color: var(--core, #bc13fe); user-select: none; }',
+                    '.holopod-controls { display: flex; gap: 6px; padding: 8px; background: #0c0912; border-bottom: 1px solid #222; flex-wrap: wrap; justify-content: center; }',
+                    '.hp-btn { background: #191224; color: var(--core, #bc13fe); border: 1px solid var(--core, #bc13fe); border-radius: 6px; padding: 6px 10px; font-family: Courier New, monospace; font-size: 0.76em; font-weight: bold; cursor: pointer; transition: 0.2s; }',
+                    '.hp-btn:hover, .hp-btn.active { background: var(--core, #bc13fe); color: #000; box-shadow: 0 0 12px var(--core, #bc13fe); }',
+                    '.hp-btn.danger { color: #ff0044; border-color: #ff0044; }',
+                    '.hp-btn.danger:hover { background: #ff0044; color: #fff; }',
+                    '.holopod-stage { position: relative; width: 100%; height: 220px; background: #050508; display: flex; align-items: center; justify-content: center; overflow: hidden; }',
+                    '.holopod-remote-vid { width: 100%; height: 100%; object-fit: cover; display: block; }',
+                    '.holopod-local-vid { position: absolute; bottom: 8px; right: 8px; width: 92px; height: 70px; object-fit: cover; border: 2px solid var(--core, #bc13fe); border-radius: 6px; background: #000; z-index: 3; transform: scaleX(-1); }',
+                    '.holopod-status { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.82); border: 1px solid var(--core, #bc13fe); color: var(--core, #bc13fe); padding: 3px 8px; border-radius: 4px; font-size: 0.68em; font-weight: bold; z-index: 4; }',
+                    '.holo-screen-theater { position: fixed !important; top: 7%; left: 5%; width: 90%; height: 84%; background: rgba(6, 6, 12, 0.98); border: 2px solid var(--core, #bc13fe); border-radius: 12px; box-shadow: 0 0 60px rgba(188, 19, 254, 0.75); z-index: 999998 !important; display: none; flex-direction: column; overflow: hidden; }',
+                    '.holo-screen-theater.open { display: flex !important; }',
+                    '.holo-screen-theater.minimized { top: auto !important; bottom: 18px !important; right: 18px !important; left: auto !important; width: 310px !important; height: 210px !important; }',
+                    '.hst-stage { width: 100%; flex-grow: 1; background: #040407; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; min-height: 0; }',
+                    '.hst-video, .hst-img { width: 100%; height: 100%; object-fit: contain; display: block; }',
+                    '.vid-filter-nv { filter: sepia(100%) hue-rotate(130deg) saturate(300%) contrast(130%); }',
+                    '.vid-filter-thermal { filter: invert(100%) hue-rotate(180deg) saturate(350%) contrast(150%); }',
+                    '.vid-filter-matrix { filter: grayscale(100%) sepia(100%) hue-rotate(75deg) saturate(400%) contrast(140%); }'
+                ].join('\n');
+                document.head.appendChild(st);
+            }
+
+            // 2. Auto-Build HTML Modals if missing so they are guaranteed to exist
+            let oldDock = document.getElementById('holoPodDock');
+            if (oldDock) oldDock.remove();
+            let oldTheater = document.getElementById('holoScreenTheater');
+            if (oldTheater) oldTheater.remove();
+
+            const dockWrapper = document.createElement('div');
+            dockWrapper.innerHTML = [
+                '<div id="holoPodDock" class="holopod-dock">',
+                '  <div id="holoPodHdr" class="holopod-hdr">',
+                '    <span>&#127909; HOLO-POD FACECAM &amp; OPTICS</span>',
+                '    <button id="holoPodClose" class="hp-btn danger" style="padding:2px 7px;">&#10006;</button>',
+                '  </div>',
+                '  <div class="holopod-controls">',
+                '    <button id="hpCamBtn" class="hp-btn">&#128247; START CAM</button>',
+                '    <button id="hpFlipBtn" class="hp-btn">&#128260; FLIP FRONT/BACK</button>',
+                '    <button id="hpFilterBtn" class="hp-btn">&#127912; OPTICS</button>',
+                '  </div>',
+                '  <div class="holopod-stage">',
+                '    <div id="hpStatusBadge" class="holopod-status">STANDBY: TAP START CAM</div>',
+                '    <video id="hpRemoteVid" class="holopod-remote-vid" autoplay playsinline></video>',
+                '    <video id="hpLocalVid" class="holopod-local-vid" autoplay muted playsinline></video>',
+                '  </div>',
+                '</div>',
+                '<div id="holoScreenTheater" class="holo-screen-theater">',
+                '  <div class="holopod-hdr">',
+                '    <span id="hstTitle">&#128242; LIVE SCREEN SHARE TELEPORTER</span>',
+                '    <div style="display:flex; gap:6px;">',
+                '      <button id="hstMinBtn" class="hp-btn">&#128204; MINI / EXPAND</button>',
+                '      <button id="hstCloseBtn" class="hp-btn danger">&#10006; STOP / CLOSE</button>',
+                '    </div>',
+                '  </div>',
+                '  <div class="hst-stage">',
+                '    <video id="hstVideo" class="hst-video" autoplay playsinline style="display:none;"></video>',
+                '    <img id="hstFrameImg" class="hst-img" style="display:none;" alt="Live Screen Stream" />',
+                '  </div>',
+                '</div>'
+            ].join('\n');
+            while (dockWrapper.firstChild) {
+                document.body.appendChild(dockWrapper.firstChild);
+            }
+
+            const holoPodDock = document.getElementById('holoPodDock');
+            const holoPodHdr = document.getElementById('holoPodHdr');
+            const holoPodClose = document.getElementById('holoPodClose');
+            const hpCamBtn = document.getElementById('hpCamBtn');
+            const hpFlipBtn = document.getElementById('hpFlipBtn');
+            const hpFilterBtn = document.getElementById('hpFilterBtn');
+            const hpStatusBadge = document.getElementById('hpStatusBadge');
+            const hpRemoteVid = document.getElementById('hpRemoteVid');
+            const hpLocalVid = document.getElementById('hpLocalVid');
+
+            const holoScreenTheater = document.getElementById('holoScreenTheater');
+            const hstVideo = document.getElementById('hstVideo');
+            const hstFrameImg = document.getElementById('hstFrameImg');
+            const hstTitle = document.getElementById('hstTitle');
+            const hstMinBtn = document.getElementById('hstMinBtn');
+            const hstCloseBtn = document.getElementById('hstCloseBtn');
+
+            // 3. Dock Clean Buttons into the Ghost-Link Bar
+            function setupMenuButtons() {
+                const oldPod = document.getElementById('holoPodLauncher');
+                if (oldPod) oldPod.remove();
+                const oldShare = document.getElementById('uniShareScreenBtn');
+                if (oldShare) oldShare.remove();
+
+                const podBtn = document.createElement('button');
+                podBtn.id = 'holoPodLauncher';
+                podBtn.innerHTML = '&#127909; HOLO-POD';
+
+                const shareBtn = document.createElement('button');
+                shareBtn.id = 'uniShareScreenBtn';
+                shareBtn.innerHTML = '&#128242; SHARE SCREEN';
+
+                const allBtns = Array.from(document.querySelectorAll('button, a'));
+                const voiceBtn = allBtns.find(function(b) {
+                    const t = (b.innerText || '').toUpperCase();
+                    return t.indexOf('VOICE CALL') > -1 || t.indexOf('BEAM PDF') > -1;
+                });
+
+                if (voiceBtn && voiceBtn.parentElement) {
+                    podBtn.className = voiceBtn.className || 'hp-btn';
+                    shareBtn.className = voiceBtn.className || 'hp-btn';
+                    voiceBtn.parentElement.appendChild(podBtn);
+                    voiceBtn.parentElement.appendChild(shareBtn);
+                } else {
+                    podBtn.className = 'hp-btn';
+                    shareBtn.className = 'hp-btn';
+                    document.body.appendChild(podBtn);
+                    document.body.appendChild(shareBtn);
+                }
+                return { podBtn: podBtn, shareBtn: shareBtn };
+            }
+
+            const uiBtns = setupMenuButtons();
+
+            // 4. Hook into PeerJS & Ghost-Link Data Channel
+            window.cartelPeer = null;
+            window.cartelConn = null;
+            window.cartelRemoteId = null;
+
+            function hookConnEvents(c) {
+                if (!c || c._masterHooked) return;
+                c._masterHooked = true;
+                window.cartelConn = c;
+                window.cartelRemoteId = c.peer;
+                c.on('data', function(data) {
+                    if (!data) return;
+                    if (data.type === 'HOLO_SCREEN_FRAME' && data.frame) {
+                        if (!holoScreenTheater.classList.contains('open')) {
+                            if (typeof playSynth === 'function') playSynth(600, 1400, 0.1, 'triangle');
+                            holoScreenTheater.classList.add('open');
+                            holoScreenTheater.classList.remove('minimized');
+                        }
+                        hstTitle.innerText = '\uD83D\uDCF2 PARTNER LIVE SCREEN STREAM (CONNECTED)';
+                        hstVideo.style.display = 'none';
+                        hstFrameImg.style.display = 'block';
+                        hstFrameImg.src = data.frame;
+                    } else if (data.type === 'HOLO_SIGNAL') {
+                        if (data.mode === 'stop_screen') {
+                            holoScreenTheater.classList.remove('open');
+                            hstFrameImg.src = '';
+                            hstVideo.srcObject = null;
+                        } else if (data.mode === 'stop_cam') {
+                            hpRemoteVid.srcObject = null;
+                            hpStatusBadge.innerText = 'PARTNER CAM STOPPED';
+                        }
+                    }
+                });
+            }
+
+            function hookPeerEvents(p) {
+                if (!p || p._masterPeerHooked) return;
+                p._masterPeerHooked = true;
+                window.cartelPeer = p;
+                p.on('connection', function(c) {
+                    hookConnEvents(c);
+                });
+                p.on('call', function(call) {
+                    const meta = (call && call.metadata && call.metadata.mode) ? call.metadata.mode : '';
+                    if (meta === 'holocam') {
+                        holoPodDock.classList.add('open');
+                        call.answer(localCamStream || undefined);
+                        call.on('stream', function(remStream) {
+                            hpRemoteVid.muted = false;
+                            hpRemoteVid.srcObject = remStream;
+                            hpStatusBadge.innerText = '\uD83D\uDFE2 PARTNER CAM LIVE';
+                        });
+                    } else if (meta === 'screen') {
+                        holoScreenTheater.classList.add('open');
+                        holoScreenTheater.classList.remove('minimized');
+                        call.answer();
+                        call.on('stream', function(remStream) {
+                            hstFrameImg.style.display = 'none';
+                            hstVideo.style.display = 'block';
+                            hstVideo.muted = false;
+                            hstVideo.srcObject = remStream;
+                            hstTitle.innerText = '\uD83D\uDDA5 PARTNER 60FPS DESKTOP STREAM';
+                        });
+                    }
+                });
+            }
+
+            if (window.Peer && window.Peer.prototype && !window.Peer.prototype._masterPatched) {
+                window.Peer.prototype._masterPatched = true;
+                const origConn = window.Peer.prototype.connect;
+                window.Peer.prototype.connect = function() {
+                    hookPeerEvents(this);
+                    const c = origConn.apply(this, arguments);
+                    if (c && c.on) {
+                        c.on('open', function() { hookConnEvents(c); });
+                        hookConnEvents(c);
+                    }
+                    return c;
+                };
+                const origOn = window.Peer.prototype.on;
+                window.Peer.prototype.on = function(ev, cb) {
+                    hookPeerEvents(this);
+                    if (ev === 'connection') {
+                        const wrap = function(c) {
+                            hookConnEvents(c);
+                            return cb.apply(this, arguments);
+                        };
+                        return origOn.call(this, ev, wrap);
+                    }
+                    return origOn.apply(this, arguments);
+                };
+            }
+
+            function findExistingConnection() {
+                try { if (typeof peer !== 'undefined' && peer) hookPeerEvents(peer); } catch (e) {}
+                try { if (typeof ghostPeer !== 'undefined' && ghostPeer) hookPeerEvents(ghostPeer); } catch (e) {}
+                try { if (typeof myPeer !== 'undefined' && myPeer) hookPeerEvents(myPeer); } catch (e) {}
+                try { if (typeof conn !== 'undefined' && conn) hookConnEvents(conn); } catch (e) {}
+                try { if (typeof ghostConn !== 'undefined' && ghostConn) hookConnEvents(ghostConn); } catch (e) {}
+                if (window.cartelPeer && window.cartelPeer.connections) {
+                    const keys = Object.keys(window.cartelPeer.connections);
+                    keys.forEach(function(k) {
+                        const list = window.cartelPeer.connections[k];
+                        if (list && list.length) {
+                            list.forEach(function(item) {
+                                if (item.type === 'data') hookConnEvents(item);
+                            });
+                        }
+                    });
+                }
+            }
+            setInterval(findExistingConnection, 1200);
+
+            // 5. Draggable Holo-Pod Window
+            let drag = false, dx = 0, dy = 0, dl = 0, dt = 0;
+            holoPodHdr.addEventListener('mousedown', function(e) {
+                if (e.target.tagName === 'BUTTON') return;
+                drag = true;
+                const r = holoPodDock.getBoundingClientRect();
+                dl = r.left; dt = r.top; dx = e.clientX; dy = e.clientY;
+                holoPodDock.style.right = 'auto';
+                holoPodDock.style.left = dl + 'px';
+                holoPodDock.style.top = dt + 'px';
+            });
+            window.addEventListener('mousemove', function(e) {
+                if (!drag) return;
+                holoPodDock.style.left = Math.max(5, dl + (e.clientX - dx)) + 'px';
+                holoPodDock.style.top = Math.max(5, dt + (e.clientY - dy)) + 'px';
+            });
+            window.addEventListener('mouseup', function() { drag = false; });
+
+            // 6. HOLO-CAM Facecam Logic
+            let localCamStream = null;
+            let camFacing = 'user';
+            let filterIdx = 0;
+            const filters = ['', 'vid-filter-nv', 'vid-filter-thermal', 'vid-filter-matrix'];
+
+            uiBtns.podBtn.addEventListener('click', function() {
+                if (typeof playSynth === 'function') playSynth(550, 1350, 0.1, 'triangle');
+                holoPodDock.classList.toggle('open');
+                uiBtns.podBtn.classList.toggle('active', holoPodDock.classList.contains('open'));
+            });
+            holoPodClose.addEventListener('click', function() {
+                holoPodDock.classList.remove('open');
+                uiBtns.podBtn.classList.remove('active');
+            });
+
+            async function toggleHoloCam() {
+                findExistingConnection();
+                if (!localCamStream) {
+                    try {
+                        localCamStream = await navigator.mediaDevices.getUserMedia({
+                            video: { facingMode: camFacing, width: { ideal: 640 }, height: { ideal: 480 } },
+                            audio: true
+                        });
+                        hpLocalVid.srcObject = localCamStream;
+                        if (!hpRemoteVid.srcObject) {
+                            hpRemoteVid.muted = true;
+                            hpRemoteVid.srcObject = localCamStream;
+                        }
+                        hpCamBtn.classList.add('active');
+                        hpCamBtn.innerHTML = '&#128994; CAM ON (STOP)';
+                        hpStatusBadge.innerText = 'HOLO-CAM LIVE';
+                        if (window.cartelPeer && window.cartelRemoteId) {
+                            const call = window.cartelPeer.call(window.cartelRemoteId, localCamStream, { metadata: { mode: 'holocam' } });
+                            if (call) {
+                                call.on('stream', function(rs) {
+                                    hpRemoteVid.muted = false;
+                                    hpRemoteVid.srcObject = rs;
+                                    hpStatusBadge.innerText = '2-WAY HOLO-CAM LOCKED';
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        hpStatusBadge.innerText = 'ALLOW CAMERA PERMISSION';
+                    }
+                } else {
+                    localCamStream.getTracks().forEach(function(t) { t.stop(); });
+                    localCamStream = null;
+                    hpLocalVid.srcObject = null;
+                    hpCamBtn.classList.remove('active');
+                    hpCamBtn.innerHTML = '&#128247; START CAM';
+                    hpStatusBadge.innerText = 'CAM STANDBY';
+                    if (window.cartelConn && window.cartelConn.open) {
+                        window.cartelConn.send({ type: 'HOLO_SIGNAL', mode: 'stop_cam' });
+                    }
+                }
+            }
+            hpCamBtn.addEventListener('click', toggleHoloCam);
+            hpFlipBtn.addEventListener('click', function() {
+                camFacing = (camFacing === 'user') ? 'environment' : 'user';
+                hpLocalVid.style.transform = (camFacing === 'user') ? 'scaleX(-1)' : 'none';
+                if (localCamStream) {
+                    localCamStream.getTracks().forEach(function(t) { t.stop(); });
+                    localCamStream = null;
+                    toggleHoloCam();
+                }
+            });
+            hpFilterBtn.addEventListener('click', function() {
+                filterIdx = (filterIdx + 1) % filters.length;
+                const f = filters[filterIdx];
+                [hpRemoteVid, hpLocalVid, hstVideo, hstFrameImg].forEach(function(el) {
+                    filters.forEach(function(c) { if (c) el.classList.remove(c); });
+                    if (f) el.classList.add(f);
+                });
+            });
+
+            // 7. UNIVERSAL SCREEN SHARE (PC 60FPS + MOBILE LIVE WAR-ROOM & VAULT DATA STREAMER)
+            let isSharingScreen = false;
+            let frameTimer = null;
+            let desktopStream = null;
+            let touchX = -100, touchY = -100, touchDown = false;
 
             window.addEventListener('touchstart', function(e) {
                 if (e.touches && e.touches[0]) {
-                    uniTouchX = e.touches[0].clientX;
-                    uniTouchY = e.touches[0].clientY;
-                    uniTouchActive = true;
+                    touchX = e.touches[0].clientX;
+                    touchY = e.touches[0].clientY;
+                    touchDown = true;
                 }
             }, { passive: true });
             window.addEventListener('touchmove', function(e) {
                 if (e.touches && e.touches[0]) {
-                    uniTouchX = e.touches[0].clientX;
-                    uniTouchY = e.touches[0].clientY;
-                    uniTouchActive = true;
+                    touchX = e.touches[0].clientX;
+                    touchY = e.touches[0].clientY;
+                    touchDown = true;
                 }
             }, { passive: true });
             window.addEventListener('touchend', function() {
-                setTimeout(function() { uniTouchActive = false; }, 400);
+                setTimeout(function() { touchDown = false; }, 350);
             }, { passive: true });
             window.addEventListener('mousemove', function(e) {
-                uniTouchX = e.clientX;
-                uniTouchY = e.clientY;
+                touchX = e.clientX;
+                touchY = e.clientY;
             });
 
-            // 1. Move HOLO-POD and SHARE SCREEN directly into the 3-Lines Menu
-            function dockIntoThreeLinesMenu() {
-                let podBtn = document.getElementById('holoPodLauncher');
-                let shareBtn = document.getElementById('uniShareScreenBtn');
+            const shareCanvas = document.createElement('canvas');
+            const shareCtx = shareCanvas.getContext('2d');
 
-                if (!podBtn) {
-                    podBtn = document.createElement('button');
-                    podBtn.id = 'holoPodLauncher';
-                    podBtn.innerHTML = '&#127909; HOLO-POD';
-                    document.body.appendChild(podBtn);
-                }
-                if (!shareBtn) {
-                    shareBtn = document.createElement('button');
-                    shareBtn.id = 'uniShareScreenBtn';
-                    shareBtn.innerHTML = '&#128242; SHARE SCREEN';
-                    document.body.appendChild(shareBtn);
-                }
+            function renderMobileScreenToCanvas() {
+                const isPort = window.innerHeight > window.innerWidth;
+                shareCanvas.width = isPort ? 480 : 800;
+                shareCanvas.height = isPort ? 760 : 450;
+                const cw = shareCanvas.width, ch = shareCanvas.height;
+                const sx = cw / Math.max(1, window.innerWidth);
+                const sy = ch / Math.max(1, window.innerHeight);
+                const core = getComputedStyle(document.documentElement).getPropertyValue('--core').trim() || '#bc13fe';
 
-                // Remove floating corner style so HOLO-POD sits inside the 3-lines menu
-                podBtn.classList.remove('holopod-launcher');
+                shareCtx.fillStyle = '#07050c';
+                shareCtx.fillRect(0, 0, cw, ch);
 
-                // Find the 3-lines menu container (where BEAM PDF / RADAR PING live)
-                const allBtns = Array.from(document.querySelectorAll('button, a'));
-                const refBtn = allBtns.find(function(b) {
-                    const txt = (b.innerText || '').toUpperCase();
-                    return txt.indexOf('BEAM PDF') > -1 || txt.indexOf('RADAR PING') > -1 || txt.indexOf('VOICE') > -1;
+                shareCtx.strokeStyle = core;
+                shareCtx.lineWidth = 3;
+                shareCtx.strokeRect(4, 4, cw - 8, ch - 8);
+
+                shareCtx.fillStyle = core;
+                shareCtx.font = 'bold 15px Courier New';
+                shareCtx.fillText('LIVE MOBILE SCREEN // THE BINARY CARTEL', 16, 28);
+
+                // Find biggest visible canvas (Ghost-Link War Room Blackboard or Cyber-Lab Canvas)
+                const allCanvases = Array.from(document.querySelectorAll('canvas')).filter(function(c) {
+                    if (c.id === 'matrixCanvas') return false;
+                    const r = c.getBoundingClientRect();
+                    return r.width > 120 && r.height > 100;
                 });
 
-                let targetMenu = null;
-                if (refBtn && refBtn.parentElement) {
-                    targetMenu = refBtn.parentElement;
-                    if (refBtn.className) {
-                        podBtn.className = refBtn.className;
-                        shareBtn.className = refBtn.className;
-                    }
+                if (allCanvases.length > 0) {
+                    const mainC = allCanvases[allCanvases.length - 1];
+                    shareCtx.fillStyle = '#000';
+                    shareCtx.fillRect(16, 44, cw - 32, ch - 135);
+                    shareCtx.strokeStyle = core;
+                    shareCtx.lineWidth = 1.5;
+                    shareCtx.strokeRect(16, 44, cw - 32, ch - 135);
+                    try {
+                        shareCtx.drawImage(mainC, 18, 46, cw - 36, ch - 139);
+                    } catch (e) {}
                 } else {
-                    targetMenu = document.querySelector('#menuDrawer, .menu-drawer, #navMenu, .nav-menu, #sideMenu, .side-menu, #ghostPanel, .ghost-panel');
-                    podBtn.className = 'hp-btn';
-                    shareBtn.className = 'hp-btn';
+                    // Draw visible Vault Cards
+                    const cards = document.querySelectorAll('#vaultGrid a, .card, .vault-card');
+                    cards.forEach(function(card) {
+                        const r = card.getBoundingClientRect();
+                        if (r.bottom < 0 || r.top > window.innerHeight) return;
+                        const rx = r.left * sx, ry = r.top * sy, rw = r.width * sx, rh = r.height * sy;
+                        shareCtx.fillStyle = '#14101e';
+                        shareCtx.fillRect(rx, ry, rw, rh);
+                        shareCtx.strokeStyle = core;
+                        shareCtx.lineWidth = 1;
+                        shareCtx.strokeRect(rx, ry, rw, rh);
+                        shareCtx.fillStyle = '#fff';
+                        shareCtx.font = 'bold 10px Courier New';
+                        const txt = (card.innerText || '').replace(/\s+/g, ' ').trim().substring(0, 24);
+                        shareCtx.fillText(txt, rx + 6, ry + (rh / 2) + 3);
+                    });
                 }
 
-                if (targetMenu) {
-                    targetMenu.appendChild(podBtn);
-                    targetMenu.appendChild(shareBtn);
+                // Draw status footer
+                shareCtx.fillStyle = '#120d1a';
+                shareCtx.fillRect(16, ch - 78, cw - 32, 62);
+                shareCtx.strokeStyle = core;
+                shareCtx.strokeRect(16, ch - 78, cw - 32, 62);
+                shareCtx.fillStyle = '#00ffcc';
+                shareCtx.font = 'bold 12px Courier New';
+                shareCtx.fillText('TRANSMITTING LIVE MOBILE VIEWPORT + TOUCH LASER', 26, ch - 52);
+                shareCtx.fillStyle = '#ccc';
+                shareCtx.font = '11px Courier New';
+                shareCtx.fillText('ScrollY: ' + Math.round(window.scrollY) + 'px | Touch: (' + Math.round(touchX) + ', ' + Math.round(touchY) + ')', 26, ch - 30);
+
+                // Draw Live Finger Touch Laser Pointer
+                if (touchX >= 0 && touchY >= 0) {
+                    const lx = touchX * sx, ly = touchY * sy;
+                    shareCtx.beginPath();
+                    shareCtx.arc(lx, ly, touchDown ? 15 : 9, 0, Math.PI * 2);
+                    shareCtx.fillStyle = touchDown ? 'rgba(255, 0, 85, 0.7)' : 'rgba(0, 255, 204, 0.6)';
+                    shareCtx.fill();
+                    shareCtx.lineWidth = 2.5;
+                    shareCtx.strokeStyle = '#fff';
+                    shareCtx.stroke();
                 }
 
-                return shareBtn;
+                return shareCanvas.toDataURL('image/jpeg', 0.55);
             }
 
-            // 2. Live Mobile & PC Screen Mirror Stream (Never uses camera!)
-            function createLiveViewportStream() {
-                const mirrorCanvas = document.createElement('canvas');
-                const isPortrait = window.innerHeight > window.innerWidth;
-                mirrorCanvas.width = isPortrait ? 540 : 960;
-                mirrorCanvas.height = isPortrait ? 960 : 540;
-                const ctx = mirrorCanvas.getContext('2d');
+            async function startShareScreen() {
+                findExistingConnection();
+                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-                function renderViewportFrame() {
-                    if (!uniScreenStream) return;
-                    const cw = mirrorCanvas.width, ch = mirrorCanvas.height;
-                    const scaleX = cw / Math.max(1, window.innerWidth);
-                    const scaleY = ch / Math.max(1, window.innerHeight);
-                    const coreHex = getComputedStyle(document.documentElement).getPropertyValue('--core').trim() || '#00ffcc';
-
-                    ctx.fillStyle = '#050508';
-                    ctx.fillRect(0, 0, cw, ch);
-                    const matCanvas = document.getElementById('matrixCanvas');
-                    if (matCanvas) {
-                        ctx.globalAlpha = 0.25;
-                        ctx.drawImage(matCanvas, 0, 0, cw, ch);
-                        ctx.globalAlpha = 1.0;
-                    }
-
-                    const clModal = document.getElementById('cyberLabModal');
-                    if (clModal && clModal.classList.contains('open')) {
-                        ctx.fillStyle = '#0a0a0f';
-                        ctx.fillRect(16, 45, cw - 32, ch - 70);
-                        ctx.strokeStyle = coreHex;
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(16, 45, cw - 32, ch - 70);
-                        ctx.fillStyle = coreHex;
-                        ctx.font = 'bold 16px Courier New';
-                        ctx.fillText('CYBER-LAB WORKBENCH (LIVE SCREEN)', 30, 75);
-
-                        const activeCanvas = document.querySelector('.cl-body.active canvas');
-                        if (activeCanvas) {
-                            ctx.drawImage(activeCanvas, 30, 95, cw - 60, Math.min(ch - 220, 380));
-                        }
-                    } else if (typeof holoModal !== 'undefined' && holoModal && holoModal.classList.contains('active')) {
-                        ctx.fillStyle = '#0a0a10';
-                        ctx.fillRect(15, 45, cw - 30, ch - 70);
-                        ctx.strokeStyle = coreHex;
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(15, 45, cw - 30, ch - 70);
-                        ctx.fillStyle = coreHex;
-                        ctx.font = 'bold 16px Courier New';
-                        const tTxt = (typeof holoTitle !== 'undefined' && holoTitle) ? holoTitle.innerText : 'HOLO-COCKPIT PDF VIEWER';
-                        ctx.fillText('HOLO-COCKPIT ACTIVE: ' + tTxt, 30, 80);
-                    } else {
-                        ctx.fillStyle = coreHex;
-                        ctx.font = 'bold 18px Courier New';
-                        ctx.textAlign = 'center';
-                        ctx.fillText('THE BINARY CARTEL // LIVE SCREEN', cw / 2, 34);
-                        ctx.textAlign = 'left';
-
-                        const cards = document.querySelectorAll('#vaultGrid a, .card, .vault-card');
-                        cards.forEach(function(card) {
-                            const r = card.getBoundingClientRect();
-                            if (r.bottom < 0 || r.top > window.innerHeight) return;
-                            const rx = r.left * scaleX, ry = r.top * scaleY, rw = r.width * scaleX, rh = r.height * scaleY;
-                            ctx.fillStyle = 'rgba(18, 18, 26, 0.92)';
-                            ctx.fillRect(rx, ry, rw, rh);
-                            ctx.strokeStyle = coreHex;
-                            ctx.lineWidth = 1.5;
-                            ctx.strokeRect(rx, ry, rw, rh);
-                            ctx.fillStyle = '#fff';
-                            ctx.font = 'bold 11px Courier New';
-                            const label = (card.innerText || '').replace(/\s+/g, ' ').trim().substring(0, 26);
-                            ctx.fillText(label, rx + 8, ry + (rh / 2) + 4);
+                // On Desktop PC: try native 60FPS getDisplayMedia first
+                if (!isMobile && navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+                    try {
+                        desktopStream = await navigator.mediaDevices.getDisplayMedia({
+                            video: { frameRate: { ideal: 60, max: 60 } },
+                            audio: true
                         });
-                    }
+                        isSharingScreen = true;
+                        uiBtns.shareBtn.classList.add('active');
+                        uiBtns.shareBtn.innerHTML = '&#128994; STOP SHARING';
 
-                    if (uniTouchX >= 0 && uniTouchY >= 0) {
-                        const tx = uniTouchX * scaleX, ty = uniTouchY * scaleY;
-                        ctx.beginPath();
-                        ctx.arc(tx, ty, uniTouchActive ? 14 : 8, 0, Math.PI * 2);
-                        ctx.fillStyle = uniTouchActive ? 'rgba(255, 0, 85, 0.55)' : 'rgba(0, 255, 204, 0.45)';
-                        ctx.fill();
-                        ctx.lineWidth = 2;
-                        ctx.strokeStyle = '#fff';
-                        ctx.stroke();
-                    }
-
-                    uniMirrorAnimId = requestAnimationFrame(renderViewportFrame);
-                }
-
-                uniScreenStream = mirrorCanvas.captureStream(30);
-                renderViewportFrame();
-                return uniScreenStream;
-            }
-
-            async function startUniversalScreenShare(btnEl) {
-                try {
-                    const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-                    if (!isMobileDevice && navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-                        try {
-                            uniScreenStream = await navigator.mediaDevices.getDisplayMedia({
-                                video: { frameRate: { ideal: 60, max: 60 } },
-                                audio: true
-                            });
-                        } catch (err) {
-                            uniScreenStream = createLiveViewportStream();
-                        }
-                    } else {
-                        uniScreenStream = createLiveViewportStream();
-                    }
-
-                    btnEl.classList.add('active');
-                    btnEl.innerHTML = '&#128994; SHARING SCREEN (STOP)';
-
-                    if (typeof hstVideo !== 'undefined' && hstVideo && typeof holoScreenTheater !== 'undefined' && holoScreenTheater) {
-                        hstVideo.srcObject = uniScreenStream;
-                        hstVideo.muted = true;
-                        if (typeof hstTitle !== 'undefined' && hstTitle) hstTitle.innerText = '\uD83D\uDCF2 LIVE UNIVERSAL SCREEN SHARE (ACTIVE)';
                         holoScreenTheater.classList.add('open');
                         holoScreenTheater.classList.add('minimized');
-                    }
+                        hstFrameImg.style.display = 'none';
+                        hstVideo.style.display = 'block';
+                        hstVideo.muted = true;
+                        hstVideo.srcObject = desktopStream;
+                        hstTitle.innerText = '\uD83D\uDDA5 CASTING PC SCREEN (LIVE)';
 
-                    const vTrack = uniScreenStream.getVideoTracks()[0];
-                    if (vTrack) {
-                        vTrack.onended = function() { stopUniversalScreenShare(btnEl); };
-                    }
+                        const vt = desktopStream.getVideoTracks()[0];
+                        if (vt) vt.onended = stopShareScreen;
 
-                    if (typeof resolveActiveGhostPeer === 'function') resolveActiveGhostPeer();
-                    if (window.cartelLocalPeer && window.cartelRemotePeerId) {
-                        if (typeof sendHoloSignal === 'function') sendHoloSignal('screen');
-                        uniScreenCall = window.cartelLocalPeer.call(window.cartelRemotePeerId, uniScreenStream, { metadata: { mode: 'screen' } });
+                        if (window.cartelPeer && window.cartelRemoteId) {
+                            window.cartelPeer.call(window.cartelRemoteId, desktopStream, { metadata: { mode: 'screen' } });
+                        }
+
+                        // Also beam frames over DataChannel so Mobile Phones always receive the PC screen!
+                        frameTimer = setInterval(function() {
+                            if (!isSharingScreen || !hstVideo.videoWidth) return;
+                            shareCanvas.width = 720;
+                            shareCanvas.height = 405;
+                            shareCtx.drawImage(hstVideo, 0, 0, 720, 405);
+                            const jpg = shareCanvas.toDataURL('image/jpeg', 0.5);
+                            if (window.cartelConn && window.cartelConn.open) {
+                                window.cartelConn.send({ type: 'HOLO_SCREEN_FRAME', frame: jpg });
+                            }
+                        }, 110);
+                        return;
+                    } catch (err) {}
+                }
+
+                // On Mobile Phone (or PC fallback): Instant DataChannel Live Screen Mirror
+                isSharingScreen = true;
+                uiBtns.shareBtn.classList.add('active');
+                uiBtns.shareBtn.innerHTML = '&#128994; STOP SHARING';
+
+                holoScreenTheater.classList.add('open');
+                holoScreenTheater.classList.add('minimized');
+                hstVideo.style.display = 'none';
+                hstFrameImg.style.display = 'block';
+                hstTitle.innerText = '\uD83D\uDCF2 BROADCASTING MOBILE SCREEN (LIVE)';
+
+                frameTimer = setInterval(function() {
+                    if (!isSharingScreen) return;
+                    findExistingConnection();
+                    const jpg = renderMobileScreenToCanvas();
+                    hstFrameImg.src = jpg;
+                    if (window.cartelConn && window.cartelConn.open) {
+                        window.cartelConn.send({ type: 'HOLO_SCREEN_FRAME', frame: jpg });
                     }
-                } catch (e) {}
+                }, 100);
             }
 
-            function stopUniversalScreenShare(btnEl) {
-                if (uniMirrorAnimId) {
-                    cancelAnimationFrame(uniMirrorAnimId);
-                    uniMirrorAnimId = null;
+            function stopShareScreen() {
+                isSharingScreen = false;
+                if (frameTimer) { clearInterval(frameTimer); frameTimer = null; }
+                if (desktopStream) {
+                    desktopStream.getTracks().forEach(function(t) { t.stop(); });
+                    desktopStream = null;
                 }
-                if (uniScreenStream) {
-                    uniScreenStream.getTracks().forEach(function(t) { t.stop(); });
-                    uniScreenStream = null;
+                hstVideo.srcObject = null;
+                hstFrameImg.src = '';
+                holoScreenTheater.classList.remove('open');
+                uiBtns.shareBtn.classList.remove('active');
+                uiBtns.shareBtn.innerHTML = '&#128242; SHARE SCREEN';
+                if (window.cartelConn && window.cartelConn.open) {
+                    window.cartelConn.send({ type: 'HOLO_SIGNAL', mode: 'stop_screen' });
                 }
-                if (uniScreenCall) {
-                    try { uniScreenCall.close(); } catch (e) {}
-                    uniScreenCall = null;
-                }
-                if (btnEl) {
-                    btnEl.classList.remove('active');
-                    btnEl.innerHTML = '&#128242; SHARE SCREEN';
-                }
-                if (typeof holoScreenTheater !== 'undefined' && holoScreenTheater) {
-                    holoScreenTheater.classList.remove('open');
-                }
-                if (typeof sendHoloSignal === 'function') sendHoloSignal('stop_screen');
             }
 
-            const shareBtn = dockIntoThreeLinesMenu();
-            if (shareBtn) {
-                shareBtn.addEventListener('click', function() {
-                    if (typeof playSynth === 'function') playSynth(550, 1500, 0.12, 'triangle');
-                    if (!uniScreenStream) startUniversalScreenShare(shareBtn);
-                    else stopUniversalScreenShare(shareBtn);
-                });
-            }
+            uiBtns.shareBtn.addEventListener('click', function() {
+                if (typeof playSynth === 'function') playSynth(600, 1500, 0.12, 'triangle');
+                if (!isSharingScreen) startShareScreen();
+                else stopShareScreen();
+            });
+
+            hstMinBtn.addEventListener('click', function() {
+                holoScreenTheater.classList.toggle('minimized');
+            });
+            hstCloseBtn.addEventListener('click', function() {
+                if (isSharingScreen) stopShareScreen();
+                else holoScreenTheater.classList.remove('open');
+            });
         })();
     </script>
 </body>
