@@ -2786,6 +2786,250 @@
                 if (hpLocalScreenStream) stopScreenTeleport();
             });
         }
+// ============================================================================
+        // AUTO-DOCK HOLO-POD & SHARE SCREEN INTO 3-LINES MENU (1-PASTE ALL-IN-ONE)
+        // ============================================================================
+        (function() {
+            let uniScreenStream = null;
+            let uniScreenCall = null;
+            let uniMirrorAnimId = null;
+            let uniTouchX = -100, uniTouchY = -100, uniTouchActive = false;
+
+            window.addEventListener('touchstart', function(e) {
+                if (e.touches && e.touches[0]) {
+                    uniTouchX = e.touches[0].clientX;
+                    uniTouchY = e.touches[0].clientY;
+                    uniTouchActive = true;
+                }
+            }, { passive: true });
+            window.addEventListener('touchmove', function(e) {
+                if (e.touches && e.touches[0]) {
+                    uniTouchX = e.touches[0].clientX;
+                    uniTouchY = e.touches[0].clientY;
+                    uniTouchActive = true;
+                }
+            }, { passive: true });
+            window.addEventListener('touchend', function() {
+                setTimeout(function() { uniTouchActive = false; }, 400);
+            }, { passive: true });
+            window.addEventListener('mousemove', function(e) {
+                uniTouchX = e.clientX;
+                uniTouchY = e.clientY;
+            });
+
+            // 1. Move HOLO-POD and SHARE SCREEN directly into the 3-Lines Menu
+            function dockIntoThreeLinesMenu() {
+                let podBtn = document.getElementById('holoPodLauncher');
+                let shareBtn = document.getElementById('uniShareScreenBtn');
+
+                if (!podBtn) {
+                    podBtn = document.createElement('button');
+                    podBtn.id = 'holoPodLauncher';
+                    podBtn.innerHTML = '&#127909; HOLO-POD';
+                    document.body.appendChild(podBtn);
+                }
+                if (!shareBtn) {
+                    shareBtn = document.createElement('button');
+                    shareBtn.id = 'uniShareScreenBtn';
+                    shareBtn.innerHTML = '&#128242; SHARE SCREEN';
+                    document.body.appendChild(shareBtn);
+                }
+
+                // Remove floating corner style so HOLO-POD sits inside the 3-lines menu
+                podBtn.classList.remove('holopod-launcher');
+
+                // Find the 3-lines menu container (where BEAM PDF / RADAR PING live)
+                const allBtns = Array.from(document.querySelectorAll('button, a'));
+                const refBtn = allBtns.find(function(b) {
+                    const txt = (b.innerText || '').toUpperCase();
+                    return txt.indexOf('BEAM PDF') > -1 || txt.indexOf('RADAR PING') > -1 || txt.indexOf('VOICE') > -1;
+                });
+
+                let targetMenu = null;
+                if (refBtn && refBtn.parentElement) {
+                    targetMenu = refBtn.parentElement;
+                    if (refBtn.className) {
+                        podBtn.className = refBtn.className;
+                        shareBtn.className = refBtn.className;
+                    }
+                } else {
+                    targetMenu = document.querySelector('#menuDrawer, .menu-drawer, #navMenu, .nav-menu, #sideMenu, .side-menu, #ghostPanel, .ghost-panel');
+                    podBtn.className = 'hp-btn';
+                    shareBtn.className = 'hp-btn';
+                }
+
+                if (targetMenu) {
+                    targetMenu.appendChild(podBtn);
+                    targetMenu.appendChild(shareBtn);
+                }
+
+                return shareBtn;
+            }
+
+            // 2. Live Mobile & PC Screen Mirror Stream (Never uses camera!)
+            function createLiveViewportStream() {
+                const mirrorCanvas = document.createElement('canvas');
+                const isPortrait = window.innerHeight > window.innerWidth;
+                mirrorCanvas.width = isPortrait ? 540 : 960;
+                mirrorCanvas.height = isPortrait ? 960 : 540;
+                const ctx = mirrorCanvas.getContext('2d');
+
+                function renderViewportFrame() {
+                    if (!uniScreenStream) return;
+                    const cw = mirrorCanvas.width, ch = mirrorCanvas.height;
+                    const scaleX = cw / Math.max(1, window.innerWidth);
+                    const scaleY = ch / Math.max(1, window.innerHeight);
+                    const coreHex = getComputedStyle(document.documentElement).getPropertyValue('--core').trim() || '#00ffcc';
+
+                    ctx.fillStyle = '#050508';
+                    ctx.fillRect(0, 0, cw, ch);
+                    const matCanvas = document.getElementById('matrixCanvas');
+                    if (matCanvas) {
+                        ctx.globalAlpha = 0.25;
+                        ctx.drawImage(matCanvas, 0, 0, cw, ch);
+                        ctx.globalAlpha = 1.0;
+                    }
+
+                    const clModal = document.getElementById('cyberLabModal');
+                    if (clModal && clModal.classList.contains('open')) {
+                        ctx.fillStyle = '#0a0a0f';
+                        ctx.fillRect(16, 45, cw - 32, ch - 70);
+                        ctx.strokeStyle = coreHex;
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(16, 45, cw - 32, ch - 70);
+                        ctx.fillStyle = coreHex;
+                        ctx.font = 'bold 16px Courier New';
+                        ctx.fillText('CYBER-LAB WORKBENCH (LIVE SCREEN)', 30, 75);
+
+                        const activeCanvas = document.querySelector('.cl-body.active canvas');
+                        if (activeCanvas) {
+                            ctx.drawImage(activeCanvas, 30, 95, cw - 60, Math.min(ch - 220, 380));
+                        }
+                    } else if (typeof holoModal !== 'undefined' && holoModal && holoModal.classList.contains('active')) {
+                        ctx.fillStyle = '#0a0a10';
+                        ctx.fillRect(15, 45, cw - 30, ch - 70);
+                        ctx.strokeStyle = coreHex;
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(15, 45, cw - 30, ch - 70);
+                        ctx.fillStyle = coreHex;
+                        ctx.font = 'bold 16px Courier New';
+                        const tTxt = (typeof holoTitle !== 'undefined' && holoTitle) ? holoTitle.innerText : 'HOLO-COCKPIT PDF VIEWER';
+                        ctx.fillText('HOLO-COCKPIT ACTIVE: ' + tTxt, 30, 80);
+                    } else {
+                        ctx.fillStyle = coreHex;
+                        ctx.font = 'bold 18px Courier New';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('THE BINARY CARTEL // LIVE SCREEN', cw / 2, 34);
+                        ctx.textAlign = 'left';
+
+                        const cards = document.querySelectorAll('#vaultGrid a, .card, .vault-card');
+                        cards.forEach(function(card) {
+                            const r = card.getBoundingClientRect();
+                            if (r.bottom < 0 || r.top > window.innerHeight) return;
+                            const rx = r.left * scaleX, ry = r.top * scaleY, rw = r.width * scaleX, rh = r.height * scaleY;
+                            ctx.fillStyle = 'rgba(18, 18, 26, 0.92)';
+                            ctx.fillRect(rx, ry, rw, rh);
+                            ctx.strokeStyle = coreHex;
+                            ctx.lineWidth = 1.5;
+                            ctx.strokeRect(rx, ry, rw, rh);
+                            ctx.fillStyle = '#fff';
+                            ctx.font = 'bold 11px Courier New';
+                            const label = (card.innerText || '').replace(/\s+/g, ' ').trim().substring(0, 26);
+                            ctx.fillText(label, rx + 8, ry + (rh / 2) + 4);
+                        });
+                    }
+
+                    if (uniTouchX >= 0 && uniTouchY >= 0) {
+                        const tx = uniTouchX * scaleX, ty = uniTouchY * scaleY;
+                        ctx.beginPath();
+                        ctx.arc(tx, ty, uniTouchActive ? 14 : 8, 0, Math.PI * 2);
+                        ctx.fillStyle = uniTouchActive ? 'rgba(255, 0, 85, 0.55)' : 'rgba(0, 255, 204, 0.45)';
+                        ctx.fill();
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = '#fff';
+                        ctx.stroke();
+                    }
+
+                    uniMirrorAnimId = requestAnimationFrame(renderViewportFrame);
+                }
+
+                uniScreenStream = mirrorCanvas.captureStream(30);
+                renderViewportFrame();
+                return uniScreenStream;
+            }
+
+            async function startUniversalScreenShare(btnEl) {
+                try {
+                    const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+                    if (!isMobileDevice && navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+                        try {
+                            uniScreenStream = await navigator.mediaDevices.getDisplayMedia({
+                                video: { frameRate: { ideal: 60, max: 60 } },
+                                audio: true
+                            });
+                        } catch (err) {
+                            uniScreenStream = createLiveViewportStream();
+                        }
+                    } else {
+                        uniScreenStream = createLiveViewportStream();
+                    }
+
+                    btnEl.classList.add('active');
+                    btnEl.innerHTML = '&#128994; SHARING SCREEN (STOP)';
+
+                    if (typeof hstVideo !== 'undefined' && hstVideo && typeof holoScreenTheater !== 'undefined' && holoScreenTheater) {
+                        hstVideo.srcObject = uniScreenStream;
+                        hstVideo.muted = true;
+                        if (typeof hstTitle !== 'undefined' && hstTitle) hstTitle.innerText = '\uD83D\uDCF2 LIVE UNIVERSAL SCREEN SHARE (ACTIVE)';
+                        holoScreenTheater.classList.add('open');
+                        holoScreenTheater.classList.add('minimized');
+                    }
+
+                    const vTrack = uniScreenStream.getVideoTracks()[0];
+                    if (vTrack) {
+                        vTrack.onended = function() { stopUniversalScreenShare(btnEl); };
+                    }
+
+                    if (typeof resolveActiveGhostPeer === 'function') resolveActiveGhostPeer();
+                    if (window.cartelLocalPeer && window.cartelRemotePeerId) {
+                        if (typeof sendHoloSignal === 'function') sendHoloSignal('screen');
+                        uniScreenCall = window.cartelLocalPeer.call(window.cartelRemotePeerId, uniScreenStream, { metadata: { mode: 'screen' } });
+                    }
+                } catch (e) {}
+            }
+
+            function stopUniversalScreenShare(btnEl) {
+                if (uniMirrorAnimId) {
+                    cancelAnimationFrame(uniMirrorAnimId);
+                    uniMirrorAnimId = null;
+                }
+                if (uniScreenStream) {
+                    uniScreenStream.getTracks().forEach(function(t) { t.stop(); });
+                    uniScreenStream = null;
+                }
+                if (uniScreenCall) {
+                    try { uniScreenCall.close(); } catch (e) {}
+                    uniScreenCall = null;
+                }
+                if (btnEl) {
+                    btnEl.classList.remove('active');
+                    btnEl.innerHTML = '&#128242; SHARE SCREEN';
+                }
+                if (typeof holoScreenTheater !== 'undefined' && holoScreenTheater) {
+                    holoScreenTheater.classList.remove('open');
+                }
+                if (typeof sendHoloSignal === 'function') sendHoloSignal('stop_screen');
+            }
+
+            const shareBtn = dockIntoThreeLinesMenu();
+            if (shareBtn) {
+                shareBtn.addEventListener('click', function() {
+                    if (typeof playSynth === 'function') playSynth(550, 1500, 0.12, 'triangle');
+                    if (!uniScreenStream) startUniversalScreenShare(shareBtn);
+                    else stopUniversalScreenShare(shareBtn);
+                });
+            }
+        })();
     </script>
 </body>
 </html>
