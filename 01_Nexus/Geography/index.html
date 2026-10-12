@@ -6914,6 +6914,218 @@
             }
             dockNewsMenuButton();
         })();
+// ============================================================================
+        // SOLAR DAY MODE / CYBER NIGHT MODE ENGINE + PDF EYE-CARE INVERTER
+        // ============================================================================
+        (function() {
+            // 1. Inject Solar Day Mode & PDF Inverter CSS
+            if (!document.getElementById('cartelDayNightCss')) {
+                const st = document.createElement('style');
+                st.id = 'cartelDayNightCss';
+                st.innerHTML = [
+                    '/* Floating Top-Right Day/Night Pill */',
+                    '.theme-mode-pill { position: fixed; top: 20px; left: 78px; background: #111827; color: var(--core, #00ffcc); border: 2px solid var(--core, #00ffcc); border-radius: 8px; padding: 6px 10px; display: flex; align-items: center; gap: 6px; z-index: 100001; box-shadow: 0 0 12px rgba(0, 255, 204, 0.35); font-family: "Courier New", monospace; font-size: 0.78em; font-weight: bold; }',
+                    '.theme-mode-btn { background: #1e293b; color: var(--core, #00ffcc); border: 1px solid var(--core, #00ffcc); border-radius: 5px; padding: 4px 8px; cursor: pointer; font-family: "Courier New", monospace; font-size: 0.92em; font-weight: bold; transition: 0.2s; }',
+                    '.theme-mode-btn:hover, .theme-mode-btn.active { background: var(--core, #00ffcc); color: #000; box-shadow: 0 0 10px var(--core, #00ffcc); }',
+                    '',
+                    '/* ===================================================================== */',
+                    '/* SOLAR DAY MODE OVERRIDES (CLEAN PAPER-WHITE & SLATE ACADEMIC LAB)     */',
+                    '/* ===================================================================== */',
+                    'body.cartel-day-mode {',
+                    '  background: #f1f5f9 !important;',
+                    '  color: #0f172a !important;',
+                    '}',
+                    'body.cartel-day-mode canvas#matrixCanvas, body.cartel-day-mode #matrix {',
+                    '  opacity: 0.08 !important;',
+                    '  filter: invert(1);',
+                    '}',
+                    'body.cartel-day-mode .theme-mode-pill, body.cartel-day-mode .radio-pill {',
+                    '  background: #ffffff !important;',
+                    '  color: #0f172a !important;',
+                    '  border-color: #0284c7 !important;',
+                    '  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.18) !important;',
+                    '}',
+                    'body.cartel-day-mode .theme-mode-btn, body.cartel-day-mode .radio-btn, body.cartel-day-mode .radio-select, body.cartel-day-mode .hp-btn {',
+                    '  background: #e2e8f0 !important;',
+                    '  color: #0f172a !important;',
+                    '  border-color: #0284c7 !important;',
+                    '}',
+                    'body.cartel-day-mode .theme-mode-btn.active, body.cartel-day-mode .hp-btn.active, body.cartel-day-mode .gr-chip.active, body.cartel-day-mode .pf-chip.active, body.cartel-day-mode .cf-chip.active, body.cartel-day-mode .news-tab-btn.active {',
+                    '  background: #0284c7 !important;',
+                    '  color: #ffffff !important;',
+                    '  border-color: #0369a1 !important;',
+                    '  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35) !important;',
+                    '}',
+                    '/* Dashboard Cards, Containers & Menus in Day Mode */',
+                    'body.cartel-day-mode #cartelHamDrop, body.cartel-day-mode .card, body.cartel-day-mode .folder-card, body.cartel-day-mode .pdf-card, body.cartel-day-mode .sector-box {',
+                    '  background: rgba(255, 255, 255, 0.96) !important;',
+                    '  color: #0f172a !important;',
+                    '  border-color: #cbd5e1 !important;',
+                    '  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08) !important;',
+                    '}',
+                    'body.cartel-day-mode .cyberlab-orb {',
+                    '  background: #f8fafc !important;',
+                    '  color: #0f172a !important;',
+                    '  border: 1px solid #0284c7 !important;',
+                    '}',
+                    'body.cartel-day-mode .cyberlab-orb:hover {',
+                    '  background: #0284c7 !important;',
+                    '  color: #ffffff !important;',
+                    '}',
+                    '/* All Super-Lab Modals in Day Mode */',
+                    'body.cartel-day-mode .chemforge-modal, body.cartel-day-mode .physforge-modal, body.cartel-day-mode .georadar-modal, body.cartel-day-mode .news-modal {',
+                    '  background: #f8fafc !important;',
+                    '  color: #0f172a !important;',
+                    '  border-color: #0284c7 !important;',
+                    '  box-shadow: 0 12px 45px rgba(15, 23, 42, 0.22) !important;',
+                    '}',
+                    'body.cartel-day-mode .cf-hdr, body.cartel-day-mode .pf-hdr, body.cartel-day-mode .gr-hdr, body.cartel-day-mode .news-hdr {',
+                    '  background: linear-gradient(90deg, #e0f2fe, #f0f9ff, #e0f2fe) !important;',
+                    '  border-bottom: 2px solid #0284c7 !important;',
+                    '}',
+                    'body.cartel-day-mode .cf-title, body.cartel-day-mode .pf-title, body.cartel-day-mode .gr-title {',
+                    '  color: #0369a1 !important;',
+                    '}',
+                    'body.cartel-day-mode .cf-search-bar, body.cartel-day-mode .pf-invoke-bar, body.cartel-day-mode .gr-search-bar, body.cartel-day-mode .cf-deck-bar, body.cartel-day-mode .pf-deck-bar, body.cartel-day-mode .pf-saved-bar, body.cartel-day-mode .gr-layer-bar, body.cartel-day-mode .gr-saved-bar, body.cartel-day-mode .news-tabs, body.cartel-day-mode .cf-view-tabs, body.cartel-day-mode .gr-hud-strip, body.cartel-day-mode .pf-status-strip {',
+                    '  background: #f1f5f9 !important;',
+                    '  color: #1e293b !important;',
+                    '  border-color: #cbd5e1 !important;',
+                    '}',
+                    'body.cartel-day-mode .cf-input, body.cartel-day-mode .pf-input, body.cartel-day-mode .gr-input, body.cartel-day-mode .gr-coord-input, body.cartel-day-mode input[type="text"], body.cartel-day-mode input[type="search"] {',
+                    '  background: #ffffff !important;',
+                    '  color: #0f172a !important;',
+                    '  border: 1px solid #0284c7 !important;',
+                    '}',
+                    'body.cartel-day-mode .cf-right-col, body.cartel-day-mode .gr-info-col, body.cartel-day-mode .news-body {',
+                    '  background: #f8fafc !important;',
+                    '  color: #0f172a !important;',
+                    '}',
+                    'body.cartel-day-mode .cf-card, body.cartel-day-mode .gr-card, body.cartel-day-mode .news-card, body.cartel-day-mode .cf-stat-box, body.cartel-day-mode .gr-stat {',
+                    '  background: #ffffff !important;',
+                    '  color: #1e293b !important;',
+                    '  border: 1px solid #cbd5e1 !important;',
+                    '  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;',
+                    '}',
+                    'body.cartel-day-mode .cf-card h3, body.cartel-day-mode .gr-card h3, body.cartel-day-mode .news-title {',
+                    '  color: #0369a1 !important;',
+                    '  border-bottom-color: #e2e8f0 !important;',
+                    '}',
+                    'body.cartel-day-mode .cf-stat-val, body.cartel-day-mode .gr-stat-val {',
+                    '  color: #0284c7 !important;',
+                    '}',
+                    'body.cartel-day-mode #cfWikiSummary, body.cartel-day-mode #grWikiBox, body.cartel-day-mode #grOsmDetails, body.cartel-day-mode .news-snippet {',
+                    '  color: #334155 !important;',
+                    '}',
+                    'body.cartel-day-mode .cf-table th {',
+                    '  background: #e0f2fe !important;',
+                    '  color: #0369a1 !important;',
+                    '}',
+                    'body.cartel-day-mode .cf-table td, body.cartel-day-mode .cf-table th {',
+                    '  border-color: #cbd5e1 !important;',
+                    '  color: #0f172a !important;',
+                    '}',
+                    'body.cartel-day-mode .gr-chip, body.cartel-day-mode .pf-chip, body.cartel-day-mode .cf-chip, body.cartel-day-mode .news-tab-btn {',
+                    '  background: #ffffff !important;',
+                    '  color: #0369a1 !important;',
+                    '  border-color: #94a3b8 !important;',
+                    '}',
+                    '/* Optional Night-Mode PDF Dark-Ink Filter */',
+                    'body.cartel-pdf-dark iframe:not(#pfSimFrame) {',
+                    '  filter: invert(0.92) hue-rotate(180deg) contrast(1.05) !important;',
+                    '}',
+                    '@media (max-width: 900px) { .theme-mode-pill { position: static; margin: 8px auto; width: fit-content; } }'
+                ].join('\n');
+                document.head.appendChild(st);
+            }
+
+            // 2. Build Floating Day/Night & PDF Eye-Care Pill
+            const oldPill = document.getElementById('cartelThemePill');
+            if (oldPill) oldPill.remove();
+
+            const pill = document.createElement('div');
+            pill.id = 'cartelThemePill';
+            pill.className = 'theme-mode-pill';
+            pill.innerHTML = [
+                '<button id="toggleDayNightBtn" class="theme-mode-btn" title="Switch between Solar Day Mode and Cyber Night Mode (Shortcut: Alt + D)">&#9728;&#65039; DAY MODE</button>',
+                '<button id="togglePdfDarkBtn" class="theme-mode-btn" title="Invert bright white PDFs into Dark Mode for eye comfort">&#128196; PDF DARK: OFF</button>'
+            ].join('\n');
+            document.body.appendChild(pill);
+
+            // 3. Also Add Day/Night Toggle Inside Top-Left 3-Lines Menu (#cartelHamDrop)
+            const hamDrop = document.getElementById('cartelHamDrop');
+            let menuThemeBtn = document.getElementById('menuThemeOrb');
+            if (menuThemeBtn) menuThemeBtn.remove();
+
+            menuThemeBtn = document.createElement('button');
+            menuThemeBtn.id = 'menuThemeOrb';
+            menuThemeBtn.className = 'cyberlab-orb';
+            menuThemeBtn.innerHTML = '&#9728;&#65039; DAY / NIGHT MODE';
+            if (hamDrop) {
+                hamDrop.appendChild(menuThemeBtn);
+            }
+
+            // 4. State & Persistence Logic (Saved in localStorage)
+            const THEME_STORAGE_KEY = 'cartelThemeModePref';
+            const PDF_DARK_KEY = 'cartelPdfDarkPref';
+
+            const toggleDayNightBtn = document.getElementById('toggleDayNightBtn');
+            const togglePdfDarkBtn = document.getElementById('togglePdfDarkBtn');
+
+            let isDayMode = (localStorage.getItem(THEME_STORAGE_KEY) === 'day');
+            let isPdfDark = (localStorage.getItem(PDF_DARK_KEY) === 'true');
+
+            function applyThemeState() {
+                document.body.classList.toggle('cartel-day-mode', isDayMode);
+                if (isDayMode) {
+                    toggleDayNightBtn.innerHTML = '&#127769; NIGHT MODE';
+                    toggleDayNightBtn.classList.add('active');
+                    if (menuThemeBtn) menuThemeBtn.innerHTML = '&#127769; SWITCH TO NIGHT MODE';
+                } else {
+                    toggleDayNightBtn.innerHTML = '&#9728;&#65039; DAY MODE';
+                    toggleDayNightBtn.classList.remove('active');
+                    if (menuThemeBtn) menuThemeBtn.innerHTML = '&#9728;&#65039; SWITCH TO DAY MODE';
+                }
+                localStorage.setItem(THEME_STORAGE_KEY, isDayMode ? 'day' : 'night');
+            }
+
+            function applyPdfDarkState() {
+                document.body.classList.toggle('cartel-pdf-dark', isPdfDark);
+                togglePdfDarkBtn.innerHTML = isPdfDark ? '&#128196; PDF DARK: ON' : '&#128196; PDF DARK: OFF';
+                togglePdfDarkBtn.classList.toggle('active', isPdfDark);
+                localStorage.setItem(PDF_DARK_KEY, isPdfDark ? 'true' : 'false');
+            }
+
+            applyThemeState();
+            applyPdfDarkState();
+
+            function triggerDayNightSwitch() {
+                if (typeof playSynth === 'function') playSynth(isDayMode ? 480 : 760, isDayMode ? 920 : 1480, 0.09, 'sine');
+                isDayMode = !isDayMode;
+                applyThemeState();
+            }
+
+            toggleDayNightBtn.addEventListener('click', triggerDayNightSwitch);
+            if (menuThemeBtn) {
+                menuThemeBtn.addEventListener('click', function() {
+                    triggerDayNightSwitch();
+                    if (hamDrop) hamDrop.classList.remove('open');
+                });
+            }
+
+            togglePdfDarkBtn.addEventListener('click', function() {
+                if (typeof playSynth === 'function') playSynth(620, 1250, 0.08, 'triangle');
+                isPdfDark = !isPdfDark;
+                applyPdfDarkState();
+            });
+
+            // 5. Keyboard Shortcut: Press [Alt + D] Anytime to Toggle Day/Night Mode!
+            window.addEventListener('keydown', function(e) {
+                if (e.altKey && (e.key === 'd' || e.key === 'D')) {
+                    e.preventDefault();
+                    triggerDayNightSwitch();
+                }
+            });
+        })();
     </script>
 </body>
 </html>
