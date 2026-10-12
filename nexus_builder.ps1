@@ -4181,6 +4181,132 @@ $buttonsHtml
                 });
             }
         })();
+// ============================================================================
+        // PERMANENT 3D MODEL SAVER UPGRADE ONLY
+        // ============================================================================
+        (function() {
+            const deckBar = document.getElementById('bioDeckBar');
+            const frame = document.getElementById('bioSketchfabFrame');
+            const activeTitle = document.getElementById('bioActiveTitle');
+            const infoHeading = document.getElementById('bioInfoHeading');
+            const infoOverview = document.getElementById('bioInfoOverview');
+            const partsList = document.getElementById('bioPartsList');
+            const detailBox = document.getElementById('bioPartDetailBox');
+            const customInput = document.getElementById('bioCustomInput');
+            const oldLoadBtn = document.getElementById('bioCustomLoadBtn');
+            const modeCloudBtn = document.getElementById('bioModeCloudBtn');
+
+            if (!deckBar || !customInput || !oldLoadBtn) return;
+
+            const saveBtn = oldLoadBtn.cloneNode(true);
+            saveBtn.id = 'bioCustomLoadBtn';
+            saveBtn.innerHTML = '&#128190; SAVE 3D';
+            oldLoadBtn.parentNode.replaceChild(saveBtn, oldLoadBtn);
+            customInput.placeholder = 'Paste Sketchfab 3D link to name & save forever...';
+
+            const STORAGE_KEY = 'cartelPermanentBioModels';
+
+            function getSavedModels() {
+                try {
+                    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            function saveModelsList(list) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+            }
+
+            function loadCustomModelIntoStage(item, chipEl) {
+                if (modeCloudBtn) modeCloudBtn.click();
+                Array.from(deckBar.querySelectorAll('.bio-chip')).forEach(function(c) {
+                    c.classList.remove('active');
+                });
+                if (chipEl) chipEl.classList.add('active');
+
+                const embedUrl = 'https://sketchfab.com/models/' + item.uid + '/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0&ui_theme=dark&dnt=1';
+                if (frame) frame.src = embedUrl;
+                if (activeTitle) activeTitle.innerText = 'CUSTOM 3D: ' + item.name.toUpperCase();
+                if (infoHeading) infoHeading.innerText = item.name.toUpperCase() + ' (SAVED 3D MODEL)';
+                if (infoOverview) infoOverview.innerText = item.notes || 'Permanently saved custom 3D model in your Binary Cartel Bio-Lab. Right-click this model button on the top bar anytime if you want to delete it.';
+                if (partsList) partsList.innerHTML = '';
+                if (detailBox) detailBox.innerHTML = '<strong style="color:#38bdf8;">' + item.name + ':</strong> Custom interactive 3D WebGL model active. Use mouse or touch to rotate 360&#176; and zoom.';
+            }
+
+            function createSavedChipButton(item) {
+                const existing = document.getElementById('custom_bio_' + item.uid);
+                if (existing) existing.remove();
+
+                const chip = document.createElement('button');
+                chip.id = 'custom_bio_' + item.uid;
+                chip.className = 'bio-chip';
+                chip.style.borderColor = '#f59e0b';
+                chip.style.color = '#fde68a';
+                chip.title = 'Click to load 3D model | Right-click to delete';
+                chip.innerHTML = '&#11088; ' + item.name.toUpperCase();
+
+                chip.addEventListener('click', function() {
+                    if (typeof playSynth === 'function') playSynth(660, 1480, 0.09, 'triangle');
+                    loadCustomModelIntoStage(item, chip);
+                });
+
+                chip.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    if (confirm('Delete saved 3D model "' + item.name + '" from your Bio-Lab?')) {
+                        const updated = getSavedModels().filter(function(x) { return x.uid !== item.uid; });
+                        saveModelsList(updated);
+                        chip.remove();
+                    }
+                });
+
+                deckBar.appendChild(chip);
+                return chip;
+            }
+
+            getSavedModels().forEach(function(item) {
+                createSavedChipButton(item);
+            });
+
+            function handleSaveNewModel() {
+                const raw = (customInput.value || '').trim();
+                if (!raw) {
+                    alert('Paste a Sketchfab 3D model link or 32-character ID into the box first!');
+                    return;
+                }
+                const match = raw.match(/([a-f0-9]{32})/i);
+                if (!match) {
+                    alert('Could not find a valid 32-character Sketchfab 3D Model ID in that link. Make sure you copy the URL of a 3D model from sketchfab.com!');
+                    return;
+                }
+                const uid = match[1];
+
+                const modelName = prompt('Enter a button name for this 3D Model (e.g., HUMAN EYE 3D, NEPHRON, DNA):', 'CUSTOM 3D MODEL');
+                if (!modelName || !modelName.trim()) return;
+
+                const modelNotes = prompt('Optional: Add a short study note or description for this 3D model (or click OK to skip):', '') || '';
+
+                const newItem = {
+                    uid: uid,
+                    name: modelName.trim(),
+                    notes: modelNotes.trim()
+                };
+
+                const list = getSavedModels().filter(function(x) { return x.uid !== uid; });
+                list.push(newItem);
+                saveModelsList(list);
+
+                customInput.value = '';
+                if (typeof playSynth === 'function') playSynth(550, 1600, 0.14, 'triangle');
+                const newChip = createSavedChipButton(newItem);
+                loadCustomModelIntoStage(newItem, newChip);
+            }
+
+            saveBtn.addEventListener('click', handleSaveNewModel);
+            customInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') handleSaveNewModel();
+            });
+        })();
     </script>
 </body>
 </html>
