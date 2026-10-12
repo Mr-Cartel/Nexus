@@ -4126,6 +4126,25 @@
             injectGeneralizedCellModels();
             setTimeout(injectGeneralizedCellModels, 500);
         })();
+// ============================================================================
+        // FIX: DOCK 3D BIO-LAB DIRECTLY INSIDE #cartelHamDrop (TOP-LEFT 3-LINES MENU)
+        // ============================================================================
+        (function() {
+            const hamDrop = document.getElementById('cartelHamDrop');
+            const hamBtn = document.getElementById('cartelHamBtn');
+            const bioOrb = document.getElementById('bioLabQuickOrb');
+
+            if (hamDrop && bioOrb) {
+                bioOrb.style.cssText = '';
+                bioOrb.className = 'cyberlab-orb';
+                hamDrop.appendChild(bioOrb);
+
+                bioOrb.addEventListener('click', function() {
+                    hamDrop.classList.remove('open');
+                    if (hamBtn) hamBtn.classList.remove('active');
+                });
+            }
+        })();
     </script>
 </body>
 </html>
