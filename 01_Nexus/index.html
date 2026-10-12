@@ -4279,6 +4279,1198 @@
                 if (e.key === 'Enter') handleSaveNewModel();
             });
         })();
+// ============================================================================
+        // 3D CHEM-FORGE V2: DYNAMIC PER-COMPOUND COLOR CODING, WIKIPEDIA + PUBCHEM
+        // 115M API & HYPERVALENT (XeF6 / sp3d3) LEWIS & ORBITAL HYBRIDIZATION ENGINE
+        // ============================================================================
+        (function() {
+            // 1. Load 3Dmol.js WebGL Engine Safely (Using \x24 so PowerShell never eats the dollar sign!)
+            const MOL3D_KEY = '\x243Dmol';
+            if (!window[MOL3D_KEY] && !document.getElementById('chem3DmolScript')) {
+                const sc = document.createElement('script');
+                sc.id = 'chem3DmolScript';
+                sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.0.4/3Dmol-min.js';
+                sc.async = true;
+                document.head.appendChild(sc);
+            }
+
+            // 2. Inject Chem-Forge V2 Cyberpunk CSS
+            const oldCss = document.getElementById('chemForgeCss');
+            if (oldCss) oldCss.remove();
+            const st = document.createElement('style');
+            st.id = 'chemForgeCss';
+            st.innerHTML = [
+                '.chemforge-modal { position: fixed !important; top: 2.5%; left: 2%; width: 96%; height: 95%; background: rgba(6, 8, 15, 0.98); border: 2px solid var(--core, #00ffcc); border-radius: 14px; box-shadow: 0 0 70px rgba(0, 255, 204, 0.45); z-index: 999999 !important; display: none; flex-direction: column; overflow: hidden; font-family: Courier New, monospace; color: #e2e8f0; text-align: left; }',
+                '.chemforge-modal.open { display: flex !important; }',
+                '.cf-hdr { background: linear-gradient(90deg, #09131c, #160d29, #09131c); border-bottom: 2px solid var(--core, #00ffcc); padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }',
+                '.cf-title { font-size: 1.02em; font-weight: bold; color: var(--core, #00ffcc); letter-spacing: 1.5px; display: flex; align-items: center; gap: 8px; }',
+                '.cf-search-bar { display: flex; gap: 6px; padding: 9px 14px; background: #0a0e17; border-bottom: 1px solid #1e293b; flex-wrap: wrap; align-items: center; }',
+                '.cf-input { flex: 1; min-width: 240px; background: #111827; color: #00ffcc; border: 1px solid var(--core, #00ffcc); border-radius: 6px; padding: 8px 12px; font-family: Courier New, monospace; font-size: 0.84em; font-weight: bold; outline: none; }',
+                '.cf-deck-bar { display: flex; gap: 6px; padding: 7px 14px; background: #070a10; border-bottom: 1px solid #1e293b; overflow-x: auto; align-items: center; min-height: 36px; flex-wrap: wrap; }',
+                '.cf-empty-hint { font-size: 0.75em; color: #64748b; font-style: italic; }',
+                '.cf-chip { background: #171324; color: #fde68a; border: 1px solid #f59e0b; border-radius: 6px; padding: 5px 10px; font-family: Courier New, monospace; font-size: 0.74em; font-weight: bold; cursor: pointer; transition: 0.2s; white-space: nowrap; }',
+                '.cf-chip:hover, .cf-chip.active { background: #f59e0b; color: #000; box-shadow: 0 0 12px #f59e0b; }',
+                '.cf-main { display: flex; flex: 1; min-height: 0; overflow: hidden; }',
+                '.cf-left-col { flex: 1.45; display: flex; flex-direction: column; background: #04060b; border-right: 1px solid #1e293b; min-width: 0; position: relative; }',
+                '.cf-view-tabs { display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; background: #0b101b; border-bottom: 1px solid #1e293b; flex-wrap: wrap; gap: 6px; }',
+                '.cf-stage-wrap { flex: 1; position: relative; width: 100%; height: 100%; overflow: hidden; background: radial-gradient(circle at center, #0c1626 0%, #030509 100%); }',
+                '.cf-3d-viewer { width: 100%; height: 100%; position: relative; }',
+                '.cf-2d-canvas { width: 100%; height: 100%; display: none; background: #050811; }',
+                '.cf-cpk-legend { position: absolute; bottom: 10px; left: 10px; right: 10px; background: rgba(6, 10, 18, 0.92); border: 1px solid var(--core, #00ffcc); border-radius: 8px; padding: 7px 12px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; font-size: 0.74em; z-index: 20; pointer-events: none; box-shadow: 0 0 15px rgba(0,0,0,0.8); }',
+                '.cf-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: middle; border: 1px solid #fff; }',
+                '.cf-right-col { flex: 1.15; display: flex; flex-direction: column; background: #070b14; padding: 12px; overflow-y: auto; gap: 10px; min-width: 310px; max-width: 520px; }',
+                '.cf-card { background: rgba(15, 23, 42, 0.9); border: 1px solid #1e3a8a; border-radius: 8px; padding: 11px; }',
+                '.cf-card h3 { margin: 0 0 8px 0; color: var(--core, #00ffcc); font-size: 0.88em; letter-spacing: 1px; border-bottom: 1px solid #1e293b; padding-bottom: 5px; }',
+                '.cf-stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }',
+                '.cf-stat-box { background: #090d16; border: 1px solid #1e293b; border-radius: 6px; padding: 7px 9px; font-size: 0.75em; }',
+                '.cf-stat-val { font-size: 1.1em; font-weight: bold; color: #38bdf8; display: block; margin-top: 2px; }',
+                '.cf-table { width: 100%; border-collapse: collapse; font-size: 0.72em; margin-top: 4px; }',
+                '.cf-table th, .cf-table td { border: 1px solid #1e293b; padding: 5px 6px; text-align: center; }',
+                '.cf-table th { background: #0f172a; color: #00ffcc; }',
+                '@media (max-width: 900px) { .cf-main { flex-direction: column; overflow-y: auto; } .cf-left-col { height: 52vh; flex: none; } .cf-right-col { max-width: 100%; flex: none; } }'
+            ].join('\n');
+            document.head.appendChild(st);
+
+            // 3. Build Clean Chem-Forge Modal DOM
+            const oldModal = document.getElementById('chemForgeModal');
+            if (oldModal) oldModal.remove();
+
+            const wrap = document.createElement('div');
+            wrap.innerHTML = [
+                '<div id="chemForgeModal" class="chemforge-modal">',
+                '  <div class="cf-hdr">',
+                '    <div class="cf-title">&#9879; 3D CHEM-FORGE // 115M PUBCHEM + WIKIPEDIA SYNTHESIZER (ORGANIC &amp; INORGANIC)</div>',
+                '    <div style="display:flex; gap:6px; flex-wrap:wrap;">',
+                '      <button id="cfBeamBtn" class="hp-btn" title="Beam Molecule to Ghost-Link Partner">&#128225; BEAM MOLECULE</button>',
+                '      <button id="cfCloseBtn" class="hp-btn danger">&#10006; EXIT FORGE</button>',
+                '    </div>',
+                '  </div>',
+                '  <div class="cf-search-bar">',
+                '    <input id="cfQueryInput" class="cf-input" type="text" placeholder="Paste ANY Wikipedia URL OR type compound/formula (e.g. XeF6, H2O, CO2, Benzene, SF6, PCl5)..." />',
+                '    <button id="cfSynthBtn" class="hp-btn active">&#9889; SYNTHESIZE 3D</button>',
+                '    <button id="cfShuffleColBtn" class="hp-btn" title="Change / Randomize Atom Color Coding for this Compound">&#127922; SHUFFLE COLORS</button>',
+                '    <button id="cfSaveDeckBtn" class="hp-btn" style="border-color:#f59e0b; color:#fde68a;">&#128190; SAVE TO DECK</button>',
+                '    <button id="cfWikiOpenBtn" class="hp-btn" title="Open Wikipedia / Google to find a compound link">&#127760; FIND ON WIKI</button>',
+                '  </div>',
+                '  <div id="cfDeckBar" class="cf-deck-bar">',
+                '    <span id="cfEmptyHint" class="cf-empty-hint">&#128194; Saved Molecules Deck is empty. Paste a Wikipedia link or compound name above and click [SAVE TO DECK] to save it with its custom color code!</span>',
+                '  </div>',
+                '  <div class="cf-main">',
+                '    <div class="cf-left-col">',
+                '      <div class="cf-view-tabs">',
+                '        <div style="display:flex; gap:5px; flex-wrap:wrap;">',
+                '          <button id="cfTab3D" class="hp-btn active">&#129514; 3D MOLECULAR STRUCTURE</button>',
+                '          <button id="cfTabLewis" class="hp-btn">&#9899; 2D LEWIS &amp; LONE PAIRS</button>',
+                '          <button id="cfTabOrbital" class="hp-btn">&#129516; ORBITAL BOXES &amp; OVERLAP</button>',
+                '        </div>',
+                '        <div id="cf3DControls" style="display:flex; gap:5px; flex-wrap:wrap;">',
+                '          <button id="cfStyleStick" class="hp-btn active" style="font-size:0.68em;">BALL &amp; STICK</button>',
+                '          <button id="cfStyleSphere" class="hp-btn" style="font-size:0.68em;">SPACEFILL</button>',
+                '          <button id="cfStyleWire" class="hp-btn" style="font-size:0.68em;">WIREFRAME</button>',
+                '          <button id="cfToggleLabels" class="hp-btn active" style="font-size:0.68em;">LABELS: ON</button>',
+                '          <button id="cfToggleSpin" class="hp-btn active" style="font-size:0.68em;">SPIN: ON</button>',
+                '        </div>',
+                '      </div>',
+                '      <div class="cf-stage-wrap">',
+                '        <div id="cf3DContainer" class="cf-3d-viewer"></div>',
+                '        <canvas id="cfLewisCanvas" class="cf-2d-canvas" width="780" height="520"></canvas>',
+                '        <canvas id="cfOrbitalCanvas" class="cf-2d-canvas" width="780" height="520"></canvas>',
+                '        <div id="cfCpkLegend" class="cf-cpk-legend">',
+                '          <span style="color:#94a3b8;">&#127912; DYNAMIC COMPOUND COLOR LEGEND: Synthesize a compound to view its custom element color coding.</span>',
+                '        </div>',
+                '      </div>',
+                '    </div>',
+                '    <div class="cf-right-col">',
+                '      <div class="cf-card">',
+                '        <h3 id="cfMolTitle">&#9883; READY TO SYNTHESIZE</h3>',
+                '        <div id="cfStatusMsg" style="font-size:0.77em; color:#94a3b8; margin-bottom:8px;">Paste any Wikipedia URL or enter any organic/inorganic compound (like <b>XeF6</b>, <b>H2O</b>, <b>CO2</b>, <b>SF6</b>, <b>Benzene</b>) and click <b>SYNTHESIZE 3D</b>.</div>',
+                '        <div class="cf-stat-grid">',
+                '          <div class="cf-stat-box">FORMULA<span id="cfStatFormula" class="cf-stat-val">--</span></div>',
+                '          <div class="cf-stat-box">MOLAR MASS<span id="cfStatWeight" class="cf-stat-val">--</span></div>',
+                '          <div class="cf-stat-box">SIGMA (&#963;) BONDS<span id="cfStatSigma" class="cf-stat-val" style="color:#22c55e;">--</span></div>',
+                '          <div class="cf-stat-box">PI (&#960;) BONDS<span id="cfStatPi" class="cf-stat-val" style="color:#ec4899;">--</span></div>',
+                '          <div class="cf-stat-box">CENTRAL HYB.<span id="cfStatHyb" class="cf-stat-val" style="color:#f59e0b;">--</span></div>',
+                '          <div class="cf-stat-box">TOTAL LONE PAIRS<span id="cfStatLP" class="cf-stat-val" style="color:#c084fc;">--</span></div>',
+                '        </div>',
+                '      </div>',
+                '      <div class="cf-card">',
+                '        <h3>&#128208; ATOM-BY-ATOM HYBRIDIZATION, VSEPR &amp; LONE PAIRS</h3>',
+                '        <div style="max-height:195px; overflow-y:auto;">',
+                '          <table class="cf-table">',
+                '            <thead><tr><th>Atom (Color)</th><th>&#963;</th><th>&#960;</th><th>Lone Pairs</th><th>Hybridization</th><th>VSEPR Geometry &amp; Angle</th></tr></thead>',
+                '            <tbody id="cfAtomTableBody"><tr><td colspan="6" style="color:#64748b;">No molecule loaded yet.</td></tr></tbody>',
+                '          </table>',
+                '        </div>',
+                '      </div>',
+                '      <div class="cf-card">',
+                '        <h3>&#128214; WIKIPEDIA &amp; PUBCHEM DATABASE INTEL</h3>',
+                '        <div id="cfWikiSummary" style="font-size:0.76em; color:#cbd5e1; line-height:1.45; max-height:145px; overflow-y:auto;">Paste a Wikipedia link or compound name to pull live data from Wikipedia &amp; NIH PubChem (115M+ compounds).</div>',
+                '      </div>',
+                '    </div>',
+                '  </div>',
+                '</div>'
+            ].join('\n');
+            document.body.appendChild(wrap.firstChild);
+
+            // 4. Dock ⚗️ 3D CHEM-FORGE Inside Top-Left 3-Lines Menu (#cartelHamDrop)
+            function dockChemForgeButton() {
+                const hamDrop = document.getElementById('cartelHamDrop');
+                const hamBtn = document.getElementById('cartelHamBtn');
+                const oldBtn = document.getElementById('chemForgeOrb');
+                if (oldBtn) oldBtn.remove();
+
+                const cfBtn = document.createElement('button');
+                cfBtn.id = 'chemForgeOrb';
+                cfBtn.className = 'cyberlab-orb';
+                cfBtn.innerHTML = '&#9879; 3D CHEM-FORGE';
+
+                cfBtn.addEventListener('click', function() {
+                    if (typeof playSynth === 'function') playSynth(540, 1480, 0.12, 'triangle');
+                    if (hamDrop) hamDrop.classList.remove('open');
+                    if (hamBtn) hamBtn.classList.remove('active');
+                    openChemForge();
+                });
+
+                if (hamDrop) {
+                    hamDrop.appendChild(cfBtn);
+                } else {
+                    document.body.appendChild(cfBtn);
+                }
+            }
+            dockChemForgeButton();
+
+            // 5. Complete 118-Element Database (Names, Valence Electrons & Principal Quantum Shell)
+            const ELEMENT_DB = {
+                H: { n: 'Hydrogen', v: 1, s: 1 }, He: { n: 'Helium', v: 2, s: 1 },
+                Li: { n: 'Lithium', v: 1, s: 2 }, Be: { n: 'Beryllium', v: 2, s: 2 }, B: { n: 'Boron', v: 3, s: 2 }, C: { n: 'Carbon', v: 4, s: 2 }, N: { n: 'Nitrogen', v: 5, s: 2 }, O: { n: 'Oxygen', v: 6, s: 2 }, F: { n: 'Fluorine', v: 7, s: 2 }, Ne: { n: 'Neon', v: 8, s: 2 },
+                Na: { n: 'Sodium', v: 1, s: 3 }, Mg: { n: 'Magnesium', v: 2, s: 3 }, Al: { n: 'Aluminium', v: 3, s: 3 }, Si: { n: 'Silicon', v: 4, s: 3 }, P: { n: 'Phosphorus', v: 5, s: 3 }, S: { n: 'Sulfur', v: 6, s: 3 }, Cl: { n: 'Chlorine', v: 7, s: 3 }, Ar: { n: 'Argon', v: 8, s: 3 },
+                K: { n: 'Potassium', v: 1, s: 4 }, Ca: { n: 'Calcium', v: 2, s: 4 }, Sc: { n: 'Scandium', v: 3, s: 4 }, Ti: { n: 'Titanium', v: 4, s: 4 }, V: { n: 'Vanadium', v: 5, s: 4 }, Cr: { n: 'Chromium', v: 6, s: 4 }, Mn: { n: 'Manganese', v: 7, s: 4 }, Fe: { n: 'Iron', v: 3, s: 4 }, Co: { n: 'Cobalt', v: 3, s: 4 }, Ni: { n: 'Nickel', v: 2, s: 4 }, Cu: { n: 'Copper', v: 2, s: 4 }, Zn: { n: 'Zinc', v: 2, s: 4 }, Ga: { n: 'Gallium', v: 3, s: 4 }, Ge: { n: 'Germanium', v: 4, s: 4 }, As: { n: 'Arsenic', v: 5, s: 4 }, Se: { n: 'Selenium', v: 6, s: 4 }, Br: { n: 'Bromine', v: 7, s: 4 }, Kr: { n: 'Krypton', v: 8, s: 4 },
+                Rb: { n: 'Rubidium', v: 1, s: 5 }, Sr: { n: 'Strontium', v: 2, s: 5 }, Y: { n: 'Yttrium', v: 3, s: 5 }, Zr: { n: 'Zirconium', v: 4, s: 5 }, Nb: { n: 'Niobium', v: 5, s: 5 }, Mo: { n: 'Molybdenum', v: 6, s: 5 }, Tc: { n: 'Technetium', v: 7, s: 5 }, Ru: { n: 'Ruthenium', v: 4, s: 5 }, Rh: { n: 'Rhodium', v: 3, s: 5 }, Pd: { n: 'Palladium', v: 2, s: 5 }, Ag: { n: 'Silver', v: 1, s: 5 }, Cd: { n: 'Cadmium', v: 2, s: 5 }, In: { n: 'Indium', v: 3, s: 5 }, Sn: { n: 'Tin', v: 4, s: 5 }, Sb: { n: 'Antimony', v: 5, s: 5 }, Te: { n: 'Tellurium', v: 6, s: 5 }, I: { n: 'Iodine', v: 7, s: 5 }, Xe: { n: 'Xenon', v: 8, s: 5 },
+                Cs: { n: 'Cesium', v: 1, s: 6 }, Ba: { n: 'Barium', v: 2, s: 6 }, La: { n: 'Lanthanum', v: 3, s: 6 }, Hf: { n: 'Hafnium', v: 4, s: 6 }, Ta: { n: 'Tantalum', v: 5, s: 6 }, W: { n: 'Tungsten', v: 6, s: 6 }, Re: { n: 'Rhenium', v: 7, s: 6 }, Os: { n: 'Osmium', v: 8, s: 6 }, Ir: { n: 'Iridium', v: 4, s: 6 }, Pt: { n: 'Platinum', v: 4, s: 6 }, Au: { n: 'Gold', v: 3, s: 6 }, Hg: { n: 'Mercury', v: 2, s: 6 }, Tl: { n: 'Thallium', v: 3, s: 6 }, Pb: { n: 'Lead', v: 4, s: 6 }, Bi: { n: 'Bismuth', v: 5, s: 6 }, Po: { n: 'Polonium', v: 6, s: 6 }, At: { n: 'Astatine', v: 7, s: 6 }, Rn: { n: 'Radon', v: 8, s: 6 },
+                U: { n: 'Uranium', v: 6, s: 7 }
+            };
+
+            // Dynamic High-Contrast Color Palette Pool (Changes Per Compound!)
+            const DYNAMIC_PALETTE = [
+                { hex: '#ff1744', name: 'CRIMSON RED' },
+                { hex: '#ffea00', name: 'SOLAR YELLOW' },
+                { hex: '#ffffff', name: 'PURE WHITE' },
+                { hex: '#00e5ff', name: 'ELECTRIC CYAN' },
+                { hex: '#00e676', name: 'NEON GREEN' },
+                { hex: '#ff9100', name: 'PLASMA ORANGE' },
+                { hex: '#d500f9', name: 'HYPER VIOLET' },
+                { hex: '#2979ff', name: 'COBALT BLUE' },
+                { hex: '#ff4081', name: 'LASER PINK' },
+                { hex: '#c6ff00', name: 'ACID LIME' },
+                { hex: '#1de9b6', name: 'MINT TEAL' },
+                { hex: '#ffd600', name: 'CYBER GOLD' }
+            ];
+
+            // DOM Elements
+            const cfModal = document.getElementById('chemForgeModal');
+            const cfCloseBtn = document.getElementById('cfCloseBtn');
+            const cfBeamBtn = document.getElementById('cfBeamBtn');
+            const cfQueryInput = document.getElementById('cfQueryInput');
+            const cfSynthBtn = document.getElementById('cfSynthBtn');
+            const cfShuffleColBtn = document.getElementById('cfShuffleColBtn');
+            const cfSaveDeckBtn = document.getElementById('cfSaveDeckBtn');
+            const cfWikiOpenBtn = document.getElementById('cfWikiOpenBtn');
+            const cfDeckBar = document.getElementById('cfDeckBar');
+            const cfEmptyHint = document.getElementById('cfEmptyHint');
+
+            const cfTab3D = document.getElementById('cfTab3D');
+            const cfTabLewis = document.getElementById('cfTabLewis');
+            const cfTabOrbital = document.getElementById('cfTabOrbital');
+            const cf3DContainer = document.getElementById('cf3DContainer');
+            const cfLewisCanvas = document.getElementById('cfLewisCanvas');
+            const cfOrbitalCanvas = document.getElementById('cfOrbitalCanvas');
+            const cf3DControls = document.getElementById('cf3DControls');
+            const cfCpkLegend = document.getElementById('cfCpkLegend');
+
+            const cfStyleStick = document.getElementById('cfStyleStick');
+            const cfStyleSphere = document.getElementById('cfStyleSphere');
+            const cfStyleWire = document.getElementById('cfStyleWire');
+            const cfToggleLabels = document.getElementById('cfToggleLabels');
+            const cfToggleSpin = document.getElementById('cfToggleSpin');
+
+            const cfMolTitle = document.getElementById('cfMolTitle');
+            const cfStatusMsg = document.getElementById('cfStatusMsg');
+            const cfStatFormula = document.getElementById('cfStatFormula');
+            const cfStatWeight = document.getElementById('cfStatWeight');
+            const cfStatSigma = document.getElementById('cfStatSigma');
+            const cfStatPi = document.getElementById('cfStatPi');
+            const cfStatHyb = document.getElementById('cfStatHyb');
+            const cfStatLP = document.getElementById('cfStatLP');
+            const cfAtomTableBody = document.getElementById('cfAtomTableBody');
+            const cfWikiSummary = document.getElementById('cfWikiSummary');
+
+            let viewer3D = null;
+            let currentSdfData = null;
+            let currentParsedMol = null;
+            let currentCompoundName = '';
+            let currentColorMap = {}; // { sym: { hex, name } } specific to the active compound!
+            let colorSeedOffset = 0;
+            let renderStyle = 'stick';
+            let showAtomLabels = true;
+            let isSpinning = true;
+
+            function openChemForge() {
+                cfModal.classList.add('open');
+                setTimeout(function() {
+                    if (viewer3D) viewer3D.resize();
+                }, 150);
+            }
+
+            cfCloseBtn.addEventListener('click', function() {
+                if (typeof playSynth === 'function') playSynth(600, 300, 0.08, 'sawtooth');
+                cfModal.classList.remove('open');
+            });
+
+            // 6. Generate Compound-Specific Dynamic Color Map (Different Compound = Different Color Coding!)
+            function buildDynamicColorMap(mol, compoundKey, customSavedMap) {
+                if (customSavedMap && Object.keys(customSavedMap).length > 0) {
+                    currentColorMap = JSON.parse(JSON.stringify(customSavedMap));
+                    updateDynamicLegendUI();
+                    return;
+                }
+                const uniqueSyms = [];
+                mol.atoms.forEach(function(a) {
+                    if (uniqueSyms.indexOf(a.sym) === -1) uniqueSyms.push(a.sym);
+                });
+
+                // Put central/heavy atom first so it gets the primary color
+                uniqueSyms.sort(function(s1, s2) {
+                    if (s1 === 'H') return 1;
+                    if (s2 === 'H') return -1;
+                    return 0;
+                });
+
+                const keyUpper = (compoundKey || '').toUpperCase().replace(/\s+/g, '');
+                // Exact match for user's H2O & CO2 examples + deterministic hash for all 115M other compounds!
+                if ((keyUpper === 'H2O' || keyUpper === 'WATER') && colorSeedOffset === 0) {
+                    currentColorMap = {
+                        O: { hex: '#ff1744', name: 'RED' },
+                        H: { hex: '#ffea00', name: 'YELLOW' }
+                    };
+                    updateDynamicLegendUI();
+                    return;
+                }
+                if ((keyUpper === 'CO2' || keyUpper === 'CARBONDIOXIDE') && colorSeedOffset === 0) {
+                    currentColorMap = {
+                        C: { hex: '#ff1744', name: 'RED' },
+                        O: { hex: '#ffffff', name: 'WHITE' }
+                    };
+                    updateDynamicLegendUI();
+                    return;
+                }
+
+                let hash = colorSeedOffset * 7;
+                for (let i = 0; i < keyUpper.length; i++) {
+                    hash = (hash * 31 + keyUpper.charCodeAt(i)) % 997;
+                }
+
+                currentColorMap = {};
+                uniqueSyms.forEach(function(sym, idx) {
+                    const palIdx = (hash + idx * 3) % DYNAMIC_PALETTE.length;
+                    currentColorMap[sym] = DYNAMIC_PALETTE[palIdx];
+                });
+                updateDynamicLegendUI();
+            }
+
+            function updateDynamicLegendUI() {
+                if (!cfCpkLegend) return;
+                const syms = Object.keys(currentColorMap);
+                if (syms.length === 0) return;
+
+                let html = '<strong style="color:var(--core, #00ffcc); margin-right:6px;">&#127912; [' + currentCompoundName.toUpperCase() + '] ATOM COLOR CODE:</strong>';
+                syms.forEach(function(sym) {
+                    const cObj = currentColorMap[sym];
+                    const elName = (ELEMENT_DB[sym] && ELEMENT_DB[sym].n) ? ELEMENT_DB[sym].n : sym;
+                    html += '<span style="background:#0f172a; padding:3px 8px; border-radius:5px; border:1px solid ' + cObj.hex + '; color:#fff;">' +
+                        '<i class="cf-dot" style="background:' + cObj.hex + ';"></i>' +
+                        '<b>' + sym + '</b> (' + elName + ') = <span style="color:' + cObj.hex + '; font-weight:bold;">' + cObj.name + '</span></span>';
+                });
+                cfCpkLegend.innerHTML = html;
+            }
+
+            // Shuffle Colors Button (Lets user change color coding anytime!)
+            cfShuffleColBtn.addEventListener('click', function() {
+                if (!currentParsedMol) return;
+                if (typeof playSynth === 'function') playSynth(700, 1500, 0.09, 'sine');
+                colorSeedOffset++;
+                buildDynamicColorMap(currentParsedMol, currentCompoundName, null);
+                apply3DStyle();
+                drawLewisDiagram(currentParsedMol);
+                drawOrbitalDiagram(currentParsedMol);
+                renderAtomTable(currentParsedMol);
+            });
+
+            // 7. VSEPR Geometry & Hybridization Calculator (Supports Steric Numbers 2 to 7 including XeF6!)
+            function getVseprAndHybridization(sigma, lonePairs, sym) {
+                if (sym === 'H') {
+                    return { hyb: '1s (Un-hyb)', geom: 'Terminal (Linear)', steric: 1 };
+                }
+                const sn = sigma + lonePairs;
+                if (sn <= 1) return { hyb: 's / p', geom: 'Terminal', steric: sn };
+                if (sn === 2) return { hyb: 'sp', geom: 'Linear (180 deg)', steric: 2 };
+                if (sn === 3) {
+                    if (lonePairs === 0) return { hyb: 'sp2', geom: 'Trigonal Planar (120 deg)', steric: 3 };
+                    return { hyb: 'sp2', geom: 'Bent / V-Shape (~118 deg)', steric: 3 };
+                }
+                if (sn === 4) {
+                    if (lonePairs === 0) return { hyb: 'sp3', geom: 'Tetrahedral (109.5 deg)', steric: 4 };
+                    if (lonePairs === 1) return { hyb: 'sp3', geom: 'Trigonal Pyramidal (~107 deg)', steric: 4 };
+                    if (lonePairs === 2) return { hyb: 'sp3', geom: 'Bent / V-Shape (~104.5 deg)', steric: 4 };
+                    return { hyb: 'sp3', geom: 'Linear (3 Lone Pairs)', steric: 4 };
+                }
+                if (sn === 5) {
+                    if (lonePairs === 0) return { hyb: 'sp3d', geom: 'Trigonal Bipyramidal (90/120 deg)', steric: 5 };
+                    if (lonePairs === 1) return { hyb: 'sp3d', geom: 'See-Saw / Disphenoidal (<90/<120 deg)', steric: 5 };
+                    if (lonePairs === 2) return { hyb: 'sp3d', geom: 'T-Shaped (~87.5 deg)', steric: 5 };
+                    return { hyb: 'sp3d', geom: 'Linear (180 deg, 3 Equatorial LP)', steric: 5 };
+                }
+                if (sn === 6) {
+                    if (lonePairs === 0) return { hyb: 'sp3d2', geom: 'Octahedral (90 deg)', steric: 6 };
+                    if (lonePairs === 1) return { hyb: 'sp3d2', geom: 'Square Pyramidal (<90 deg)', steric: 6 };
+                    return { hyb: 'sp3d2', geom: 'Square Planar (90 deg, 2 Axial LP)', steric: 6 };
+                }
+                if (sn >= 7) {
+                    if (lonePairs === 0) return { hyb: 'sp3d3', geom: 'Pentagonal Bipyramidal (72/90 deg)', steric: 7 };
+                    return { hyb: 'sp3d3', geom: 'Distorted Octahedral / Capped Octahedron (6 Sigma + 1 LP)', steric: 7 };
+                }
+                return { hyb: 'sp3', geom: 'Tetrahedral', steric: 4 };
+            }
+
+            // 8. Parse SDF V2000 + Auto-Reconstruct Missing Hypervalent Bonds & 3D VSEPR Coordinates
+            function parseAndEnhanceSdf(sdfText) {
+                const lines = sdfText.split(/\r?\n/);
+                let countsIdx = -1;
+                for (let i = 0; i < Math.min(12, lines.length); i++) {
+                    if (lines[i].indexOf('V2000') > -1) { countsIdx = i; break; }
+                }
+                if (countsIdx === -1) return null;
+
+                const cLine = lines[countsIdx];
+                const numAtoms = parseInt(cLine.substring(0, 3).trim(), 10) || 0;
+                const numBonds = parseInt(cLine.substring(3, 6).trim(), 10) || 0;
+                if (numAtoms === 0) return null;
+
+                const atoms = [];
+                let allZZero = true;
+                for (let a = 1; a <= numAtoms; a++) {
+                    const l = lines[countsIdx + a] || '';
+                    const x = parseFloat(l.substring(0, 10).trim()) || 0;
+                    const y = parseFloat(l.substring(10, 20).trim()) || 0;
+                    const z = parseFloat(l.substring(20, 30).trim()) || 0;
+                    if (Math.abs(z) > 0.01) allZZero = false;
+                    const sym = l.substring(31, 34).trim() || 'C';
+                    atoms.push({ idx: a, x: x, y: y, z: z, sym: sym, bonds: [], sigma: 0, pi: 0, bondOrderSum: 0, lonePairs: 0, hyb: '--', geom: '--', steric: 0 });
+                }
+
+                const bonds = [];
+                for (let b = 1; b <= numBonds; b++) {
+                    const l = lines[countsIdx + numAtoms + b] || '';
+                    const a1 = parseInt(l.substring(0, 3).trim(), 10);
+                    const a2 = parseInt(l.substring(3, 6).trim(), 10);
+                    const type = parseInt(l.substring(6, 9).trim(), 10) || 1;
+                    if (a1 >= 1 && a1 <= numAtoms && a2 >= 1 && a2 <= numAtoms) {
+                        bonds.push({ a1: a1, a2: a2, type: type });
+                        atoms[a1 - 1].bonds.push({ to: a2, type: type });
+                        atoms[a2 - 1].bonds.push({ to: a1, type: type });
+                    }
+                }
+
+                // CRITICAL FIX FOR HYPERVALENT / INORGANIC COMPOUNDS (like XeF6, SF6, PCl5):
+                // If PubChem SDF lists atoms as disconnected (numBonds === 0) when numAtoms > 1,
+                // automatically connect surrounding ligands to the central atom!
+                if (bonds.length === 0 && numAtoms > 1) {
+                    let centralIdx = 0;
+                    // Find unique/heaviest central atom (e.g., Xe in XeF6)
+                    const counts = {};
+                    atoms.forEach(function(a) { counts[a.sym] = (counts[a.sym] || 0) + 1; });
+                    for (let i = 0; i < atoms.length; i++) {
+                        if (counts[atoms[i].sym] === 1 && atoms[i].sym !== 'H') {
+                            centralIdx = i;
+                            break;
+                        }
+                    }
+                    const cAtom = atoms[centralIdx];
+                    atoms.forEach(function(at, idx) {
+                        if (idx === centralIdx) return;
+                        const bType = (at.sym === 'O' && cAtom.sym !== 'H') ? 2 : 1;
+                        bonds.push({ a1: cAtom.idx, a2: at.idx, type: bType });
+                        cAtom.bonds.push({ to: at.idx, type: bType });
+                        at.bonds.push({ to: cAtom.idx, type: bType });
+                    });
+                }
+
+                // If 2D SDF was used (all Z == 0) for a single-center molecule (like XeF6, SF6, PCl5, IF7),
+                // upgrade its coordinates to true 3D VSEPR geometry so it rotates in 3D!
+                if (allZZero && numAtoms >= 3 && numAtoms <= 9) {
+                    let centerAtom = atoms[0];
+                    atoms.forEach(function(a) { if (a.bonds.length > centerAtom.bonds.length) centerAtom = a; });
+                    if (centerAtom.bonds.length === numAtoms - 1) {
+                        centerAtom.x = 0; centerAtom.y = 0; centerAtom.z = 0;
+                        const ligands = atoms.filter(function(a) { return a.idx !== centerAtom.idx; });
+                        const nL = ligands.length;
+                        const R = 1.85;
+                        const coords3D = getIdeal3DVseprVectors(nL, R);
+                        ligands.forEach(function(lig, i) {
+                            const v = coords3D[i] || { x: R, y: 0, z: 0 };
+                            lig.x = v.x; lig.y = v.y; lig.z = v.z;
+                        });
+                    }
+                }
+
+                // Calculate Sigma, Pi, Lone Pairs & Hybridization per atom
+                let totalSigma = 0;
+                let totalPi = 0;
+                bonds.forEach(function(b) {
+                    totalSigma += 1;
+                    if (b.type === 2) totalPi += 1;
+                    else if (b.type === 3) totalPi += 2;
+                    else if (b.type === 4) totalPi += 0.5;
+                });
+                totalPi = Math.round(totalPi);
+
+                let totalLonePairs = 0;
+                let centralAtomObj = atoms[0];
+
+                atoms.forEach(function(at) {
+                    if (at.bonds.length > centralAtomObj.bonds.length) centralAtomObj = at;
+
+                    const sigmaCnt = at.bonds.length;
+                    let piCnt = 0;
+                    let boSum = 0;
+                    at.bonds.forEach(function(bd) {
+                        if (bd.type === 1) { boSum += 1; }
+                        else if (bd.type === 2) { boSum += 2; piCnt += 1; }
+                        else if (bd.type === 3) { boSum += 3; piCnt += 2; }
+                        else if (bd.type === 4) { boSum += 1.5; piCnt += 0.5; }
+                    });
+                    piCnt = Math.round(piCnt);
+                    boSum = Math.round(boSum);
+
+                    const elInfo = ELEMENT_DB[at.sym] || { n: at.sym, v: 4, s: 2 };
+                    const val = elInfo.v;
+                    let lp = 0;
+                    if (at.sym !== 'H' && val >= boSum) {
+                        lp = Math.max(0, Math.floor((val - boSum) / 2));
+                    }
+
+                    at.sigma = sigmaCnt;
+                    at.pi = piCnt;
+                    at.bondOrderSum = boSum;
+                    at.lonePairs = lp;
+                    totalLonePairs += lp;
+
+                    const vsepr = getVseprAndHybridization(sigmaCnt, lp, at.sym);
+                    at.hyb = vsepr.hyb;
+                    at.geom = vsepr.geom;
+                    at.steric = vsepr.steric;
+                });
+
+                // Rebuild valid V2000 SDF string so 3Dmol.js renders all reconstructed 3D coordinates & bonds
+                const rebuiltSdf = buildSdfFromAtomsAndBonds(atoms, bonds);
+
+                return {
+                    atoms: atoms,
+                    bonds: bonds,
+                    totalSigma: totalSigma,
+                    totalPi: totalPi,
+                    totalLonePairs: totalLonePairs,
+                    centralAtom: centralAtomObj,
+                    dominantHyb: centralAtomObj ? centralAtomObj.hyb : 'sp3',
+                    sdf: rebuiltSdf
+                };
+            }
+
+            function getIdeal3DVseprVectors(n, R) {
+                if (n === 2) return [{ x: R, y: 0, z: 0 }, { x: -R, y: 0, z: 0 }];
+                if (n === 3) return [
+                    { x: R, y: 0, z: 0 },
+                    { x: -R * 0.5, y: R * 0.866, z: 0 },
+                    { x: -R * 0.5, y: -R * 0.866, z: 0 }
+                ];
+                if (n === 4) return [
+                    { x: R, y: R, z: R },
+                    { x: -R, y: -R, z: R },
+                    { x: -R, y: R, z: -R },
+                    { x: R, y: -R, z: -R }
+                ].map(function(v) { const m = Math.hypot(v.x, v.y, v.z) / R; return { x: v.x / m, y: v.y / m, z: v.z / m }; });
+                if (n === 5) return [
+                    { x: 0, y: R, z: 0 }, { x: 0, y: -R, z: 0 },
+                    { x: R, y: 0, z: 0 }, { x: -R * 0.5, y: 0, z: R * 0.866 }, { x: -R * 0.5, y: 0, z: -R * 0.866 }
+                ];
+                if (n === 6) return [
+                    { x: R, y: 0, z: 0 }, { x: -R, y: 0, z: 0 },
+                    { x: 0, y: R, z: 0 }, { x: 0, y: -R, z: 0 },
+                    { x: 0, y: 0, z: R }, { x: 0, y: 0, z: -R }
+                ];
+                // n >= 7 (Pentagonal Bipyramidal)
+                const arr = [{ x: 0, y: R, z: 0 }, { x: 0, y: -R, z: 0 }];
+                for (let k = 0; k < n - 2; k++) {
+                    const ang = (k * 2 * Math.PI) / (n - 2);
+                    arr.push({ x: R * Math.cos(ang), y: 0, z: R * Math.sin(ang) });
+                }
+                return arr;
+            }
+
+            function padSdfNum(num, width, dec) {
+                const s = (typeof dec === 'number') ? Number(num).toFixed(dec) : String(num);
+                return s.padStart(width, ' ');
+            }
+
+            function buildSdfFromAtomsAndBonds(atoms, bonds) {
+                const out = ['CHEMFORGE_3D', '  BinaryCartel3D', '', padSdfNum(atoms.length, 3) + padSdfNum(bonds.length, 3) + '  0  0  0  0  0  0  0  0999 V2000'];
+                atoms.forEach(function(a) {
+                    const symField = a.sym.padEnd(3, ' ');
+                    out.push(padSdfNum(a.x, 10, 4) + padSdfNum(a.y, 10, 4) + padSdfNum(a.z, 10, 4) + ' ' + symField + ' 0  0  0  0  0  0  0  0  0  0  0  0');
+                });
+                bonds.forEach(function(b) {
+                    out.push(padSdfNum(b.a1, 3) + padSdfNum(b.a2, 3) + padSdfNum(b.type, 3) + '  0  0  0  0');
+                });
+                out.push('M  END', '');
+                return out.join('\n');
+            }
+
+            // Built-in Formula-to-3D VSEPR Fallback Synthesizer (If offline or for exotic hypervalent formulas!)
+            function synthesizeFromFormulaDirectly(formulaStr) {
+                const regex = /([A-Z][a-z]?)(\d*)/g;
+                const parts = [];
+                let m;
+                while ((m = regex.exec(formulaStr)) !== null) {
+                    if (ELEMENT_DB[m[1]]) {
+                        parts.push({ sym: m[1], count: m[2] ? parseInt(m[2], 10) : 1 });
+                    }
+                }
+                if (parts.length === 0) return null;
+
+                // Pick central atom (lowest count non-H atom)
+                let centerPartIdx = 0;
+                for (let i = 0; i < parts.length; i++) {
+                    if (parts[i].sym !== 'H') { centerPartIdx = i; break; }
+                }
+                const centerSym = parts[centerPartIdx].sym;
+                const atoms = [{ idx: 1, x: 0, y: 0, z: 0, sym: centerSym, bonds: [] }];
+                const ligands = [];
+                parts.forEach(function(p, idx) {
+                    const cnt = (idx === centerPartIdx) ? (p.count - 1) : p.count;
+                    for (let k = 0; k < cnt; k++) ligands.push(p.sym);
+                });
+
+                const vecs = getIdeal3DVseprVectors(ligands.length, 1.85);
+                const bonds = [];
+                ligands.forEach(function(sym, i) {
+                    const v = vecs[i] || { x: 1.8, y: 0, z: 0 };
+                    const aIdx = i + 2;
+                    atoms.push({ idx: aIdx, x: v.x, y: v.y, z: v.z, sym: sym, bonds: [] });
+                    const bType = (sym === 'O' && centerSym !== 'H') ? 2 : 1;
+                    bonds.push({ a1: 1, a2: aIdx, type: bType });
+                });
+
+                const rawSdf = buildSdfFromAtomsAndBonds(atoms, bonds);
+                return parseAndEnhanceSdf(rawSdf);
+            }
+
+            // 9. Render 3D WebGL Model with Dynamic Per-Compound Element Colors!
+            function render3DMolecule(sdfText) {
+                const mol3d = window[MOL3D_KEY];
+                if (!mol3d) {
+                    setTimeout(function() { render3DMolecule(sdfText); }, 350);
+                    return;
+                }
+                cf3DContainer.innerHTML = '';
+                viewer3D = mol3d.createViewer(cf3DContainer, {
+                    backgroundColor: '#04060b'
+                });
+                viewer3D.addModel(sdfText, 'sdf');
+                apply3DStyle();
+                viewer3D.zoomTo();
+                viewer3D.render();
+                viewer3D.spin(isSpinning ? 'y' : false);
+            }
+
+            function apply3DStyle() {
+                if (!viewer3D || !currentParsedMol) return;
+                viewer3D.setStyle({}, {});
+
+                // Apply the active compound's custom color map to each element!
+                Object.keys(currentColorMap).forEach(function(sym) {
+                    const hexCol = currentColorMap[sym].hex;
+                    if (renderStyle === 'stick') {
+                        viewer3D.setStyle({ elem: sym }, {
+                            stick: { radius: 0.16, color: hexCol },
+                            sphere: { scale: 0.32, color: hexCol }
+                        });
+                    } else if (renderStyle === 'sphere') {
+                        viewer3D.setStyle({ elem: sym }, {
+                            sphere: { scale: 0.85, color: hexCol }
+                        });
+                    } else if (renderStyle === 'wire') {
+                        viewer3D.setStyle({ elem: sym }, {
+                            line: { linewidth: 3.5, color: hexCol }
+                        });
+                    }
+                });
+
+                viewer3D.removeAllLabels();
+                if (showAtomLabels) {
+                    currentParsedMol.atoms.forEach(function(at) {
+                        if (at.sym !== 'H' || currentParsedMol.atoms.length <= 14) {
+                            const col = (currentColorMap[at.sym] && currentColorMap[at.sym].hex) || '#00ffcc';
+                            viewer3D.addLabel(at.sym + at.idx, {
+                                position: { x: at.x, y: at.y, z: at.z },
+                                backgroundColor: 'rgba(5, 8, 16, 0.78)',
+                                fontColor: col,
+                                fontSize: 11,
+                                showBackground: true
+                            });
+                        }
+                    });
+                }
+                viewer3D.render();
+            }
+
+            // 10. Draw 2D Lewis Structure & Lone Pair Dots Using Dynamic Compound Colors
+            function drawLewisDiagram(mol) {
+                if (!mol || !cfLewisCanvas) return;
+                const ctx = cfLewisCanvas.getContext('2d');
+                const w = cfLewisCanvas.width, h = cfLewisCanvas.height;
+                ctx.fillStyle = '#050811';
+                ctx.fillRect(0, 0, w, h);
+
+                ctx.strokeStyle = 'rgba(0, 255, 204, 0.06)';
+                ctx.lineWidth = 1;
+                for (let gx = 0; gx < w; gx += 35) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke(); }
+                for (let gy = 0; gy < h; gy += 35) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke(); }
+
+                ctx.fillStyle = '#00ffcc';
+                ctx.font = 'bold 14px Courier New';
+                ctx.textAlign = 'left';
+                ctx.fillText('2D LEWIS DOT STRUCTURE, BONDS & LONE PAIRS // ' + currentCompoundName.toUpperCase(), 18, 28);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '11px Courier New';
+                ctx.fillText('Atom colors match your active compound legend below. Glowing pink dots (..) show non-bonding Lone Pairs.', 18, 46);
+
+                if (mol.atoms.length === 0) return;
+
+                let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+                mol.atoms.forEach(function(a) {
+                    if (a.x < minX) minX = a.x;
+                    if (a.x > maxX) maxX = a.x;
+                    if (a.y < minY) minY = a.y;
+                    if (a.y > maxY) maxY = a.y;
+                });
+                const spanX = Math.max(1.8, maxX - minX);
+                const spanY = Math.max(1.8, maxY - minY);
+                const pad = 95;
+                const scale = Math.min((w - pad * 2) / spanX, (h - pad * 2 - 40) / spanY);
+                const cx = w / 2, cy = (h + 30) / 2;
+                const midX = (minX + maxX) / 2, midY = (minY + maxY) / 2;
+
+                function proj(a) {
+                    return {
+                        px: cx + (a.x - midX) * scale,
+                        py: cy - (a.y - midY) * scale
+                    };
+                }
+
+                mol.bonds.forEach(function(b) {
+                    const p1 = proj(mol.atoms[b.a1 - 1]);
+                    const p2 = proj(mol.atoms[b.a2 - 1]);
+                    const dx = p2.px - p1.px, dy = p2.py - p1.py;
+                    const len = Math.hypot(dx, dy) || 1;
+                    const nx = -dy / len, ny = dx / len;
+
+                    if (b.type === 1) {
+                        ctx.strokeStyle = '#cbd5e1';
+                        ctx.lineWidth = 2.6;
+                        ctx.beginPath(); ctx.moveTo(p1.px, p1.py); ctx.lineTo(p2.px, p2.py); ctx.stroke();
+                    } else if (b.type === 2 || b.type === 4) {
+                        ctx.strokeStyle = '#38bdf8';
+                        ctx.lineWidth = 2.3;
+                        [-4.5, 4.5].forEach(function(off) {
+                            ctx.beginPath();
+                            ctx.moveTo(p1.px + nx * off, p1.py + ny * off);
+                            ctx.lineTo(p2.px + nx * off, p2.py + ny * off);
+                            ctx.stroke();
+                        });
+                    } else if (b.type === 3) {
+                        ctx.strokeStyle = '#f59e0b';
+                        ctx.lineWidth = 2.2;
+                        [-6, 0, 6].forEach(function(off) {
+                            ctx.beginPath();
+                            ctx.moveTo(p1.px + nx * off, p1.py + ny * off);
+                            ctx.lineTo(p2.px + nx * off, p2.py + ny * off);
+                            ctx.stroke();
+                        });
+                    }
+                });
+
+                mol.atoms.forEach(function(a) {
+                    const p = proj(a);
+                    const col = (currentColorMap[a.sym] && currentColorMap[a.sym].hex) || '#00ffcc';
+                    const rad = (a.sym === 'H') ? 13 : 18;
+
+                    ctx.fillStyle = '#090d18';
+                    ctx.beginPath(); ctx.arc(p.px, p.py, rad, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = col;
+                    ctx.lineWidth = 2.5;
+                    ctx.stroke();
+
+                    ctx.fillStyle = col;
+                    ctx.font = 'bold ' + (a.sym === 'H' ? '11px' : '13px') + ' Courier New';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(a.sym, p.px, p.py + 4);
+
+                    if (a.lonePairs > 0) {
+                        const baseAngles = [Math.PI / 2, -Math.PI / 2, 0, Math.PI];
+                        for (let lpIdx = 0; lpIdx < Math.min(4, a.lonePairs); lpIdx++) {
+                            const ang = baseAngles[lpIdx];
+                            const dist = rad + 7;
+                            const lx = p.px + Math.cos(ang) * dist;
+                            const ly = p.py + Math.sin(ang) * dist;
+                            const tx = -Math.sin(ang) * 3.5;
+                            const ty = Math.cos(ang) * 3.5;
+
+                            ctx.fillStyle = '#ff007f';
+                            ctx.beginPath(); ctx.arc(lx - tx, ly - ty, 2.7, 0, Math.PI * 2); ctx.fill();
+                            ctx.beginPath(); ctx.arc(lx + tx, ly + ty, 2.7, 0, Math.PI * 2); ctx.fill();
+                        }
+                    }
+                });
+            }
+
+            // 11. Draw Dynamic Central-Atom Orbital Box Diagram (Supports s, p, and d Orbitals like XeF6 sp3d3!)
+            function drawOrbitalDiagram(mol) {
+                if (!mol || !cfOrbitalCanvas) return;
+                const ctx = cfOrbitalCanvas.getContext('2d');
+                const w = cfOrbitalCanvas.width, h = cfOrbitalCanvas.height;
+                ctx.fillStyle = '#050811';
+                ctx.fillRect(0, 0, w, h);
+
+                const cAtom = mol.centralAtom || mol.atoms[0];
+                const sym = cAtom ? cAtom.sym : 'C';
+                const elInfo = ELEMENT_DB[sym] || { n: sym, v: 4, s: 2 };
+                const shellN = elInfo.s;
+                const valE = elInfo.v;
+                const hyb = cAtom ? cAtom.hyb : 'sp3';
+                const lp = cAtom ? cAtom.lonePairs : 0;
+                const sig = cAtom ? cAtom.sigma : 4;
+                const pi = cAtom ? cAtom.pi : 0;
+
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#00ffcc';
+                ctx.font = 'bold 14px Courier New';
+                ctx.fillText('CENTRAL ATOM [' + sym + ' - ' + elInfo.n.toUpperCase() + '] ORBITAL HYBRIDIZATION // ' + hyb.toUpperCase(), 18, 28);
+
+                function drawBox(x, y, label, arrows, borderCol) {
+                    ctx.strokeStyle = borderCol || '#38bdf8';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x, y, 38, 34);
+                    ctx.fillStyle = '#cbd5e1';
+                    ctx.font = '10px Courier New';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(label, x + 19, y + 48);
+
+                    ctx.fillStyle = (arrows === 2) ? '#c084fc' : '#f59e0b';
+                    ctx.font = 'bold 15px Courier New';
+                    if (arrows === 2) ctx.fillText('\u2191\u2193', x + 19, y + 23);
+                    else if (arrows === 1) ctx.fillText('\u2191', x + 19, y + 23);
+                }
+
+                // Distribute Ground State Valence Electrons into ns and np
+                const gsS = Math.min(2, valE);
+                let remP = Math.max(0, valE - 2);
+                const gsP = [0, 0, 0];
+                for (let i = 0; i < 3 && remP > 0; i++) { gsP[i]++; remP--; }
+                for (let i = 0; i < 3 && remP > 0; i++) { gsP[i]++; remP--; }
+
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 12px Courier New';
+                ctx.fillText('1. GROUND STATE VALENCE SHELL (' + sym + ': ' + valE + ' valence e- in n=' + shellN + '):', 20, 62);
+
+                drawBox(20, 72, shellN + 's', gsS, '#38bdf8');
+                drawBox(72, 72, shellN + 'px', gsP[0], '#38bdf8');
+                drawBox(116, 72, shellN + 'py', gsP[1], '#38bdf8');
+                drawBox(160, 72, shellN + 'pz', gsP[2], '#38bdf8');
+
+                const needsD = (hyb.indexOf('d') > -1 || sig + lp > 4);
+                if (needsD) {
+                    for (let d = 0; d < 5; d++) {
+                        drawBox(218 + d * 44, 72, shellN + 'd' + (d + 1), 0, '#475569');
+                    }
+                }
+
+                // Hybridized State (Showing Lone Pair boxes ↑↓ + Sigma Bonding boxes ↑ + Unhybridized Pi boxes ↑)
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#22c55e';
+                ctx.font = 'bold 12px Courier New';
+                ctx.fillText('2. HYBRIDIZED ORBITALS (' + hyb.toUpperCase() + ' -> ' + lp + ' Lone Pair[s] + ' + sig + ' Sigma Bonding + ' + pi + ' Pi Unhybridized):', 20, 152);
+
+                let bx = 20;
+                for (let l = 0; l < lp; l++) {
+                    drawBox(bx, 162, 'LP (' + hyb + ')', 2, '#c084fc');
+                    bx += 52;
+                }
+                for (let s = 0; s < Math.min(8, sig); s++) {
+                    drawBox(bx, 162, '\u03C3 (' + hyb + ')', 1, '#22c55e');
+                    bx += 52;
+                }
+                for (let p = 0; p < Math.min(4, pi); p++) {
+                    drawBox(bx, 162, '\u03C0 (Unhyb p/d)', 1, '#ec4899');
+                    bx += 58;
+                }
+
+                // Section 3: Visual 3D Orbital Lobe Overlap Diagram
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = 'bold 12px Courier New';
+                ctx.fillText('3. MOLECULAR ORBITAL LOBE OVERLAP & VSEPR GEOMETRY (' + (cAtom ? cAtom.geom.toUpperCase() : '') + '):', 20, 248);
+
+                const cy = 375;
+                const cx = 380;
+                const cCol = (currentColorMap[sym] && currentColorMap[sym].hex) || '#00ffcc';
+
+                // Draw hybrid lobes radiating from Central Atom for each Sigma bond & Lone Pair
+                const totalLobes = Math.max(2, sig + lp);
+                for (let i = 0; i < totalLobes; i++) {
+                    const ang = (i * 2 * Math.PI) / totalLobes - Math.PI / 2;
+                    const isLonePair = i < lp;
+                    const lx = cx + Math.cos(ang) * 62;
+                    const ly = cy + Math.sin(ang) * 52;
+
+                    ctx.save();
+                    ctx.translate(lx, ly);
+                    ctx.rotate(ang);
+                    ctx.fillStyle = isLonePair ? 'rgba(192, 132, 252, 0.32)' : 'rgba(34, 197, 94, 0.26)';
+                    ctx.strokeStyle = isLonePair ? '#c084fc' : '#22c55e';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 50, 20, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+
+                    const tipX = cx + Math.cos(ang) * 118;
+                    const tipY = cy + Math.sin(ang) * 98;
+                    ctx.fillStyle = isLonePair ? '#c084fc' : '#22c55e';
+                    ctx.font = 'bold 11px Courier New';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(isLonePair ? 'LONE PAIR (..)' : '\u03C3 BOND', tipX, tipY);
+                }
+
+                // Center Atom Core
+                ctx.fillStyle = '#090d18';
+                ctx.beginPath(); ctx.arc(cx, cy, 22, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = cCol;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.fillStyle = cCol;
+                ctx.font = 'bold 14px Courier New';
+                ctx.textAlign = 'center';
+                ctx.fillText(sym, cx, cy + 5);
+            }
+
+            function renderAtomTable(mol) {
+                if (!mol || !cfAtomTableBody) return;
+                const heavyAtoms = mol.atoms.filter(function(a) { return a.sym !== 'H'; });
+                const displayAtoms = heavyAtoms.length > 0 ? heavyAtoms : mol.atoms;
+                cfAtomTableBody.innerHTML = displayAtoms.map(function(at) {
+                    const cObj = currentColorMap[at.sym] || { hex: '#00ffcc', name: 'CYAN' };
+                    return '<tr>' +
+                        '<td style="color:' + cObj.hex + ';font-weight:bold;">' + at.sym + at.idx + ' (' + cObj.name + ')</td>' +
+                        '<td>' + at.sigma + '</td>' +
+                        '<td>' + at.pi + '</td>' +
+                        '<td>' + at.lonePairs + '</td>' +
+                        '<td style="color:#f59e0b;font-weight:bold;">' + at.hyb + '</td>' +
+                        '<td>' + at.geom + '</td>' +
+                        '</tr>';
+                }).join('');
+            }
+
+            // 12. Resolve Wikipedia URL OR Compound Name -> Query Wikipedia + NIH PubChem 115M API
+            async function resolveWikipediaUrlOrQuery(raw) {
+                let s = (raw || '').trim();
+                if (!s) return { title: '', extract: '' };
+
+                // If user pasted a Wikipedia link, extract slug and query Wikipedia REST API first
+                if (s.indexOf('wikipedia.org/wiki/') > -1) {
+                    const slug = s.split('wikipedia.org/wiki/')[1].split('#')[0].split('?')[0];
+                    try {
+                        const wRes = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + slug);
+                        if (wRes.ok) {
+                            const wJson = await wRes.json();
+                            return {
+                                title: wJson.title || decodeURIComponent(slug).replace(/_/g, ' '),
+                                extract: wJson.extract || ''
+                            };
+                        }
+                    } catch (e) {}
+                    return { title: decodeURIComponent(slug).replace(/_/g, ' '), extract: '' };
+                }
+
+                // Otherwise, also try fetching Wikipedia summary for the typed name/formula
+                try {
+                    const wRes2 = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(s));
+                    if (wRes2.ok) {
+                        const wJson2 = await wRes2.json();
+                        return {
+                            title: wJson2.title || s,
+                            extract: wJson2.extract || ''
+                        };
+                    }
+                } catch (e) {}
+
+                return { title: s, extract: '' };
+            }
+
+            async function synthesizeCompound(rawInput, customSavedColors) {
+                const raw = (rawInput || '').trim();
+                if (!raw) {
+                    alert('Paste a Wikipedia URL or enter a compound name / formula (e.g., XeF6, H2O, CO2, Benzene) first!');
+                    return;
+                }
+
+                if (typeof playSynth === 'function') playSynth(580, 1520, 0.14, 'triangle');
+                cfStatusMsg.innerHTML = '<span style="color:#f59e0b;">&#9889; Resolving via Wikipedia &amp; NIH PubChem (115M Compounds)...</span>';
+
+                const wikiInfo = await resolveWikipediaUrlOrQuery(raw);
+                const candidates = [];
+                if (wikiInfo.title) candidates.push(wikiInfo.title);
+                if (raw.indexOf('http') === -1 && candidates.indexOf(raw) === -1) candidates.push(raw);
+
+                let prop = null;
+                let sdfText = null;
+                let matchedName = wikiInfo.title || raw;
+
+                for (let i = 0; i < candidates.length; i++) {
+                    const q = candidates[i];
+                    try {
+                        // Try PubChem by compound name
+                        let propRes = await fetch('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/' + encodeURIComponent(q) + '/property/MolecularFormula,MolecularWeight,IUPACName,CanonicalSMILES/JSON');
+                        if (!propRes.ok && /^[A-Za-z0-9]+$/.test(q)) {
+                            // Try PubChem fastformula search if formula like XeF6 was entered
+                            propRes = await fetch('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastformula/' + encodeURIComponent(q) + '/property/MolecularFormula,MolecularWeight,IUPACName,CanonicalSMILES/JSON');
+                        }
+                        if (propRes.ok) {
+                            const propJson = await propRes.json();
+                            prop = propJson.PropertyTable.Properties[0];
+                            matchedName = q;
+                            const cid = prop.CID;
+
+                            let sdfRes = await fetch('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/' + cid + '/SDF?record_type=3d');
+                            if (!sdfRes.ok) {
+                                sdfRes = await fetch('https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/' + cid + '/SDF?record_type=2d');
+                            }
+                            if (sdfRes.ok) {
+                                sdfText = await sdfRes.text();
+                                break;
+                            }
+                        }
+                    } catch (e) {}
+                }
+
+                currentCompoundName = matchedName;
+                colorSeedOffset = 0;
+
+                let parsed = null;
+                if (sdfText) {
+                    parsed = parseAndEnhanceSdf(sdfText);
+                }
+                if (!parsed) {
+                    // Use Built-In 3D VSEPR Formula Synthesizer fallback (Handles XeF6, IF7, SF6, PCl5, etc. even offline!)
+                    const formulaTarget = (prop && prop.MolecularFormula) ? prop.MolecularFormula : matchedName;
+                    parsed = synthesizeFromFormulaDirectly(formulaTarget);
+                }
+
+                if (!parsed) {
+                    cfStatusMsg.innerHTML = '<span style="color:#ff0055;">&#9888; Could not parse structure for "' + matchedName + '". Try pasting its Wikipedia URL or chemical formula (e.g., XeF6, H2O, C6H6)!</span>';
+                    return;
+                }
+
+                currentParsedMol = parsed;
+                currentSdfData = parsed.sdf;
+
+                // Build Compound-Specific Dynamic Color Map!
+                buildDynamicColorMap(parsed, prop ? prop.MolecularFormula : matchedName, customSavedColors);
+
+                cfMolTitle.innerHTML = '&#9883; ' + matchedName.toUpperCase() + (prop && prop.CID ? ' (CID: ' + prop.CID + ')' : '');
+                cfStatusMsg.innerHTML = '<span style="color:#22c55e;">&#10004; Dynamic Color Coding, 3D VSEPR Structure, Lewis Dots &amp; Orbitals Locked!</span>';
+                cfStatFormula.innerText = (prop && prop.MolecularFormula) ? prop.MolecularFormula : matchedName;
+                cfStatWeight.innerText = (prop && prop.MolecularWeight) ? (prop.MolecularWeight + ' g/mol') : '--';
+                cfStatSigma.innerText = parsed.totalSigma + ' \u03C3';
+                cfStatPi.innerText = parsed.totalPi + ' \u03C0';
+                cfStatHyb.innerText = parsed.dominantHyb;
+                cfStatLP.innerText = parsed.totalLonePairs + ' Pairs (' + (parsed.totalLonePairs * 2) + ' e-)';
+
+                renderAtomTable(parsed);
+                drawLewisDiagram(parsed);
+                drawOrbitalDiagram(parsed);
+                render3DMolecule(parsed.sdf);
+
+                let wikiHtml = '';
+                if (prop) {
+                    wikiHtml += '<b>IUPAC Name:</b> ' + (prop.IUPACName || matchedName) + '<br><b>SMILES:</b> <code>' + (prop.CanonicalSMILES || '--') + '</code><br><br>';
+                }
+                if (wikiInfo.extract) {
+                    wikiHtml += wikiInfo.extract;
+                } else {
+                    wikiHtml += 'Synthesized with compound-specific dynamic atom color coding. Click <b>[SHUFFLE COLORS]</b> above to cycle atom colors or <b>[SAVE TO DECK]</b> to store permanently.';
+                }
+                cfWikiSummary.innerHTML = wikiHtml;
+            }
+
+            cfSynthBtn.addEventListener('click', function() {
+                synthesizeCompound(cfQueryInput.value, null);
+            });
+            cfQueryInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') synthesizeCompound(cfQueryInput.value, null);
+            });
+
+            cfWikiOpenBtn.addEventListener('click', function() {
+                const q = (cfQueryInput.value || '').trim() || 'Xenon hexafluoride';
+                window.open('https://en.wikipedia.org/wiki/Special:Search?search=' + encodeURIComponent(q), '_blank');
+            });
+
+            // 13. View Mode & 3D Style Toggles
+            function setStageTab(mode) {
+                cfTab3D.classList.toggle('active', mode === '3d');
+                cfTabLewis.classList.toggle('active', mode === 'lewis');
+                cfTabOrbital.classList.toggle('active', mode === 'orbital');
+
+                cf3DContainer.style.display = (mode === '3d') ? 'block' : 'none';
+                cf3DControls.style.display = (mode === '3d') ? 'flex' : 'none';
+                cfLewisCanvas.style.display = (mode === 'lewis') ? 'block' : 'none';
+                cfOrbitalCanvas.style.display = (mode === 'orbital') ? 'block' : 'none';
+
+                if (mode === '3d' && viewer3D) viewer3D.resize();
+                if (mode === 'lewis' && currentParsedMol) drawLewisDiagram(currentParsedMol);
+                if (mode === 'orbital' && currentParsedMol) drawOrbitalDiagram(currentParsedMol);
+            }
+
+            cfTab3D.addEventListener('click', function() { setStageTab('3d'); });
+            cfTabLewis.addEventListener('click', function() { setStageTab('lewis'); });
+            cfTabOrbital.addEventListener('click', function() { setStageTab('orbital'); });
+
+            cfStyleStick.addEventListener('click', function() {
+                renderStyle = 'stick';
+                cfStyleStick.classList.add('active'); cfStyleSphere.classList.remove('active'); cfStyleWire.classList.remove('active');
+                apply3DStyle();
+            });
+            cfStyleSphere.addEventListener('click', function() {
+                renderStyle = 'sphere';
+                cfStyleSphere.classList.add('active'); cfStyleStick.classList.remove('active'); cfStyleWire.classList.remove('active');
+                apply3DStyle();
+            });
+            cfStyleWire.addEventListener('click', function() {
+                renderStyle = 'wire';
+                cfStyleWire.classList.add('active'); cfStyleStick.classList.remove('active'); cfStyleSphere.classList.remove('active');
+                apply3DStyle();
+            });
+            cfToggleLabels.addEventListener('click', function() {
+                showAtomLabels = !showAtomLabels;
+                cfToggleLabels.classList.toggle('active', showAtomLabels);
+                cfToggleLabels.innerText = showAtomLabels ? 'LABELS: ON' : 'LABELS: OFF';
+                apply3DStyle();
+            });
+            cfToggleSpin.addEventListener('click', function() {
+                isSpinning = !isSpinning;
+                cfToggleSpin.classList.toggle('active', isSpinning);
+                cfToggleSpin.innerText = isSpinning ? 'SPIN: ON' : 'SPIN: OFF';
+                if (viewer3D) viewer3D.spin(isSpinning ? 'y' : false);
+            });
+
+            // 14. Permanent Saved Molecules Deck (Saves Both Compound & Its Custom Color Map!)
+            const CHEM_STORAGE_KEY = 'cartelPermanentChemModelsV2';
+
+            function getSavedMols() {
+                try {
+                    return JSON.parse(localStorage.getItem(CHEM_STORAGE_KEY) || '[]');
+                } catch (e) { return []; }
+            }
+
+            function saveMolsList(list) {
+                localStorage.setItem(CHEM_STORAGE_KEY, JSON.stringify(list));
+            }
+
+            function renderSavedDeck() {
+                const list = getSavedMols();
+                Array.from(cfDeckBar.querySelectorAll('.cf-chip')).forEach(function(c) { c.remove(); });
+                if (cfEmptyHint) cfEmptyHint.style.display = (list.length === 0) ? 'inline' : 'none';
+
+                list.forEach(function(item) {
+                    const chip = document.createElement('button');
+                    chip.className = 'cf-chip';
+                    chip.title = 'Click to load ' + item.label + ' with its custom color code | Right-click to delete';
+                    chip.innerHTML = '&#9883; ' + item.label.toUpperCase();
+                    chip.addEventListener('click', function() {
+                        Array.from(cfDeckBar.querySelectorAll('.cf-chip')).forEach(function(c) { c.classList.remove('active'); });
+                        chip.classList.add('active');
+                        cfQueryInput.value = item.query;
+                        synthesizeCompound(item.query, item.colorMap || null);
+                    });
+                    chip.addEventListener('contextmenu', function(e) {
+                        e.preventDefault();
+                        if (confirm('Delete saved compound "' + item.label + '" from your Chem-Forge deck?')) {
+                            const updated = getSavedMols().filter(function(x) { return x.label.toLowerCase() !== item.label.toLowerCase(); });
+                            saveMolsList(updated);
+                            renderSavedDeck();
+                        }
+                    });
+                    cfDeckBar.appendChild(chip);
+                });
+            }
+            renderSavedDeck();
+
+            cfSaveDeckBtn.addEventListener('click', function() {
+                const q = (cfQueryInput.value || '').trim() || currentCompoundName;
+                if (!q) {
+                    alert('Synthesize a Wikipedia link or compound first before saving!');
+                    return;
+                }
+                const label = prompt('Enter a permanent button name for this molecule (e.g., XeF6, H2O, CO2, BENZENE):', (currentCompoundName || q).toUpperCase());
+                if (!label || !label.trim()) return;
+
+                const list = getSavedMols().filter(function(x) { return x.label.toLowerCase() !== label.trim().toLowerCase(); });
+                list.push({
+                    label: label.trim(),
+                    query: q,
+                    colorMap: currentColorMap
+                });
+                saveMolsList(list);
+                renderSavedDeck();
+            });
+
+            // 15. Ghost-Link Co-Op Partner Molecule Beamer
+            cfBeamBtn.addEventListener('click', function() {
+                if (!currentCompoundName) {
+                    alert('Synthesize a molecule first before beaming!');
+                    return;
+                }
+                if (window.cartelConn && window.cartelConn.open) {
+                    window.cartelConn.send({ type: 'CHEM_FORGE_SYNC', query: currentCompoundName, colorMap: currentColorMap });
+                    cfBeamBtn.innerHTML = '&#128994; BEAMED!';
+                    setTimeout(function() { cfBeamBtn.innerHTML = '&#128225; BEAM MOLECULE'; }, 1500);
+                } else {
+                    alert('Connect with your partner in the Ghost-Link War Room first to beam 3D molecules live!');
+                }
+            });
+
+            setInterval(function() {
+                if (window.cartelConn && !window.cartelConn._chemHookedV2) {
+                    window.cartelConn._chemHookedV2 = true;
+                    window.cartelConn.on('data', function(d) {
+                        if (d && d.type === 'CHEM_FORGE_SYNC' && d.query) {
+                            openChemForge();
+                            synthesizeCompound(d.query, d.colorMap || null);
+                        }
+                    });
+                }
+            }, 1200);
+        })();
     </script>
 </body>
 </html>
