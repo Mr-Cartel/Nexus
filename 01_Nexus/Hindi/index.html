@@ -4128,6 +4128,49 @@
             injectGeneralizedCellModels();
             setTimeout(injectGeneralizedCellModels, 500);
         })();
+// ============================================================================
+        // MOVE 3D BIO-LAB BUTTON FROM BOTTOM-LEFT INTO THE 3-LINES (☰) MENU
+        // ============================================================================
+        (function() {
+            function moveBioLabIntoThreeLines() {
+                const bioModal = document.getElementById('holoBioLabModal');
+                const floatingOrb = document.getElementById('bioLabQuickOrb');
+
+                // Find the Cyber-Lab or other button inside the top-left 3-lines (☰) menu
+                const menuTargetBtn = document.getElementById('cyberLabTrigger') || Array.from(document.querySelectorAll('button, a, div')).find(function(el) {
+                    if (el.id === 'bioLabQuickOrb' || el.id === 'bioLabLauncherBtn') return false;
+                    const txt = (el.innerText || '').trim().toUpperCase();
+                    return txt.indexOf('CYBER-LAB') > -1 || txt.indexOf('GHOST-LINK') > -1 || txt.indexOf('WAR ROOM') > -1;
+                });
+
+                if (menuTargetBtn && menuTargetBtn.parentElement) {
+                    const threeLinesContainer = menuTargetBtn.parentElement;
+
+                    let menuBioBtn = document.getElementById('bioLabThreeLinesBtn');
+                    if (!menuBioBtn) {
+                        menuBioBtn = document.createElement(menuTargetBtn.tagName || 'BUTTON');
+                        menuBioBtn.id = 'bioLabThreeLinesBtn';
+                        menuBioBtn.className = menuTargetBtn.className;
+                        menuBioBtn.style.cssText = menuTargetBtn.style.cssText;
+                        menuBioBtn.innerHTML = '&#129516; 3D BIO-LAB';
+                        menuBioBtn.addEventListener('click', function() {
+                            if (typeof playSynth === 'function') playSynth(520, 1380, 0.12, 'triangle');
+                            if (bioModal) bioModal.classList.add('open');
+                        });
+                        threeLinesContainer.appendChild(menuBioBtn);
+                    }
+
+                    // Remove the floating bottom-left orb from the main screen
+                    if (floatingOrb) floatingOrb.remove();
+                } else if (floatingOrb) {
+                    // Fallback: strip fixed bottom-left positioning
+                    floatingOrb.style.cssText = '';
+                }
+            }
+
+            moveBioLabIntoThreeLines();
+            setTimeout(moveBioLabIntoThreeLines, 400);
+        })();
     </script>
 </body>
 </html>
