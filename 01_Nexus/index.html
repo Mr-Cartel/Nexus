@@ -5471,6 +5471,389 @@
                 }
             }, 1200);
         })();
+// ============================================================================
+        // 3D PHYS-FORGE: PHET HTML5 INTERACTIVE SIMULATIONS + SMART INVOKER & SAVER
+        // ============================================================================
+        (function() {
+            // 1. Inject Phys-Forge Cyberpunk CSS (Z-Index 999999)
+            if (!document.getElementById('physForgeCss')) {
+                const st = document.createElement('style');
+                st.id = 'physForgeCss';
+                st.innerHTML = [
+                    '.physforge-modal { position: fixed !important; top: 2%; left: 1.5%; width: 97%; height: 96%; background: rgba(5, 8, 15, 0.98); border: 2px solid var(--core, #00ffcc); border-radius: 14px; box-shadow: 0 0 70px rgba(0, 255, 204, 0.45); z-index: 999999 !important; display: none; flex-direction: column; overflow: hidden; font-family: Courier New, monospace; color: #e2e8f0; text-align: left; }',
+                    '.physforge-modal.open { display: flex !important; }',
+                    '.pf-hdr { background: linear-gradient(90deg, #091420, #1b0e2e, #091420); border-bottom: 2px solid var(--core, #00ffcc); padding: 9px 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }',
+                    '.pf-title { font-size: 1.02em; font-weight: bold; color: var(--core, #00ffcc); letter-spacing: 1.5px; display: flex; align-items: center; gap: 8px; }',
+                    '.pf-invoke-bar { display: flex; gap: 6px; padding: 8px 14px; background: #0a0f1c; border-bottom: 1px solid #1e293b; flex-wrap: wrap; align-items: center; }',
+                    '.pf-input { flex: 1; min-width: 250px; background: #111827; color: #00ffcc; border: 1px solid var(--core, #00ffcc); border-radius: 6px; padding: 7px 12px; font-family: Courier New, monospace; font-size: 0.82em; font-weight: bold; outline: none; }',
+                    '.pf-deck-bar { display: flex; gap: 6px; padding: 7px 14px; background: #070a12; border-bottom: 1px solid #1e293b; overflow-x: auto; align-items: center; flex-wrap: wrap; }',
+                    '.pf-saved-bar { display: flex; gap: 6px; padding: 6px 14px; background: #05070d; border-bottom: 1px solid #1e293b; overflow-x: auto; align-items: center; min-height: 32px; flex-wrap: wrap; }',
+                    '.pf-chip { background: #111827; color: #38bdf8; border: 1px solid #0284c7; border-radius: 6px; padding: 5px 10px; font-family: Courier New, monospace; font-size: 0.74em; font-weight: bold; cursor: pointer; transition: 0.2s; white-space: nowrap; }',
+                    '.pf-chip:hover, .pf-chip.active { background: var(--core, #00ffcc); color: #000; border-color: var(--core, #00ffcc); box-shadow: 0 0 12px var(--core, #00ffcc); }',
+                    '.pf-chip.saved { background: #1c1608; color: #fde68a; border-color: #f59e0b; }',
+                    '.pf-chip.saved:hover, .pf-chip.saved.active { background: #f59e0b; color: #000; box-shadow: 0 0 12px #f59e0b; }',
+                    '.pf-guide-box { background: rgba(15, 23, 42, 0.96); border-bottom: 2px solid #f59e0b; padding: 12px 18px; font-size: 0.78em; line-height: 1.55; color: #e2e8f0; display: none; }',
+                    '.pf-guide-box.open { display: block; }',
+                    '.pf-stage-wrap { flex: 1; position: relative; width: 100%; height: 100%; background: #020408; overflow: hidden; display: flex; flex-direction: column; }',
+                    '.pf-iframe { width: 100%; flex: 1; border: none; background: #000; display: block; }',
+                    '.pf-status-strip { background: #080c16; border-top: 1px solid #1e293b; padding: 5px 14px; font-size: 0.74em; color: #94a3b8; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }'
+                ].join('\n');
+                document.head.appendChild(st);
+            }
+
+            // 2. Pre-Loaded Core PhET HTML5 Physics Simulations
+            const CORE_PHET_SIMS = [
+                {
+                    id: 'phet_dc_circuit',
+                    btn: '&#128267; DC CIRCUIT KIT',
+                    title: 'CIRCUIT CONSTRUCTION KIT: DC (BREADBOARD, AMMETER & SHORT CIRCUITS)',
+                    slug: 'circuit-construction-kit-dc',
+                    url: 'https://phet.colorado.edu/sims/html/circuit-construction-kit-dc/latest/circuit-construction-kit-dc_en.html'
+                },
+                {
+                    id: 'phet_ac_circuit',
+                    btn: '&#128268; AC + CAPACITOR LAB',
+                    title: 'CIRCUIT CONSTRUCTION KIT: AC, CAPACITORS, INDUCTORS & OSCILLOSCOPE',
+                    slug: 'circuit-construction-kit-ac',
+                    url: 'https://phet.colorado.edu/sims/html/circuit-construction-kit-ac/latest/circuit-construction-kit-ac_en.html'
+                },
+                {
+                    id: 'phet_nlm_forces',
+                    btn: '&#128230; NLM FORCES & FRICTION',
+                    title: 'NEWTONS LAWS OF MOTION: FORCES, FRICTION, NET FORCE & ACCELERATION',
+                    slug: 'forces-and-motion-basics',
+                    url: 'https://phet.colorado.edu/sims/html/forces-and-motion-basics/latest/forces-and-motion-basics_en.html'
+                },
+                {
+                    id: 'phet_projectile',
+                    btn: '&#128640; PROJECTILE CANNON',
+                    title: 'PROJECTILE MOTION SANDBOX (LAUNCH ANGLE, GRAVITY, DRAG & VECTORS)',
+                    slug: 'projectile-motion',
+                    url: 'https://phet.colorado.edu/sims/html/projectile-motion/latest/projectile-motion_en.html'
+                },
+                {
+                    id: 'phet_collision',
+                    btn: '&#128165; COLLISION LAB (1D/2D)',
+                    title: 'ELASTIC & INELASTIC COLLISIONS (MOMENTUM, CENTER OF MASS & KINETIC ENERGY)',
+                    slug: 'collision-lab',
+                    url: 'https://phet.colorado.edu/sims/html/collision-lab/latest/collision-lab_en.html'
+                },
+                {
+                    id: 'phet_gravity',
+                    btn: '&#129680; GRAVITY & ORBITS',
+                    title: 'UNIVERSAL GRAVITATION & KEPLER ORBITS (STAR, PLANET & SATELLITE)',
+                    slug: 'gravity-and-orbits',
+                    url: 'https://phet.colorado.edu/sims/html/gravity-and-orbits/latest/gravity-and-orbits_en.html'
+                },
+                {
+                    id: 'phet_pendulum',
+                    btn: '&#9201; PENDULUM LAB (SHM)',
+                    title: 'PENDULUM OSCILLATIONS, PERIOD TIMER, GRAVITY & ENERGY GRAPHS',
+                    slug: 'pendulum-lab',
+                    url: 'https://phet.colorado.edu/sims/html/pendulum-lab/latest/pendulum-lab_en.html'
+                },
+                {
+                    id: 'phet_skate_energy',
+                    btn: '&#128761; ENERGY SKATE PARK',
+                    title: 'CONSERVATION OF MECHANICAL ENERGY (KINETIC, POTENTIAL & THERMAL)',
+                    slug: 'energy-skate-park',
+                    url: 'https://phet.colorado.edu/sims/html/energy-skate-park/latest/energy-skate-park_en.html'
+                },
+                {
+                    id: 'phet_charges',
+                    btn: '&#9889; ELECTRIC FIELDS',
+                    title: 'CHARGES AND FIELDS (COULOMBS LAW, EQUIPOTENTIAL & E-FIELD SENSORS)',
+                    slug: 'charges-and-fields',
+                    url: 'https://phet.colorado.edu/sims/html/charges-and-fields/latest/charges-and-fields_en.html'
+                },
+                {
+                    id: 'phet_optics',
+                    btn: '&#127752; BENDING LIGHT (OPTICS)',
+                    title: 'SNELLS LAW, REFRACTION, PRISMS & TOTAL INTERNAL REFLECTION',
+                    slug: 'bending-light',
+                    url: 'https://phet.colorado.edu/sims/html/bending-light/latest/bending-light_en.html'
+                }
+            ];
+
+            // 3. Build Phys-Forge Modal DOM
+            const oldModal = document.getElementById('physForgeModal');
+            if (oldModal) oldModal.remove();
+
+            const wrap = document.createElement('div');
+            wrap.innerHTML = [
+                '<div id="physForgeModal" class="physforge-modal">',
+                '  <div class="pf-hdr">',
+                '    <div class="pf-title">&#9889; 3D PHYS-FORGE // PHET INTERACTIVE PHYSICS SANDBOX &amp; PERMANENT SIM VAULT</div>',
+                '    <div style="display:flex; gap:6px; flex-wrap:wrap;">',
+                '      <button id="pfGuideToggleBtn" class="hp-btn" style="border-color:#f59e0b; color:#fde68a;">&#128214; HOW TO INVOKE &amp; SAVE</button>',
+                '      <button id="pfBrowsePhetBtn" class="hp-btn">&#127760; OPEN PHET CATALOG</button>',
+                '      <button id="pfBeamPartnerBtn" class="hp-btn" title="Beam active Physics Sim to Ghost-Link Partner">&#128225; BEAM TO PARTNER</button>',
+                '      <button id="pfFullBtn" class="hp-btn">&#9974; FULLSCREEN</button>',
+                '      <button id="pfCloseBtn" class="hp-btn danger">&#10006; EXIT LAB</button>',
+                '    </div>',
+                '  </div>',
+                '  <div id="pfGuideBox" class="pf-guide-box">',
+                '    <div style="color:#f59e0b; font-weight:bold; margin-bottom:4px;">&#127942; HOW TO INVOKE &amp; PERMANENTLY SAVE ANY PHET SIMULATION IN 3 SECONDS:</div>',
+                '    <div><b>STEP 1 (Find a Sim):</b> Click <b>[&#127760; OPEN PHET CATALOG]</b> above to browse 100+ sims on <i>phet.colorado.edu</i> (or just type a topic name like <code>faradays-law</code>, <code>ohms-law</code>, <code>coulombs-law</code>, <code>gas-properties</code>, <code>wave-on-a-string</code>, or <code>geometric-optics</code>).</div>',
+                '    <div><b>STEP 2 (Invoke It):</b> Copy the URL from your browser address bar and paste it into the box below, then click <b>[&#9889; INVOKE SIM]</b>. Our engine automatically converts any PhET page link into a live, playable HTML5 simulation!</div>',
+                '    <div><b>STEP 3 (Save Forever):</b> Click <b>[&#128190; SAVE TO DECK]</b>, type a custom button name (e.g. <i>FARADAY LAW</i>), and it will be pinned forever as a gold button in your <b>Saved Sims Bar</b> below (Right-click any saved button to delete it).</div>',
+                '  </div>',
+                '  <div class="pf-invoke-bar">',
+                '    <input id="pfInvokeInput" class="pf-input" type="text" placeholder="Paste ANY PhET link (e.g. https://phet.colorado.edu/en/simulations/faradays-law) OR type slug (e.g. ohms-law, gas-properties)..." />',
+                '    <button id="pfInvokeBtn" class="hp-btn active">&#9889; INVOKE SIM</button>',
+                '    <button id="pfSaveSimBtn" class="hp-btn" style="border-color:#f59e0b; color:#fde68a;">&#128190; SAVE TO DECK</button>',
+                '  </div>',
+                '  <div id="pfCoreDeckBar" class="pf-deck-bar"></div>',
+                '  <div id="pfSavedDeckBar" class="pf-saved-bar">',
+                '    <span id="pfSavedEmptyHint" style="font-size:0.73em; color:#64748b; font-style:italic;">&#11088; Your Custom Saved Sims Bar is empty. Invoke any PhET link above and click [SAVE TO DECK] to pin it here forever!</span>',
+                '  </div>',
+                '  <div class="pf-stage-wrap">',
+                '    <iframe id="pfSimFrame" class="pf-iframe" allow="fullscreen; autoplay; accelerometer; gyroscope" allowfullscreen></iframe>',
+                '    <div class="pf-status-strip">',
+                '      <span id="pfActiveSimTitle" style="color:var(--core, #00ffcc); font-weight:bold;">READY</span>',
+                '      <span>&#128187; Powered by University of Colorado Boulder (PhET HTML5 Engine) | Works on Laptop &amp; Mobile Touch</span>',
+                '    </div>',
+                '  </div>',
+                '</div>'
+            ].join('\n');
+            document.body.appendChild(wrap.firstChild);
+
+            // 4. Dock ⚡ 3D PHYS-FORGE Button Inside Top-Left 3-Lines Menu (#cartelHamDrop)
+            function dockPhysForgeMenuButton() {
+                const hamDrop = document.getElementById('cartelHamDrop');
+                const hamBtn = document.getElementById('cartelHamBtn');
+                const oldOrb = document.getElementById('physForgeOrb');
+                if (oldOrb) oldOrb.remove();
+
+                const pfBtn = document.createElement('button');
+                pfBtn.id = 'physForgeOrb';
+                pfBtn.className = 'cyberlab-orb';
+                pfBtn.innerHTML = '&#9889; 3D PHYS-FORGE';
+
+                pfBtn.addEventListener('click', function() {
+                    if (typeof playSynth === 'function') playSynth(520, 1500, 0.12, 'triangle');
+                    if (hamDrop) hamDrop.classList.remove('open');
+                    if (hamBtn) hamBtn.classList.remove('active');
+                    openPhysForge();
+                });
+
+                if (hamDrop) {
+                    hamDrop.appendChild(pfBtn);
+                } else {
+                    document.body.appendChild(pfBtn);
+                }
+            }
+            dockPhysForgeMenuButton();
+
+            // 5. DOM References & Smart PhET URL Converter
+            const pfModal = document.getElementById('physForgeModal');
+            const pfCloseBtn = document.getElementById('pfCloseBtn');
+            const pfFullBtn = document.getElementById('pfFullBtn');
+            const pfGuideToggleBtn = document.getElementById('pfGuideToggleBtn');
+            const pfGuideBox = document.getElementById('pfGuideBox');
+            const pfBrowsePhetBtn = document.getElementById('pfBrowsePhetBtn');
+            const pfBeamPartnerBtn = document.getElementById('pfBeamPartnerBtn');
+            const pfInvokeInput = document.getElementById('pfInvokeInput');
+            const pfInvokeBtn = document.getElementById('pfInvokeBtn');
+            const pfSaveSimBtn = document.getElementById('pfSaveSimBtn');
+            const pfCoreDeckBar = document.getElementById('pfCoreDeckBar');
+            const pfSavedDeckBar = document.getElementById('pfSavedDeckBar');
+            const pfSavedEmptyHint = document.getElementById('pfSavedEmptyHint');
+            const pfSimFrame = document.getElementById('pfSimFrame');
+            const pfActiveSimTitle = document.getElementById('pfActiveSimTitle');
+
+            let currentSimUrl = CORE_PHET_SIMS[0].url;
+            let currentSimTitle = CORE_PHET_SIMS[0].title;
+
+            // Smart Converter: Turns any PhET webpage URL or slug into a direct runnable HTML5 iframe URL!
+            function convertToRunnableSimUrl(rawInput) {
+                let s = (rawInput || '').trim();
+                if (!s) return null;
+
+                // Case 1: Already a direct PhET /sims/html/ embed link
+                if (s.indexOf('phet.colorado.edu/sims/html/') > -1) {
+                    return { url: s, name: s.split('/sims/html/')[1].split('/')[0].replace(/-/g, ' ').toUpperCase() };
+                }
+
+                // Case 2: Standard PhET browse link like https://phet.colorado.edu/en/simulations/faradays-law
+                if (s.indexOf('phet.colorado.edu') > -1 && s.indexOf('/simulations/') > -1) {
+                    const slug = s.split('/simulations/')[1].split('?')[0].split('#')[0].split('/')[0].trim();
+                    if (slug) {
+                        return {
+                            url: 'https://phet.colorado.edu/sims/html/' + slug + '/latest/' + slug + '_en.html',
+                            name: slug.replace(/-/g, ' ').toUpperCase()
+                        };
+                    }
+                }
+
+                // Case 3: Any other full https:// simulation URL (e.g. Falstad or oPhysics)
+                if (/^https?:\/\//i.test(s)) {
+                    return { url: s, name: 'CUSTOM CLOUD SIMULATION' };
+                }
+
+                // Case 4: User typed a PhET simulation name or slug (e.g. "faradays law" or "ohms-law" or "gas-properties")
+                const cleanSlug = s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                if (cleanSlug) {
+                    return {
+                        url: 'https://phet.colorado.edu/sims/html/' + cleanSlug + '/latest/' + cleanSlug + '_en.html',
+                        name: cleanSlug.replace(/-/g, ' ').toUpperCase()
+                    };
+                }
+                return null;
+            }
+
+            function loadSimIntoStage(url, title, activeChipEl) {
+                currentSimUrl = url;
+                currentSimTitle = title || 'INTERACTIVE PHYSICS SIMULATION';
+                if (pfSimFrame.src !== url) {
+                    pfSimFrame.src = url;
+                }
+                pfActiveSimTitle.innerText = 'ACTIVE LAB: ' + currentSimTitle;
+
+                Array.from(document.querySelectorAll('#pfCoreDeckBar .pf-chip, #pfSavedDeckBar .pf-chip')).forEach(function(c) {
+                    c.classList.remove('active');
+                });
+                if (activeChipEl) activeChipEl.classList.add('active');
+            }
+
+            // 6. Populate 10 Core PhET Buttons
+            CORE_PHET_SIMS.forEach(function(sim, idx) {
+                const btn = document.createElement('button');
+                btn.className = 'pf-chip' + (idx === 0 ? ' active' : '');
+                btn.innerHTML = sim.btn;
+                btn.addEventListener('click', function() {
+                    if (typeof playSynth === 'function') playSynth(620, 1450, 0.08, 'triangle');
+                    loadSimIntoStage(sim.url, sim.title, btn);
+                });
+                pfCoreDeckBar.appendChild(btn);
+            });
+
+            // 7. Invoke & Permanent Save Engine (Stored in localStorage)
+            const PHYS_STORAGE_KEY = 'cartelPermanentPhysSims';
+
+            function getSavedSims() {
+                try {
+                    return JSON.parse(localStorage.getItem(PHYS_STORAGE_KEY) || '[]');
+                } catch (e) { return []; }
+            }
+
+            function saveSimsList(list) {
+                localStorage.setItem(PHYS_STORAGE_KEY, JSON.stringify(list));
+            }
+
+            function renderSavedSimsBar() {
+                const list = getSavedSims();
+                Array.from(pfSavedDeckBar.querySelectorAll('.pf-chip')).forEach(function(c) { c.remove(); });
+                if (pfSavedEmptyHint) {
+                    pfSavedEmptyHint.style.display = (list.length === 0) ? 'inline' : 'none';
+                }
+
+                list.forEach(function(item) {
+                    const chip = document.createElement('button');
+                    chip.className = 'pf-chip saved';
+                    chip.title = 'Click to launch ' + item.label + ' | Right-click to delete';
+                    chip.innerHTML = '&#11088; ' + item.label.toUpperCase();
+                    chip.addEventListener('click', function() {
+                        if (typeof playSynth === 'function') playSynth(660, 1520, 0.09, 'triangle');
+                        loadSimIntoStage(item.url, item.label.toUpperCase(), chip);
+                    });
+                    chip.addEventListener('contextmenu', function(e) {
+                        e.preventDefault();
+                        if (confirm('Delete saved physics simulation "' + item.label + '" from your deck?')) {
+                            const updated = getSavedSims().filter(function(x) { return x.url !== item.url; });
+                            saveSimsList(updated);
+                            renderSavedSimsBar();
+                        }
+                    });
+                    pfSavedDeckBar.appendChild(chip);
+                });
+            }
+            renderSavedSimsBar();
+
+            function handleInvokeSim() {
+                const parsed = convertToRunnableSimUrl(pfInvokeInput.value);
+                if (!parsed) {
+                    alert('Paste a PhET simulation link (from phet.colorado.edu) or type a simulation slug like "faradays-law" or "ohms-law" first!');
+                    return;
+                }
+                if (typeof playSynth === 'function') playSynth(580, 1550, 0.12, 'triangle');
+                loadSimIntoStage(parsed.url, parsed.name, null);
+            }
+
+            pfInvokeBtn.addEventListener('click', handleInvokeSim);
+            pfInvokeInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') handleInvokeSim();
+            });
+
+            pfSaveSimBtn.addEventListener('click', function() {
+                const raw = (pfInvokeInput.value || '').trim();
+                const parsed = raw ? convertToRunnableSimUrl(raw) : { url: currentSimUrl, name: currentSimTitle };
+                if (!parsed || !parsed.url) {
+                    alert('Invoke or select a simulation first before saving!');
+                    return;
+                }
+                const label = prompt('Enter a permanent button name for this Physics Simulation (e.g., FARADAYS LAW, OHMS LAW, FLUID TOWER):', parsed.name);
+                if (!label || !label.trim()) return;
+
+                const list = getSavedSims().filter(function(x) { return x.url !== parsed.url; });
+                list.push({ label: label.trim(), url: parsed.url });
+                saveSimsList(list);
+                pfInvokeInput.value = '';
+                renderSavedSimsBar();
+                loadSimIntoStage(parsed.url, label.trim().toUpperCase(), null);
+                if (typeof playSynth === 'function') playSynth(600, 1650, 0.14, 'triangle');
+            });
+
+            // 8. Top Header Buttons (Guide Toggle, Catalog, Fullscreen, Partner Beam, Close)
+            pfGuideToggleBtn.addEventListener('click', function() {
+                if (typeof playSynth === 'function') playSynth(700, 1350, 0.08, 'sine');
+                pfGuideBox.classList.toggle('open');
+                pfGuideToggleBtn.classList.toggle('active', pfGuideBox.classList.contains('open'));
+            });
+
+            pfBrowsePhetBtn.addEventListener('click', function() {
+                window.open('https://phet.colorado.edu/en/simulations/filter?subjects=physics&type=html', '_blank');
+            });
+
+            pfFullBtn.addEventListener('click', function() {
+                if (pfSimFrame.requestFullscreen) pfSimFrame.requestFullscreen();
+                else if (pfSimFrame.webkitRequestFullscreen) pfSimFrame.webkitRequestFullscreen();
+            });
+
+            pfBeamPartnerBtn.addEventListener('click', function() {
+                if (window.cartelConn && window.cartelConn.open) {
+                    window.cartelConn.send({ type: 'PHYS_FORGE_SYNC', url: currentSimUrl, title: currentSimTitle });
+                    pfBeamPartnerBtn.innerHTML = '&#128994; BEAMED!';
+                    setTimeout(function() { pfBeamPartnerBtn.innerHTML = '&#128225; BEAM TO PARTNER'; }, 1500);
+                } else {
+                    alert('Connect with your partner in the Ghost-Link War Room first to beam live Physics Simulations!');
+                }
+            });
+
+            setInterval(function() {
+                if (window.cartelConn && !window.cartelConn._physHooked) {
+                    window.cartelConn._physHooked = true;
+                    window.cartelConn.on('data', function(d) {
+                        if (d && d.type === 'PHYS_FORGE_SYNC' && d.url) {
+                            openPhysForge();
+                            loadSimIntoStage(d.url, d.title || 'PARTNER BEAMED SIM', null);
+                        }
+                    });
+                }
+            }, 1200);
+
+            function openPhysForge() {
+                pfModal.classList.add('open');
+                if (!pfSimFrame.src) {
+                    loadSimIntoStage(CORE_PHET_SIMS[0].url, CORE_PHET_SIMS[0].title, pfCoreDeckBar.querySelector('.pf-chip'));
+                }
+            }
+
+            pfCloseBtn.addEventListener('click', function() {
+                if (typeof playSynth === 'function') playSynth(600, 300, 0.08, 'sawtooth');
+                pfModal.classList.remove('open');
+            });
+        })();
     </script>
 </body>
 </html>
