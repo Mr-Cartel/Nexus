@@ -5850,6 +5850,748 @@
                 pfModal.classList.remove('open');
             });
         })();
+// ============================================================================
+        // 3D GEO-RADAR: WIKIPEDIA + OPENSTREETMAP GEOJSON RIVER/MOUNTAIN TRACER,
+        // SATELLITE/TOPO CONTOUR MAP, LIVE LAT/LON TRACKER & ICSE INDIA OVERLAY
+        // ============================================================================
+        (function() {
+            // 1. Dynamically Load Leaflet.js Open-Source Mapping Engine (CSS + JS)
+            if (!document.getElementById('leafletGeoCss')) {
+                const lCss = document.createElement('link');
+                lCss.id = 'leafletGeoCss';
+                lCss.rel = 'stylesheet';
+                lCss.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+                document.head.appendChild(lCss);
+            }
+            if (!window.L && !document.getElementById('leafletGeoScript')) {
+                const lSc = document.createElement('script');
+                lSc.id = 'leafletGeoScript';
+                lSc.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+                lSc.async = true;
+                document.head.appendChild(lSc);
+            }
+
+            // 2. Inject Geo-Radar Cyberpunk Styles (Z-Index 999999)
+            if (!document.getElementById('geoRadarCss')) {
+                const st = document.createElement('style');
+                st.id = 'geoRadarCss';
+                st.innerHTML = [
+                    '.georadar-modal { position: fixed !important; top: 2%; left: 1.5%; width: 97%; height: 96%; background: rgba(5, 9, 15, 0.98); border: 2px solid var(--core, #00ffcc); border-radius: 14px; box-shadow: 0 0 70px rgba(0, 255, 204, 0.45); z-index: 999999 !important; display: none; flex-direction: column; overflow: hidden; font-family: Courier New, monospace; color: #e2e8f0; text-align: left; }',
+                    '.georadar-modal.open { display: flex !important; }',
+                    '.gr-hdr { background: linear-gradient(90deg, #07191e, #121029, #07191e); border-bottom: 2px solid var(--core, #00ffcc); padding: 9px 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }',
+                    '.gr-title { font-size: 1.02em; font-weight: bold; color: var(--core, #00ffcc); letter-spacing: 1.5px; display: flex; align-items: center; gap: 8px; }',
+                    '.gr-search-bar { display: flex; gap: 6px; padding: 8px 14px; background: #090e18; border-bottom: 1px solid #1e293b; flex-wrap: wrap; align-items: center; }',
+                    '.gr-input { flex: 1; min-width: 210px; background: #111827; color: #00ffcc; border: 1px solid var(--core, #00ffcc); border-radius: 6px; padding: 7px 10px; font-family: Courier New, monospace; font-size: 0.8em; font-weight: bold; outline: none; }',
+                    '.gr-coord-input { width: 92px; background: #0f172a; color: #38bdf8; border: 1px solid #0284c7; border-radius: 6px; padding: 7px 8px; font-family: Courier New, monospace; font-size: 0.78em; font-weight: bold; text-align: center; outline: none; }',
+                    '.gr-layer-bar { display: flex; gap: 6px; padding: 6px 14px; background: #070b12; border-bottom: 1px solid #1e293b; overflow-x: auto; align-items: center; justify-content: space-between; flex-wrap: wrap; }',
+                    '.gr-saved-bar { display: flex; gap: 6px; padding: 6px 14px; background: #05080e; border-bottom: 1px solid #1e293b; overflow-x: auto; align-items: center; min-height: 32px; flex-wrap: wrap; }',
+                    '.gr-chip { background: #111827; color: #38bdf8; border: 1px solid #0284c7; border-radius: 6px; padding: 5px 9px; font-family: Courier New, monospace; font-size: 0.73em; font-weight: bold; cursor: pointer; transition: 0.2s; white-space: nowrap; }',
+                    '.gr-chip:hover, .gr-chip.active { background: var(--core, #00ffcc); color: #000; border-color: var(--core, #00ffcc); box-shadow: 0 0 12px var(--core, #00ffcc); }',
+                    '.gr-chip.saved { background: #1c1608; color: #fde68a; border-color: #f59e0b; }',
+                    '.gr-chip.saved:hover, .gr-chip.saved.active { background: #f59e0b; color: #000; box-shadow: 0 0 12px #f59e0b; }',
+                    '.gr-main { display: flex; flex: 1; min-height: 0; overflow: hidden; }',
+                    '.gr-map-col { flex: 1.65; display: flex; flex-direction: column; background: #03060a; border-right: 1px solid #1e293b; position: relative; min-width: 0; }',
+                    '.gr-map-box { flex: 1; width: 100%; height: 100%; position: relative; z-index: 1; background: #040810; cursor: crosshair !important; }',
+                    '.gr-hud-strip { background: #080d18; border-top: 1px solid #1e293b; padding: 6px 12px; font-size: 0.74em; color: #38bdf8; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; z-index: 10; }',
+                    '.gr-info-col { flex: 1.05; display: flex; flex-direction: column; background: #070b14; padding: 12px; overflow-y: auto; gap: 10px; min-width: 310px; max-width: 490px; }',
+                    '.gr-card { background: rgba(15, 23, 42, 0.92); border: 1px solid #1e3a8a; border-radius: 8px; padding: 11px; }',
+                    '.gr-card h3 { margin: 0 0 8px 0; color: var(--core, #00ffcc); font-size: 0.86em; letter-spacing: 1px; border-bottom: 1px solid #1e293b; padding-bottom: 5px; }',
+                    '.gr-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }',
+                    '.gr-stat { background: #090d16; border: 1px solid #1e293b; border-radius: 6px; padding: 6px 8px; font-size: 0.73em; color: #94a3b8; }',
+                    '.gr-stat-val { font-size: 1.04em; font-weight: bold; color: #38bdf8; display: block; margin-top: 2px; word-break: break-word; }',
+                    '.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: rgba(8, 13, 24, 0.96) !important; color: #00ffcc !important; border: 1px solid #00ffcc !important; font-family: Courier New, monospace !important; box-shadow: 0 0 18px rgba(0,255,204,0.4) !important; }',
+                    '@media (max-width: 900px) { .gr-main { flex-direction: column; overflow-y: auto; } .gr-map-col { height: 52vh; flex: none; } .gr-info-col { max-width: 100%; flex: none; } }'
+                ].join('\n');
+                document.head.appendChild(st);
+            }
+
+            // 3. Build Geo-Radar Modal DOM
+            const oldModal = document.getElementById('geoRadarModal');
+            if (oldModal) oldModal.remove();
+
+            const wrap = document.createElement('div');
+            wrap.innerHTML = [
+                '<div id="geoRadarModal" class="georadar-modal">',
+                '  <div class="gr-hdr">',
+                '    <div class="gr-title">&#127757; 3D GEO-RADAR // GLOBAL PHYSICAL GEOGRAPHY, RIVER/MOUNTAIN TRACER &amp; LAT/LON TRACKER</div>',
+                '    <div style="display:flex; gap:6px; flex-wrap:wrap;">',
+                '      <button id="grEarth3DBtn" class="hp-btn" style="border-color:#22c55e; color:#86efac;" title="Open active coordinates in 3D Google Earth Web">&#127758; 3D GOOGLE EARTH</button>',
+                '      <button id="grPeakFinderBtn" class="hp-btn" style="border-color:#38bdf8; color:#bae6fd;" title="Open 360 Mountain Horizon Scanner at active coordinates">&#127956; 3D PEAK HORIZON</button>',
+                '      <button id="grBeamPartnerBtn" class="hp-btn" title="Beam active Physical Feature &amp; Coordinates to Ghost-Link Partner">&#128225; BEAM TO PARTNER</button>',
+                '      <button id="grCloseBtn" class="hp-btn danger">&#10006; EXIT RADAR</button>',
+                '    </div>',
+                '  </div>',
+                '  <div class="gr-search-bar">',
+                '    <input id="grQueryInput" class="gr-input" type="text" placeholder="Type ANY River, Mountain, Pass, Lake, Plateau (e.g. Ganga River, Mount Everest, Karakoram Pass) OR paste Wikipedia URL..." />',
+                '    <button id="grScanBtn" class="hp-btn active">&#128269; SCAN &amp; TRACE</button>',
+                '    <button id="grSaveDeckBtn" class="hp-btn" style="border-color:#f59e0b; color:#fde68a;">&#128190; SAVE TO DECK</button>',
+                '    <span style="color:#64748b; font-size:0.75em;">| LAT/LON:</span>',
+                '    <input id="grLatInput" class="gr-coord-input" type="text" placeholder="Lat (27.98)" />',
+                '    <input id="grLonInput" class="gr-coord-input" type="text" placeholder="Lon (86.92)" />',
+                '    <button id="grGoCoordBtn" class="hp-btn">&#127919; GO LAT/LON</button>',
+                '  </div>',
+                '  <div class="gr-layer-bar">',
+                '    <div style="display:flex; gap:5px; flex-wrap:wrap; align-items:center;">',
+                '      <span style="font-size:0.72em; color:#94a3b8; font-weight:bold;">MAP LAYER:</span>',
+                '      <button id="grLayerSat" class="gr-chip active">&#128752; SATELLITE + LABELS</button>',
+                '      <button id="grLayerTopo" class="gr-chip">&#127956; TOPO CONTOURS (ELEVATION)</button>',
+                '      <button id="grLayerDark" class="gr-chip">&#128374; CYBER DARK RADAR</button>',
+                '    </div>',
+                '    <div style="display:flex; gap:5px; flex-wrap:wrap; align-items:center;">',
+                '      <span style="font-size:0.72em; color:#f59e0b; font-weight:bold;">ICSE INDIA OVERLAYS:</span>',
+                '      <button class="gr-chip icse-layer-btn" data-cat="rivers">&#127754; INDIA RIVERS</button>',
+                '      <button class="gr-chip icse-layer-btn" data-cat="mountains">&#9968; MOUNTAINS &amp; PEAKS</button>',
+                '      <button class="gr-chip icse-layer-btn" data-cat="plateaus">&#128681; PASSES &amp; PLATEAUS</button>',
+                '      <button class="gr-chip icse-layer-btn" data-cat="water">&#128167; LAKES &amp; GULFS</button>',
+                '      <button id="grClearOverlayBtn" class="gr-chip" style="border-color:#ef4444; color:#fca5a5;">&#129529; CLEAR PINS</button>',
+                '    </div>',
+                '  </div>',
+                '  <div id="grSavedBar" class="gr-saved-bar">',
+                '    <span id="grSavedHint" style="font-size:0.73em; color:#64748b; font-style:italic;">&#11088; Saved Geo-Deck is empty. Search any River, Mountain, Pass, or Lat/Lon above and click [SAVE TO DECK] to pin it here forever!</span>',
+                '  </div>',
+                '  <div class="gr-main">',
+                '    <div class="gr-map-col">',
+                '      <div id="grLeafletMap" class="gr-map-box"></div>',
+                '      <div class="gr-hud-strip">',
+                '        <span id="grCursorHud">&#129517; CURSOR TRACKER: Move mouse over map to track live Latitude &amp; Longitude</span>',
+                '        <span style="color:#94a3b8;">&#128433; Click ANYWHERE on map to lock coordinates, elevation &amp; solar time!</span>',
+                '      </div>',
+                '    </div>',
+                '    <div class="gr-info-col">',
+                '      <div class="gr-card">',
+                '        <h3 id="grTargetHeading">&#129517; LIVE LONGITUDE / LATITUDE &amp; SOLAR TIME TRACKER</h3>',
+                '        <div id="grStatusBanner" style="font-size:0.76em; color:#94a3b8; margin-bottom:8px;">Click anywhere on the map or search a physical feature to lock its exact coordinates, elevation &amp; solar time.</div>',
+                '        <div class="gr-grid">',
+                '          <div class="gr-stat">LATITUDE (DEC / DMS)<span id="grValLat" class="gr-stat-val">23.5000&#176; N</span></div>',
+                '          <div class="gr-stat">LONGITUDE (DEC / DMS)<span id="grValLon" class="gr-stat-val">82.5000&#176; E</span></div>',
+                '          <div class="gr-stat">ELEVATION (ALTIMETER)<span id="grValElev" class="gr-stat-val" style="color:#22c55e;">-- m</span></div>',
+                '          <div class="gr-stat">CLIMATIC ZONE<span id="grValZone" class="gr-stat-val" style="color:#f59e0b;">Torrid / Tropical</span></div>',
+                '          <div class="gr-stat">LOCAL SOLAR TIME (LMT)<span id="grValSolar" class="gr-stat-val" style="color:#c084fc;">GMT +5h 30m</span></div>',
+                '          <div class="gr-stat">OFFSET FROM IST (82.5&#176;E)<span id="grValIstDiff" class="gr-stat-val" style="color:#38bdf8;">0 min (On IST Meridian)</span></div>',
+                '        </div>',
+                '      </div>',
+                '      <div class="gr-card">',
+                '        <h3>&#128752; PHYSICAL FEATURE TELEMETRY (OSM + GEOJSON)</h3>',
+                '        <div id="grOsmDetails" style="font-size:0.76em; color:#cbd5e1; line-height:1.45;">',
+                '          <b>Feature Class:</b> Standby<br><b>GeoJSON Boundary / River Course:</b> Ready to trace. When you search a river (like <i>Ganga River</i> or <i>Nile</i>) or mountain chain, its entire physical geometry is highlighted on the map.',
+                '        </div>',
+                '      </div>',
+                '      <div class="gr-card">',
+                '        <h3>&#128214; WIKIPEDIA GEOGRAPHICAL DOSSIER</h3>',
+                '        <div id="grWikiBox" style="font-size:0.76em; color:#cbd5e1; line-height:1.48; max-height:210px; overflow-y:auto;">',
+                '          Search any physical feature or paste a Wikipedia link above to pull its complete geographical encyclopedic summary, origin, tributaries, or elevation profile.',
+                '        </div>',
+                '      </div>',
+                '    </div>',
+                '  </div>',
+                '</div>'
+            ].join('\n');
+            document.body.appendChild(wrap.firstChild);
+
+            // 4. Dock 🌍 3D GEO-RADAR Inside Top-Left 3-Lines Menu (#cartelHamDrop)
+            function dockGeoRadarMenuButton() {
+                const hamDrop = document.getElementById('cartelHamDrop');
+                const hamBtn = document.getElementById('cartelHamBtn');
+                const oldOrb = document.getElementById('geoRadarOrb');
+                if (oldOrb) oldOrb.remove();
+
+                const grBtn = document.createElement('button');
+                grBtn.id = 'geoRadarOrb';
+                grBtn.className = 'cyberlab-orb';
+                grBtn.innerHTML = '&#127757; 3D GEO-RADAR';
+
+                grBtn.addEventListener('click', function() {
+                    if (typeof playSynth === 'function') playSynth(540, 1460, 0.12, 'triangle');
+                    if (hamDrop) hamDrop.classList.remove('open');
+                    if (hamBtn) hamBtn.classList.remove('active');
+                    openGeoRadar();
+                });
+
+                if (hamDrop) {
+                    hamDrop.appendChild(grBtn);
+                } else {
+                    document.body.appendChild(grBtn);
+                }
+            }
+            dockGeoRadarMenuButton();
+
+            // 5. ICSE High-Yield India Physical Features Database
+            const ICSE_INDIA_FEATURES = {
+                rivers: [
+                    { name: 'Ganga River', lat: 25.3176, lon: 83.0062, desc: 'Origin: Gangotri Glacier (Bhagirathi); Major tributaries: Yamuna, Ghaghara, Gandak, Kosi, Son; drains into Bay of Bengal forming Sundarbans Delta.' },
+                    { name: 'Indus River', lat: 34.1526, lon: 77.5771, desc: 'Origin: Near Lake Mansarovar (Tibet); flows NW through Ladakh between Ladakh & Zanskar ranges; 5 tributaries: Jhelum, Chenab, Ravi, Beas, Sutlej.' },
+                    { name: 'Brahmaputra River', lat: 26.2006, lon: 92.9376, desc: 'Known as Tsangpo in Tibet, Dihang in Arunachal, Brahmaputra in Assam, and Jamuna in Bangladesh; forms Majuli river island.' },
+                    { name: 'Narmada River', lat: 22.7500, lon: 77.7200, desc: 'Origin: Amarkantak Plateau; flows westward in a rift valley between Vindhya (North) and Satpura (South) ranges into Gulf of Khambhat.' },
+                    { name: 'Tapi (Tapti) River', lat: 21.2500, lon: 73.5000, desc: 'Origin: Multai (Betul district, MP); flows westward south of Satpura range into the Arabian Sea (Gulf of Khambhat).' },
+                    { name: 'Godavari River (Dakshin Ganga)', lat: 17.0000, lon: 81.7800, desc: 'Longest peninsular river (1465 km); Origin: Trimbakeshwar (Nashik, Western Ghats); drains into Bay of Bengal.' },
+                    { name: 'Krishna River', lat: 16.5062, lon: 80.6480, desc: 'Origin: Mahabaleshwar (Western Ghats); major tributary: Tungabhadra; forms fertile delta in Andhra Pradesh.' },
+                    { name: 'Kaveri (Cauvery) River', lat: 10.8505, lon: 78.6921, desc: 'Origin: Talakaveri (Brahmagiri Hills, Kodagu); receives rainfall from both SW and NE Monsoons.' },
+                    { name: 'Mahanadi River', lat: 20.4625, lon: 85.8830, desc: 'Origin: Sihawa (Chhattisgarh); Hirakud Dam is built across it; drains into Bay of Bengal in Odisha.' }
+                ],
+                mountains: [
+                    { name: 'Mount K2 (Godwin-Austen)', lat: 35.8800, lon: 76.5151, desc: 'Highest peak in Karakoram Range & India (8,611 m).' },
+                    { name: 'Kanchenjunga Peak', lat: 27.7025, lon: 88.1475, desc: 'Highest Himalayan peak in Sikkim, India (8,586 m) on the India-Nepal border.' },
+                    { name: 'Aravalli Range (Guru Shikhar)', lat: 24.6500, lon: 72.7800, desc: 'Oldest fold mountain range in India (residual mountain); runs NE-SW across Rajasthan; parallel to SW Monsoon winds.' },
+                    { name: 'Vindhya Range', lat: 23.5000, lon: 78.5000, desc: 'Block/scarp mountain dividing North India (Indo-Gangetic plain) from Peninsular India; north of Narmada rift valley.' },
+                    { name: 'Satpura Range', lat: 22.4500, lon: 78.4000, desc: 'Block mountain (Horst) flanked by Narmada graben in the north and Tapi graben in the south; highest peak: Dhupgarh.' },
+                    { name: 'Western Ghats (Sahyadris)', lat: 14.0000, lon: 75.0000, desc: 'Continuous steep escarpment along western coast; causes heavy orographic rainfall on windward side; highest peak: Anamudi (2,695 m).' },
+                    { name: 'Eastern Ghats', lat: 17.5000, lon: 82.5000, desc: 'Discontinuous, older hills dissected by east-flowing rivers (Mahanadi, Godavari, Krishna, Kaveri).' },
+                    { name: 'Nilgiri Hills (Blue Mountains)', lat: 11.4102, lon: 76.6950, desc: 'Meeting point (knot) of Western Ghats and Eastern Ghats; highest peak: Doddabetta (2,637 m).' }
+                ],
+                plateaus: [
+                    { name: 'Karakoram Pass', lat: 35.5133, lon: 77.8247, desc: 'High mountain pass (5,540 m) in the Karakoram range connecting Ladakh with Tarim Basin.' },
+                    { name: 'Nathu La Pass', lat: 27.3866, lon: 88.8309, desc: 'Strategic Himalayan mountain pass in Sikkim connecting India with Chumbi Valley (Tibet).' },
+                    { name: 'Deccan Plateau', lat: 18.0000, lon: 77.0000, desc: 'Large triangular volcanic basaltic (Deccan Trap) plateau tilted eastward; rich in Black Regur cotton soil.' },
+                    { name: 'Chota Nagpur Plateau', lat: 23.3500, lon: 85.3300, desc: 'Mineral heartland (Ruhr of India) in Jharkhand/Odisha; drained by Damodar River; rich in coal, iron ore, and mica.' },
+                    { name: 'Malwa Plateau', lat: 23.8000, lon: 76.0000, desc: 'Volcanic lava plateau north of Vindhya range drained by Chambal, Betwa, and Ken rivers.' },
+                    { name: 'Thar Desert (Great Indian Desert)', lat: 27.0000, lon: 71.0000, desc: 'Arid desert west of Aravalli range; inland drainage (Luni River).' }
+                ],
+                water: [
+                    { name: 'Chilika Lake', lat: 19.7147, lon: 85.3189, desc: 'Largest brackish water coastal lagoon in India (Odisha coast, south of Mahanadi delta).' },
+                    { name: 'Wular Lake', lat: 34.3333, lon: 74.5500, desc: 'Largest freshwater tectonic lake in India (Bandipora, Jammu & Kashmir), fed by Jhelum River.' },
+                    { name: 'Gulf of Kutch', lat: 22.6000, lon: 69.5000, desc: 'Inlet of Arabian Sea between Kutch and Kathiawar peninsulas in Gujarat.' },
+                    { name: 'Gulf of Khambhat (Cambay)', lat: 21.5000, lon: 72.4000, desc: 'Bay of Arabian Sea where Narmada, Tapi, Mahi, and Sabarmati rivers drain.' },
+                    { name: 'Palk Strait & Gulf of Mannar', lat: 9.9000, lon: 79.4500, desc: 'Shallow strait separating Tamil Nadu (India) from Sri Lanka.' },
+                    { name: 'Indian Standard Meridian (82.5 E)', lat: 25.1500, lon: 82.5000, desc: 'Standard Meridian of India (82 deg 30 min E) passing through Mirzapur (near Prayagraj, UP); IST = GMT + 5:30.' }
+                ]
+            };
+
+            // 6. DOM References & Map State
+            const grModal = document.getElementById('geoRadarModal');
+            const grCloseBtn = document.getElementById('grCloseBtn');
+            const grEarth3DBtn = document.getElementById('grEarth3DBtn');
+            const grPeakFinderBtn = document.getElementById('grPeakFinderBtn');
+            const grBeamPartnerBtn = document.getElementById('grBeamPartnerBtn');
+            const grQueryInput = document.getElementById('grQueryInput');
+            const grScanBtn = document.getElementById('grScanBtn');
+            const grSaveDeckBtn = document.getElementById('grSaveDeckBtn');
+            const grLatInput = document.getElementById('grLatInput');
+            const grLonInput = document.getElementById('grLonInput');
+            const grGoCoordBtn = document.getElementById('grGoCoordBtn');
+
+            const grLayerSat = document.getElementById('grLayerSat');
+            const grLayerTopo = document.getElementById('grLayerTopo');
+            const grLayerDark = document.getElementById('grLayerDark');
+            const grClearOverlayBtn = document.getElementById('grClearOverlayBtn');
+            const grSavedBar = document.getElementById('grSavedBar');
+            const grSavedHint = document.getElementById('grSavedHint');
+
+            const grCursorHud = document.getElementById('grCursorHud');
+            const grTargetHeading = document.getElementById('grTargetHeading');
+            const grStatusBanner = document.getElementById('grStatusBanner');
+            const grValLat = document.getElementById('grValLat');
+            const grValLon = document.getElementById('grValLon');
+            const grValElev = document.getElementById('grValElev');
+            const grValZone = document.getElementById('grValZone');
+            const grValSolar = document.getElementById('grValSolar');
+            const grValIstDiff = document.getElementById('grValIstDiff');
+            const grOsmDetails = document.getElementById('grOsmDetails');
+            const grWikiBox = document.getElementById('grWikiBox');
+
+            let map = null;
+            let baseLayers = {};
+            let currentLayerGroup = null;
+            let icseOverlayGroup = null;
+            let lockedLat = 23.5000;
+            let lockedLon = 82.5000;
+            let currentFeatureName = 'Indian Standard Meridian (82.5 E)';
+
+            // 7. Coordinate Math Helpers (DMS, Climatic Zone, Solar Time & IST Offset)
+            function toDMS(deg, isLat) {
+                const dir = isLat ? (deg >= 0 ? 'N' : 'S') : (deg >= 0 ? 'E' : 'W');
+                const abs = Math.abs(deg);
+                const d = Math.floor(abs);
+                const mFloat = (abs - d) * 60;
+                const m = Math.floor(mFloat);
+                const s = Math.round((mFloat - m) * 60);
+                return d + '\u00B0 ' + m + "' " + s + '" ' + dir;
+            }
+
+            function getClimaticZone(lat) {
+                const a = Math.abs(lat);
+                if (a <= 23.436) return 'Torrid / Tropical Zone (0\u00B0 - 23.5\u00B0)';
+                if (a <= 66.56) return 'Temperate Zone (23.5\u00B0 - 66.5\u00B0)';
+                return 'Frigid / Polar Zone (66.5\u00B0 - 90\u00B0)';
+            }
+
+            function updateCoordinateTelemetry(lat, lon, labelStr) {
+                lockedLat = parseFloat(Number(lat).toFixed(5));
+                lockedLon = parseFloat(Number(lon).toFixed(5));
+                if (labelStr) currentFeatureName = labelStr;
+
+                grLatInput.value = lockedLat;
+                grLonInput.value = lockedLon;
+
+                const latDir = lockedLat >= 0 ? 'N' : 'S';
+                const lonDir = lockedLon >= 0 ? 'E' : 'W';
+                grValLat.innerText = Math.abs(lockedLat).toFixed(4) + '\u00B0 ' + latDir + ' (' + toDMS(lockedLat, true) + ')';
+                grValLon.innerText = Math.abs(lockedLon).toFixed(4) + '\u00B0 ' + lonDir + ' (' + toDMS(lockedLon, false) + ')';
+                grValZone.innerText = getClimaticZone(lockedLat);
+
+                // Geography Longitude-Time Calculation (1 deg = 4 minutes)
+                const totalMinsFromGmt = Math.round(lockedLon * 4);
+                const sign = totalMinsFromGmt >= 0 ? '+' : '-';
+                const absMins = Math.abs(totalMinsFromGmt);
+                const hrs = Math.floor(absMins / 60);
+                const mins = absMins % 60;
+                grValSolar.innerText = 'GMT ' + sign + hrs + 'h ' + mins + 'm (' + (lockedLon >= 0 ? 'East Ahead' : 'West Behind') + ')';
+
+                // Offset from Indian Standard Meridian (82.5 E)
+                const degDiffIst = lockedLon - 82.5;
+                const minDiffIst = Math.round(degDiffIst * 4);
+                if (Math.abs(minDiffIst) < 1) {
+                    grValIstDiff.innerText = '0 min (Exactly on 82\u00B030\'E IST)';
+                } else {
+                    grValIstDiff.innerText = (minDiffIst > 0 ? '+' : '') + minDiffIst + ' mins vs IST (' + Math.abs(degDiffIst).toFixed(2) + '\u00B0 ' + (degDiffIst > 0 ? 'East' : 'West') + ' of Mirzapur)';
+                }
+
+                // Fetch Live Satellite Radar Elevation (Open-Meteo Elevation API)
+                grValElev.innerText = 'Scanning...';
+                fetch('https://api.open-meteo.com/v1/elevation?latitude=' + lockedLat + '&longitude=' + lockedLon)
+                    .then(function(r) { return r.json(); })
+                    .then(function(d) {
+                        if (d && d.elevation && d.elevation.length > 0) {
+                            const m = Math.round(d.elevation[0]);
+                            const ft = Math.round(m * 3.28084);
+                            grValElev.innerText = m + ' m (' + ft + ' ft ASL)';
+                        } else {
+                            grValElev.innerText = 'Sea Level / N/A';
+                        }
+                    })
+                    .catch(function() {
+                        grValElev.innerText = 'N/A';
+                    });
+            }
+
+            // 8. Initialize Leaflet Map with Satellite, Topo Contours & Cyber Dark Layers
+            function initLeafletMap() {
+                if (map || !window.L) return;
+                const L = window.L;
+
+                map = L.map('grLeafletMap', {
+                    center: [22.9734, 78.6569],
+                    zoom: 5,
+                    zoomControl: true
+                });
+
+                // Layer 1: High-Res Esri World Satellite + Reference Labels
+                const satImg = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    maxZoom: 18,
+                    attribution: 'Esri Satellite'
+                });
+                const satLabels = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+                    maxZoom: 18
+                });
+                baseLayers.sat = L.layerGroup([satImg, satLabels]);
+
+                // Layer 2: OpenTopoMap (Real Elevation Contour Lines, Peaks & Passes)
+                baseLayers.topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 17,
+                    attribution: 'OpenTopoMap Contours'
+                });
+
+                // Layer 3: CartoDB Dark Matter (Cyberpunk Radar)
+                baseLayers.dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    maxZoom: 19,
+                    attribution: 'CartoDB Radar'
+                });
+
+                baseLayers.sat.addTo(map);
+                currentLayerGroup = L.layerGroup().addTo(map);
+                icseOverlayGroup = L.layerGroup().addTo(map);
+
+                // Live Cursor Longitude/Latitude Tracker
+                map.on('mousemove', function(e) {
+                    const lat = e.latlng.lat;
+                    const lon = e.latlng.lng;
+                    if (grCursorHud) {
+                        grCursorHud.innerHTML = '&#129517; <b>LIVE CURSOR LAT/LON:</b> ' +
+                            lat.toFixed(4) + '&#176; (' + toDMS(lat, true) + ') , ' +
+                            lon.toFixed(4) + '&#176; (' + toDMS(lon, false) + ')';
+                    }
+                });
+
+                // Click-to-Sniper Pin & Reverse Geocode Any Spot on Earth
+                map.on('click', async function(e) {
+                    if (typeof playSynth === 'function') playSynth(680, 1450, 0.08, 'sine');
+                    const lat = e.latlng.lat;
+                    const lon = e.latlng.lng;
+                    updateCoordinateTelemetry(lat, lon, 'Pinned Coordinate');
+
+                    currentLayerGroup.clearLayers();
+                    const marker = L.circleMarker([lat, lon], {
+                        radius: 9,
+                        color: '#00ffcc',
+                        weight: 3,
+                        fillColor: '#ff0055',
+                        fillOpacity: 0.9
+                    }).addTo(currentLayerGroup);
+
+                    grStatusBanner.innerHTML = '<span style="color:#f59e0b;">&#128225; Reverse-geocoding clicked coordinates (' + lat.toFixed(3) + ', ' + lon.toFixed(3) + ')...</span>';
+
+                    try {
+                        const revRes = await fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon + '&zoom=10&accept-language=en');
+                        if (revRes.ok) {
+                            const revJson = await revRes.json();
+                            const disp = revJson.display_name || ('Lat ' + lat.toFixed(3) + ', Lon ' + lon.toFixed(3));
+                            const shortName = (revJson.name || disp.split(',')[0]).trim();
+                            currentFeatureName = shortName;
+                            grTargetHeading.innerHTML = '&#128205; ' + shortName.toUpperCase();
+                            grStatusBanner.innerHTML = '<span style="color:#22c55e;">&#10004; Locked onto: ' + disp + '</span>';
+                            marker.bindPopup('<b>' + shortName + '</b><br>Lat: ' + lat.toFixed(4) + '<br>Lon: ' + lon.toFixed(4)).openPopup();
+                            fetchWikipediaDossier(shortName);
+                        }
+                    } catch (err) {}
+                });
+            }
+
+            function setMapBaseLayer(mode) {
+                if (!map) return;
+                Object.keys(baseLayers).forEach(function(k) {
+                    map.removeLayer(baseLayers[k]);
+                });
+                if (baseLayers[mode]) baseLayers[mode].addTo(map);
+                grLayerSat.classList.toggle('active', mode === 'sat');
+                grLayerTopo.classList.toggle('active', mode === 'topo');
+                grLayerDark.classList.toggle('active', mode === 'dark');
+            }
+
+            grLayerSat.addEventListener('click', function() { setMapBaseLayer('sat'); });
+            grLayerTopo.addEventListener('click', function() { setMapBaseLayer('topo'); });
+            grLayerDark.addEventListener('click', function() { setMapBaseLayer('dark'); });
+
+            // 9. Fetch Wikipedia Geographical Dossier & Extract Slug from Wikipedia URL
+            function extractGeoQuery(raw) {
+                let s = (raw || '').trim();
+                if (!s) return '';
+                if (s.indexOf('wikipedia.org/wiki/') > -1) {
+                    const slug = s.split('wikipedia.org/wiki/')[1].split('#')[0].split('?')[0];
+                    return decodeURIComponent(slug).replace(/_/g, ' ').trim();
+                }
+                return s;
+            }
+
+            async function fetchWikipediaDossier(titleQuery) {
+                if (!titleQuery) return null;
+                try {
+                    // First try direct summary
+                    let res = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(titleQuery));
+                    if (!res.ok) {
+                        // Search Wikipedia opensearch for closest article title
+                        const sRes = await fetch('https://en.wikipedia.org/w/api.php?action=opensearch&search=' + encodeURIComponent(titleQuery) + '&limit=1&namespace=0&format=json&origin=*');
+                        if (sRes.ok) {
+                            const sJson = await sRes.json();
+                            if (sJson[1] && sJson[1][0]) {
+                                res = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(sJson[1][0]));
+                            }
+                        }
+                    }
+                    if (res.ok) {
+                        const data = await res.json();
+                        let html = '';
+                        if (data.thumbnail && data.thumbnail.source) {
+                            html += '<img src="' + data.thumbnail.source + '" style="float:right; max-width:110px; border-radius:6px; border:1px solid #00ffcc; margin:0 0 6px 10px;" />';
+                        }
+                        html += '<strong style="color:#00ffcc; font-size:1.05em;">' + (data.title || titleQuery) + '</strong>';
+                        if (data.description) html += ' <span style="color:#f59e0b;">(' + data.description + ')</span>';
+                        html += '<br><br>' + (data.extract || 'No summary available.');
+                        grWikiBox.innerHTML = html;
+                        return data;
+                    }
+                } catch (e) {}
+                return null;
+            }
+
+            // 10. Master Physical Feature Scanner & River/Mountain GeoJSON Tracer
+            async function scanAndTraceFeature(rawInput) {
+                initLeafletMap();
+                const query = extractGeoQuery(rawInput);
+                if (!query) {
+                    alert('Enter a physical feature (e.g., Ganga River, Mount Everest, Karakoram Pass, Chilika Lake) or paste a Wikipedia URL first!');
+                    return;
+                }
+                grQueryInput.value = query;
+                currentFeatureName = query;
+
+                if (typeof playSynth === 'function') playSynth(560, 1520, 0.14, 'triangle');
+                grStatusBanner.innerHTML = '<span style="color:#f59e0b;">&#9889; Scanning OpenStreetMap GeoJSON &amp; Wikipedia Satellites for <b>' + query.toUpperCase() + '</b>...</span>';
+
+                // Query Wikipedia & OpenStreetMap Nominatim (with polygon_geojson=1) in parallel!
+                const wikiPromise = fetchWikipediaDossier(query);
+                const osmUrl = 'https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1&extratags=1&limit=5&accept-language=en&q=' + encodeURIComponent(query);
+
+                let osmBest = null;
+                try {
+                    const osmRes = await fetch(osmUrl);
+                    if (osmRes.ok) {
+                        const osmList = await osmRes.json();
+                        if (osmList && osmList.length > 0) {
+                            // Prefer waterways, natural landforms (peak, mountain_range, water, saddle, plateau), or LineStrings/Polygons
+                            osmBest = osmList.find(function(item) {
+                                return item.class === 'waterway' || item.class === 'natural' || (item.geojson && item.geojson.type !== 'Point');
+                            }) || osmList[0];
+                        }
+                    }
+                } catch (e) {}
+
+                const wikiData = await wikiPromise;
+
+                if (!osmBest && (!wikiData || !wikiData.coordinates)) {
+                    grStatusBanner.innerHTML = '<span style="color:#ff0055;">&#9888; Could not locate "' + query + '". Try a standard geographical name (e.g. "Godavari River", "Vindhya Range", "Nathu La") or paste its Wikipedia URL!</span>';
+                    return;
+                }
+
+                const lat = osmBest ? parseFloat(osmBest.lat) : wikiData.coordinates.lat;
+                const lon = osmBest ? parseFloat(osmBest.lon) : wikiData.coordinates.lon;
+                const dispTitle = (wikiData && wikiData.title) ? wikiData.title : (osmBest ? osmBest.display_name.split(',')[0] : query);
+
+                grTargetHeading.innerHTML = '&#127757; ' + dispTitle.toUpperCase();
+                grStatusBanner.innerHTML = '<span style="color:#22c55e;">&#10004; Target Locked! Tracing Physical Geometry &amp; Coordinates...</span>';
+                updateCoordinateTelemetry(lat, lon, dispTitle);
+
+                if (map && window.L) {
+                    const L = window.L;
+                    currentLayerGroup.clearLayers();
+
+                    // Draw GeoJSON River Course / Mountain Boundary if available!
+                    if (osmBest && osmBest.geojson && osmBest.geojson.type !== 'Point') {
+                        const isWater = (osmBest.class === 'waterway' || osmBest.type === 'river' || osmBest.type === 'lake' || osmBest.type === 'water' || /river|lake|gulf|sea|strait/i.test(query));
+                        const strokeCol = isWater ? '#00e5ff' : '#ff9100';
+
+                        const geoLayer = L.geoJSON(osmBest.geojson, {
+                            style: function() {
+                                return {
+                                    color: strokeCol,
+                                    weight: 5,
+                                    opacity: 0.95,
+                                    fillColor: strokeCol,
+                                    fillOpacity: 0.22
+                                };
+                            }
+                        }).addTo(currentLayerGroup);
+
+                        try {
+                            map.fitBounds(geoLayer.getBounds(), { padding: [35, 35], maxZoom: 11 });
+                        } catch (be) {
+                            map.setView([lat, lon], 8);
+                        }
+                    } else {
+                        map.setView([lat, lon], 9);
+                    }
+
+                    // Drop High-Visibility Target Beacon Pin
+                    const pin = L.circleMarker([lat, lon], {
+                        radius: 10,
+                        color: '#ffffff',
+                        weight: 3,
+                        fillColor: '#ff0055',
+                        fillOpacity: 1
+                    }).addTo(currentLayerGroup);
+
+                    pin.bindPopup(
+                        '<div style="font-size:0.9em;"><b>&#127919; ' + dispTitle.toUpperCase() + '</b><br>' +
+                        '<b>Lat:</b> ' + lat.toFixed(4) + ' (' + toDMS(lat, true) + ')<br>' +
+                        '<b>Lon:</b> ' + lon.toFixed(4) + ' (' + toDMS(lon, false) + ')</div>'
+                    ).openPopup();
+                }
+
+                // Update OSM Telemetry Panel
+                if (osmBest) {
+                    const geomType = (osmBest.geojson && osmBest.geojson.type) ? osmBest.geojson.type : 'Point Coordinate';
+                    const wikiTag = (osmBest.extratags && osmBest.extratags.wikipedia) ? osmBest.extratags.wikipedia : '--';
+                    const elevTag = (osmBest.extratags && osmBest.extratags.ele) ? (osmBest.extratags.ele + ' m') : 'See Altimeter Above';
+                    grOsmDetails.innerHTML =
+                        '<b>Full Geographical Path:</b> ' + osmBest.display_name + '<br>' +
+                        '<b>Classification:</b> <span style="color:#00ffcc; text-transform:uppercase;">' + (osmBest.class || 'landform') + ' // ' + (osmBest.type || 'feature') + '</span><br>' +
+                        '<b>Vector Geometry:</b> <span style="color:#f59e0b;">' + geomType + ' (Traced on Radar)</span> | <b>OSM Elevation Tag:</b> ' + elevTag + ' | <b>Wiki Ref:</b> ' + wikiTag;
+                }
+            }
+
+            grScanBtn.addEventListener('click', function() {
+                scanAndTraceFeature(grQueryInput.value);
+            });
+            grQueryInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') scanAndTraceFeature(grQueryInput.value);
+            });
+
+            // Direct Lat/Lon Coordinate Jumper
+            grGoCoordBtn.addEventListener('click', function() {
+                initLeafletMap();
+                const lat = parseFloat(grLatInput.value);
+                const lon = parseFloat(grLonInput.value);
+                if (isNaN(lat) || isNaN(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+                    alert('Enter valid Latitude (-90 to 90) and Longitude (-180 to 180) coordinates!');
+                    return;
+                }
+                if (typeof playSynth === 'function') playSynth(640, 1500, 0.1, 'triangle');
+                updateCoordinateTelemetry(lat, lon, 'Coordinate (' + lat.toFixed(2) + ', ' + lon.toFixed(2) + ')');
+                if (map && window.L) {
+                    currentLayerGroup.clearLayers();
+                    map.setView([lat, lon], 9);
+                    const m = window.L.circleMarker([lat, lon], {
+                        radius: 10, color: '#fff', weight: 3, fillColor: '#00ffcc', fillOpacity: 0.95
+                    }).addTo(currentLayerGroup);
+                    m.bindPopup('<b>LOCKED COORDINATE</b><br>Lat: ' + lat.toFixed(4) + '<br>Lon: ' + lon.toFixed(4)).openPopup();
+                }
+            });
+
+            // 11. ICSE India Physical Features 1-Click Overlay Buttons
+            Array.from(document.querySelectorAll('.icse-layer-btn')).forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    initLeafletMap();
+                    if (!map || !window.L) return;
+                    if (typeof playSynth === 'function') playSynth(620, 1480, 0.1, 'triangle');
+
+                    const cat = btn.getAttribute('data-cat');
+                    const list = ICSE_INDIA_FEATURES[cat] || [];
+                    icseOverlayGroup.clearLayers();
+
+                    Array.from(document.querySelectorAll('.icse-layer-btn')).forEach(function(b) { b.classList.remove('active'); });
+                    btn.classList.add('active');
+
+                    const colMap = { rivers: '#00e5ff', mountains: '#ff9100', plateaus: '#f59e0b', water: '#c084fc' };
+                    const pinCol = colMap[cat] || '#00ffcc';
+
+                    map.setView([22.8, 79.5], 5);
+
+                    list.forEach(function(item) {
+                        const marker = window.L.circleMarker([item.lat, item.lon], {
+                            radius: 8,
+                            color: '#ffffff',
+                            weight: 2,
+                            fillColor: pinCol,
+                            fillOpacity: 0.95
+                        }).addTo(icseOverlayGroup);
+
+                        marker.bindPopup(
+                            '<div style="max-width:230px;">' +
+                            '<strong style="color:' + pinCol + ';font-size:1.05em;">' + item.name + '</strong><br>' +
+                            '<span style="color:#cbd5e1;font-size:0.9em;">' + item.desc + '</span><br>' +
+                            '<span style="color:#38bdf8;font-size:0.85em;">Lat: ' + item.lat + '&#176; N | Lon: ' + item.lon + '&#176; E</span>' +
+                            '</div>'
+                        );
+
+                        marker.on('click', function() {
+                            updateCoordinateTelemetry(item.lat, item.lon, item.name);
+                            grTargetHeading.innerHTML = '&#127470;&#127475; ' + item.name.toUpperCase();
+                            grStatusBanner.innerHTML = '<span style="color:#22c55e;">&#10004; ICSE Feature Selected: ' + item.name + '</span>';
+                            grOsmDetails.innerHTML = '<b>ICSE Exam Note:</b> ' + item.desc + '<br><i>Click [SCAN & TRACE] above if you want to trace its full OpenStreetMap GeoJSON river course/polygon!</i>';
+                            grQueryInput.value = item.name;
+                            fetchWikipediaDossier(item.name);
+                        });
+                    });
+                });
+            });
+
+            grClearOverlayBtn.addEventListener('click', function() {
+                if (icseOverlayGroup) icseOverlayGroup.clearLayers();
+                if (currentLayerGroup) currentLayerGroup.clearLayers();
+                Array.from(document.querySelectorAll('.icse-layer-btn')).forEach(function(b) { b.classList.remove('active'); });
+            });
+
+            // 12. External 3D Google Earth Web & PeakFinder 360 Horizon Launchers
+            grEarth3DBtn.addEventListener('click', function() {
+                const url = 'https://earth.google.com/web/@' + lockedLat + ',' + lockedLon + ',1500a,35000d,35y,0h,45t,0r';
+                window.open(url, '_blank');
+            });
+
+            grPeakFinderBtn.addEventListener('click', function() {
+                const url = 'https://www.peakfinder.org/?lat=' + lockedLat + '&lng=' + lockedLon + '&name=' + encodeURIComponent(currentFeatureName);
+                window.open(url, '_blank');
+            });
+
+            // 13. Permanent Saved Geo-Deck (Starts Empty, Saves to localStorage)
+            const GEO_STORAGE_KEY = 'cartelPermanentGeoRadar';
+
+            function getSavedGeoList() {
+                try {
+                    return JSON.parse(localStorage.getItem(GEO_STORAGE_KEY) || '[]');
+                } catch (e) { return []; }
+            }
+
+            function saveGeoList(list) {
+                localStorage.setItem(GEO_STORAGE_KEY, JSON.stringify(list));
+            }
+
+            function renderSavedGeoBar() {
+                const list = getSavedGeoList();
+                Array.from(grSavedBar.querySelectorAll('.gr-chip')).forEach(function(c) { c.remove(); });
+                if (grSavedHint) grSavedHint.style.display = (list.length === 0) ? 'inline' : 'none';
+
+                list.forEach(function(item) {
+                    const chip = document.createElement('button');
+                    chip.className = 'gr-chip saved';
+                    chip.title = 'Click to trace ' + item.label + ' | Right-click to delete';
+                    chip.innerHTML = '&#128205; ' + item.label.toUpperCase();
+                    chip.addEventListener('click', function() {
+                        Array.from(grSavedBar.querySelectorAll('.gr-chip')).forEach(function(c) { c.classList.remove('active'); });
+                        chip.classList.add('active');
+                        scanAndTraceFeature(item.query);
+                    });
+                    chip.addEventListener('contextmenu', function(e) {
+                        e.preventDefault();
+                        if (confirm('Delete saved location "' + item.label + '" from your Geo-Radar deck?')) {
+                            const updated = getSavedGeoList().filter(function(x) { return x.label.toLowerCase() !== item.label.toLowerCase(); });
+                            saveGeoList(updated);
+                            renderSavedGeoBar();
+                        }
+                    });
+                    grSavedBar.appendChild(chip);
+                });
+            }
+            renderSavedGeoBar();
+
+            grSaveDeckBtn.addEventListener('click', function() {
+                const q = extractGeoQuery(grQueryInput.value) || currentFeatureName;
+                if (!q) {
+                    alert('Scan a river, mountain, or coordinate first before saving!');
+                    return;
+                }
+                const label = prompt('Enter a permanent button name for this Physical Feature (e.g., GANGA RIVER, MT EVEREST, NATHU LA):', q.toUpperCase());
+                if (!label || !label.trim()) return;
+
+                const list = getSavedGeoList().filter(function(x) { return x.label.toLowerCase() !== label.trim().toLowerCase(); });
+                list.push({ label: label.trim(), query: q });
+                saveGeoList(list);
+                renderSavedGeoBar();
+            });
+
+            // 14. Ghost-Link Co-Op Partner Beamer
+            grBeamPartnerBtn.addEventListener('click', function() {
+                if (window.cartelConn && window.cartelConn.open) {
+                    window.cartelConn.send({ type: 'GEO_RADAR_SYNC', query: grQueryInput.value || currentFeatureName });
+                    grBeamPartnerBtn.innerHTML = '&#128994; BEAMED!';
+                    setTimeout(function() { grBeamPartnerBtn.innerHTML = '&#128225; BEAM TO PARTNER'; }, 1500);
+                } else {
+                    alert('Connect with your partner in the Ghost-Link War Room first to beam live Geo-Radar targets!');
+                }
+            });
+
+            setInterval(function() {
+                if (window.cartelConn && !window.cartelConn._geoHooked) {
+                    window.cartelConn._geoHooked = true;
+                    window.cartelConn.on('data', function(d) {
+                        if (d && d.type === 'GEO_RADAR_SYNC' && d.query) {
+                            openGeoRadar();
+                            scanAndTraceFeature(d.query);
+                        }
+                    });
+                }
+            }, 1200);
+
+            function openGeoRadar() {
+                grModal.classList.add('open');
+                setTimeout(function() {
+                    initLeafletMap();
+                    if (map) map.invalidateSize();
+                }, 200);
+            }
+
+            grCloseBtn.addEventListener('click', function() {
+                if (typeof playSynth === 'function') playSynth(600, 300, 0.08, 'sawtooth');
+                grModal.classList.remove('open');
+            });
+        })();
     </script>
 </body>
 </html>
