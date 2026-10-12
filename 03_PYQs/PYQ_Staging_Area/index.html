@@ -7077,6 +7077,365 @@
                 }
             });
         })();
+// ============================================================================
+        // FLOATING MINI-WINDOW (PiP) DOCKER: DRAGGABLE & RESIZABLE LABS OVER ANY PDF
+        // ============================================================================
+        (function() {
+            // 1. Inject PiP Mini-Window Styles & Iframe Drag Shield
+            if (!document.getElementById('cartelPipDockerCss')) {
+                const st = document.createElement('style');
+                st.id = 'cartelPipDockerCss';
+                st.innerHTML = [
+                    '/* Keep 3-Lines Menu Reachable Even Above Open PDFs & Modals */',
+                    '#cartelHamBtn, #cartelHamDrop { z-index: 1000050 !important; }',
+                    '',
+                    '/* Floating Mini-Window (PiP) Base Styling */',
+                    '.cartel-pip-window {',
+                    '  border: 2px solid var(--core, #00ffcc) !important;',
+                    '  border-radius: 12px !important;',
+                    '  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.88), 0 0 25px rgba(0, 255, 204, 0.45) !important;',
+                    '  transition: none !important;',
+                    '}',
+                    '.cartel-pip-window .pf-hdr, .cartel-pip-window .gr-hdr, .cartel-pip-window .cf-hdr, .cartel-pip-window .bl-hdr, .cartel-pip-window .news-hdr, .cartel-pip-window .cl-hdr {',
+                    '  cursor: move !important;',
+                    '  user-select: none !important;',
+                    '  padding: 6px 10px !important;',
+                    '}',
+                    '.cartel-pip-window .pf-title, .cartel-pip-window .gr-title, .cartel-pip-window .cf-title, .cartel-pip-window .bl-title {',
+                    '  font-size: 0.76em !important;',
+                    '  max-width: 175px !important;',
+                    '  white-space: nowrap !important;',
+                    '  overflow: hidden !important;',
+                    '  text-overflow: ellipsis !important;',
+                    '}',
+                    '',
+                    '/* Canvas-Only Focus Mode Inside Mini-Window */',
+                    '.cartel-pip-window.pip-canvas-only .pf-invoke-bar, .cartel-pip-window.pip-canvas-only .pf-deck-bar, .cartel-pip-window.pip-canvas-only .pf-saved-bar, .cartel-pip-window.pip-canvas-only .pf-status-strip, .cartel-pip-window.pip-canvas-only .pf-guide-box,',
+                    '.cartel-pip-window.pip-canvas-only .gr-search-bar, .cartel-pip-window.pip-canvas-only .gr-layer-bar, .cartel-pip-window.pip-canvas-only .gr-saved-bar, .cartel-pip-window.pip-canvas-only .gr-info-col, .cartel-pip-window.pip-canvas-only .gr-hud-strip,',
+                    '.cartel-pip-window.pip-canvas-only .cf-search-bar, .cartel-pip-window.pip-canvas-only .cf-deck-bar, .cartel-pip-window.pip-canvas-only .cf-right-col, .cartel-pip-window.pip-canvas-only .cf-view-tabs,',
+                    '.cartel-pip-window.pip-canvas-only .bl-search-bar, .cartel-pip-window.pip-canvas-only .bl-deck-bar, .cartel-pip-window.pip-canvas-only .bl-right-col {',
+                    '  display: none !important;',
+                    '}',
+                    '',
+                    '/* Shield All Iframes During Drag or Resize So Mouse Never Gets Trapped */',
+                    'body.pip-dragging iframe {',
+                    '  pointer-events: none !important;',
+                    '}',
+                    'body.pip-dragging {',
+                    '  user-select: none !important;',
+                    '}',
+                    '',
+                    '/* Custom Neon Bottom-Right Resize Grip */',
+                    '.pip-resize-grip {',
+                    '  position: absolute !important;',
+                    '  bottom: 0 !important;',
+                    '  right: 0 !important;',
+                    '  width: 24px !important;',
+                    '  height: 24px !important;',
+                    '  cursor: nwse-resize !important;',
+                    '  z-index: 1000020 !important;',
+                    '  display: none;',
+                    '  align-items: flex-end;',
+                    '  justify-content: flex-end;',
+                    '  padding: 2px 4px;',
+                    '  color: var(--core, #00ffcc);',
+                    '  font-size: 14px;',
+                    '  line-height: 1;',
+                    '  user-select: none;',
+                    '  background: linear-gradient(135deg, transparent 50%, rgba(0, 255, 204, 0.28) 50%);',
+                    '  border-bottom-right-radius: 10px;',
+                    '}',
+                    '.cartel-pip-window .pip-resize-grip {',
+                    '  display: flex !important;',
+                    '}',
+                    '',
+                    '/* PiP Header Control Buttons */',
+                    '.pip-ctrl-btn {',
+                    '  background: #0f172a !important;',
+                    '  color: #38bdf8 !important;',
+                    '  border: 1px solid #0284c7 !important;',
+                    '  border-radius: 5px !important;',
+                    '  padding: 4px 8px !important;',
+                    '  font-family: "Courier New", monospace !important;',
+                    '  font-size: 0.74em !important;',
+                    '  font-weight: bold !important;',
+                    '  cursor: pointer !important;',
+                    '  transition: 0.15s !important;',
+                    '}',
+                    '.pip-ctrl-btn:hover, .pip-ctrl-btn.active {',
+                    '  background: var(--core, #00ffcc) !important;',
+                    '  color: #000000 !important;',
+                    '  border-color: var(--core, #00ffcc) !important;',
+                    '  box-shadow: 0 0 10px var(--core, #00ffcc) !important;',
+                    '}',
+                    'body.cartel-day-mode .pip-ctrl-btn {',
+                    '  background: #e2e8f0 !important;',
+                    '  color: #0f172a !important;',
+                    '  border-color: #0284c7 !important;',
+                    '}',
+                    'body.cartel-day-mode .pip-ctrl-btn.active {',
+                    '  background: #0284c7 !important;',
+                    '  color: #ffffff !important;',
+                    '}'
+                ].join('\n');
+                document.head.appendChild(st);
+            }
+
+            let topPipZ = 1000010;
+
+            function bringModalToFront(modal) {
+                topPipZ += 1;
+                modal.style.setProperty('z-index', String(topPipZ), 'important');
+            }
+
+            function triggerCanvasRefresh() {
+                window.dispatchEvent(new Event('resize'));
+                setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 80);
+                setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 240);
+            }
+
+            function setPipBoxGeometry(modal, topVal, leftVal, bottomVal, rightVal, widthVal, heightVal) {
+                modal.style.setProperty('top', topVal, 'important');
+                modal.style.setProperty('left', leftVal, 'important');
+                modal.style.setProperty('bottom', bottomVal, 'important');
+                modal.style.setProperty('right', rightVal, 'important');
+                modal.style.setProperty('width', widthVal, 'important');
+                modal.style.setProperty('height', heightVal, 'important');
+            }
+
+            function clearPipBoxGeometry(modal) {
+                modal.style.removeProperty('top');
+                modal.style.removeProperty('left');
+                modal.style.removeProperty('bottom');
+                modal.style.removeProperty('right');
+                modal.style.removeProperty('width');
+                modal.style.removeProperty('height');
+            }
+
+            const LAB_CONFIGS = [
+                { modalId: 'physForgeModal',  hdrClass: '.pf-hdr' },
+                { modalId: 'geoRadarModal',   hdrClass: '.gr-hdr' },
+                { modalId: 'chemForgeModal',  hdrClass: '.cf-hdr' },
+                { modalId: 'bioLabModal',     hdrClass: '.bl-hdr' },
+                { modalId: 'cartelNewsModal', hdrClass: '.news-hdr' },
+                { modalId: 'cyberLabModal',   hdrClass: '.cl-hdr' }
+            ];
+
+            function upgradeLabWithPip(cfg) {
+                const modal = document.getElementById(cfg.modalId);
+                if (!modal || modal._pipUpgraded) return;
+
+                const hdr = modal.querySelector(cfg.hdrClass) || modal.firstElementChild;
+                if (!hdr) return;
+                modal._pipUpgraded = true;
+
+                const btnContainer = hdr.children[1] || hdr;
+
+                // 1. Create [MINI-PIP] Toggle Button
+                const pipBtn = document.createElement('button');
+                pipBtn.type = 'button';
+                pipBtn.className = 'pip-ctrl-btn';
+                pipBtn.innerHTML = '&#128471; MINI-PIP';
+                pipBtn.title = 'Shrink Lab into a Floating Corner Window over your PDFs (Alt + M)';
+
+                // 2. Create [CANVAS ONLY] Compact Button
+                const focusBtn = document.createElement('button');
+                focusBtn.type = 'button';
+                focusBtn.className = 'pip-ctrl-btn';
+                focusBtn.style.display = 'none';
+                focusBtn.innerHTML = '&#128065; CANVAS ONLY';
+                focusBtn.title = 'Hide toolbars & sidebars so the 3D/Map/Sim fills 100% of the Mini-Window';
+
+                // 3. Create [CORNER] Snapper Button
+                const snapBtn = document.createElement('button');
+                snapBtn.type = 'button';
+                snapBtn.className = 'pip-ctrl-btn';
+                snapBtn.style.display = 'none';
+                snapBtn.innerHTML = '&#128208; CORNER';
+                snapBtn.title = 'Snap Mini-Window to next screen corner';
+
+                btnContainer.insertBefore(snapBtn, btnContainer.firstChild);
+                btnContainer.insertBefore(focusBtn, btnContainer.firstChild);
+                btnContainer.insertBefore(pipBtn, btnContainer.firstChild);
+
+                // 4. Create Bottom-Right Neon Resize Grip
+                const grip = document.createElement('div');
+                grip.className = 'pip-resize-grip';
+                grip.innerHTML = '&#9698;';
+                grip.title = 'Drag to resize Mini-Lab window';
+                modal.appendChild(grip);
+
+                let cornerIndex = 0;
+
+                function togglePipMode(forceState) {
+                    const willBePip = (typeof forceState === 'boolean') ? forceState : !modal.classList.contains('cartel-pip-window');
+                    if (typeof playSynth === 'function') playSynth(willBePip ? 720 : 520, willBePip ? 1480 : 980, 0.09, 'triangle');
+
+                    if (willBePip) {
+                        modal.classList.add('cartel-pip-window');
+                        bringModalToFront(modal);
+                        const initW = Math.min(520, Math.round(window.innerWidth * 0.46));
+                        const initH = Math.min(390, Math.round(window.innerHeight * 0.50));
+                        setPipBoxGeometry(modal, 'auto', 'auto', '22px', '22px', initW + 'px', initH + 'px');
+
+                        pipBtn.classList.add('active');
+                        pipBtn.innerHTML = '&#9974; FULL LAB';
+                        focusBtn.style.display = 'inline-block';
+                        snapBtn.style.display = 'inline-block';
+                    } else {
+                        modal.classList.remove('cartel-pip-window');
+                        modal.classList.remove('pip-canvas-only');
+                        clearPipBoxGeometry(modal);
+
+                        pipBtn.classList.remove('active');
+                        pipBtn.innerHTML = '&#128471; MINI-PIP';
+                        focusBtn.classList.remove('active');
+                        focusBtn.innerHTML = '&#128065; CANVAS ONLY';
+                        focusBtn.style.display = 'none';
+                        snapBtn.style.display = 'none';
+                    }
+                    triggerCanvasRefresh();
+                }
+
+                modal._togglePipMode = togglePipMode;
+
+                modal.addEventListener('mousedown', function() {
+                    if (modal.classList.contains('cartel-pip-window')) {
+                        bringModalToFront(modal);
+                    }
+                });
+
+                pipBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    togglePipMode();
+                });
+
+                focusBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const isCompact = modal.classList.toggle('pip-canvas-only');
+                    focusBtn.classList.toggle('active', isCompact);
+                    focusBtn.innerHTML = isCompact ? '&#128065; SHOW TOOLS' : '&#128065; CANVAS ONLY';
+                    triggerCanvasRefresh();
+                });
+
+                snapBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (!modal.classList.contains('cartel-pip-window')) return;
+                    cornerIndex = (cornerIndex + 1) % 4;
+                    const rect = modal.getBoundingClientRect();
+                    const curW = Math.round(rect.width) + 'px';
+                    const curH = Math.round(rect.height) + 'px';
+
+                    if (cornerIndex === 0) setPipBoxGeometry(modal, 'auto', 'auto', '22px', '22px', curW, curH);
+                    else if (cornerIndex === 1) setPipBoxGeometry(modal, 'auto', '22px', '22px', 'auto', curW, curH);
+                    else if (cornerIndex === 2) setPipBoxGeometry(modal, '72px', '22px', 'auto', 'auto', curW, curH);
+                    else setPipBoxGeometry(modal, '72px', 'auto', 'auto', '22px', curW, curH);
+
+                    triggerCanvasRefresh();
+                });
+
+                // 5. Smooth Header Dragging Engine
+                let isDragging = false;
+                let dragStartX = 0, dragStartY = 0, startLeft = 0, startTop = 0, lockedW = 0, lockedH = 0;
+
+                hdr.addEventListener('mousedown', function(e) {
+                    if (!modal.classList.contains('cartel-pip-window')) return;
+                    if (e.target.closest('button, input, select, a')) return;
+
+                    isDragging = true;
+                    bringModalToFront(modal);
+                    document.body.classList.add('pip-dragging');
+
+                    const rect = modal.getBoundingClientRect();
+                    dragStartX = e.clientX;
+                    dragStartY = e.clientY;
+                    startLeft = rect.left;
+                    startTop = rect.top;
+                    lockedW = Math.round(rect.width);
+                    lockedH = Math.round(rect.height);
+
+                    setPipBoxGeometry(modal, startTop + 'px', startLeft + 'px', 'auto', 'auto', lockedW + 'px', lockedH + 'px');
+                    e.preventDefault();
+                });
+
+                window.addEventListener('mousemove', function(e) {
+                    if (!isDragging) return;
+                    const dx = e.clientX - dragStartX;
+                    const dy = e.clientY - dragStartY;
+                    const nextLeft = Math.max(4, Math.min(window.innerWidth - 100, Math.round(startLeft + dx)));
+                    const nextTop = Math.max(4, Math.min(window.innerHeight - 50, Math.round(startTop + dy)));
+                    modal.style.setProperty('left', nextLeft + 'px', 'important');
+                    modal.style.setProperty('top', nextTop + 'px', 'important');
+                });
+
+                window.addEventListener('mouseup', function() {
+                    if (isDragging) {
+                        isDragging = false;
+                        document.body.classList.remove('pip-dragging');
+                        triggerCanvasRefresh();
+                    }
+                });
+
+                // 6. Smooth Bottom-Right Corner Resize Engine
+                let isResizing = false;
+                let resStartX = 0, resStartY = 0, startW = 0, startH = 0, rLeft = 0, rTop = 0;
+
+                grip.addEventListener('mousedown', function(e) {
+                    if (!modal.classList.contains('cartel-pip-window')) return;
+                    isResizing = true;
+                    bringModalToFront(modal);
+                    document.body.classList.add('pip-dragging');
+
+                    const rect = modal.getBoundingClientRect();
+                    resStartX = e.clientX;
+                    resStartY = e.clientY;
+                    startW = rect.width;
+                    startH = rect.height;
+                    rLeft = Math.round(rect.left);
+                    rTop = Math.round(rect.top);
+
+                    setPipBoxGeometry(modal, rTop + 'px', rLeft + 'px', 'auto', 'auto', Math.round(startW) + 'px', Math.round(startH) + 'px');
+                    e.stopPropagation();
+                    e.preventDefault();
+                });
+
+                window.addEventListener('mousemove', function(e) {
+                    if (!isResizing) return;
+                    const nextW = Math.max(300, Math.min(window.innerWidth - rLeft - 8, Math.round(startW + (e.clientX - resStartX))));
+                    const nextH = Math.max(220, Math.min(window.innerHeight - rTop - 8, Math.round(startH + (e.clientY - resStartY))));
+                    modal.style.setProperty('width', nextW + 'px', 'important');
+                    modal.style.setProperty('height', nextH + 'px', 'important');
+                });
+
+                window.addEventListener('mouseup', function() {
+                    if (isResizing) {
+                        isResizing = false;
+                        document.body.classList.remove('pip-dragging');
+                        triggerCanvasRefresh();
+                    }
+                });
+            }
+
+            function attachPipToAllLabs() {
+                LAB_CONFIGS.forEach(upgradeLabWithPip);
+            }
+            attachPipToAllLabs();
+            setInterval(attachPipToAllLabs, 1500);
+
+            // 7. Global Hotkey: Press [Alt + M] to Toggle Active Lab Between Fullscreen & Mini-PiP
+            window.addEventListener('keydown', function(e) {
+                if (e.altKey && (e.key === 'm' || e.key === 'M')) {
+                    for (let i = 0; i < LAB_CONFIGS.length; i++) {
+                        const m = document.getElementById(LAB_CONFIGS[i].modalId);
+                        if (m && m.classList.contains('open') && typeof m._togglePipMode === 'function') {
+                            e.preventDefault();
+                            m._togglePipMode();
+                            break;
+                        }
+                    }
+                }
+            });
+        })();
     </script>
 </body>
 </html>
