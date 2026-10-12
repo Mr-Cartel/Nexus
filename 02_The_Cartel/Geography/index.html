@@ -3315,6 +3315,826 @@
                 else holoScreenTheater.classList.remove('open');
             });
         })();
+// ============================================================================
+        // 3D HOLO-BIO LAB: COMPLETE MALE/FEMALE HUMAN ANATOMY & PLANT BOTANY ENGINE
+        // ============================================================================
+        (function() {
+            // 1. Inject Bio-Lab Cyberpunk Styles (Z-Index 999999 so it floats above everything)
+            if (!document.getElementById('holoBioLabCss')) {
+                const css = document.createElement('style');
+                css.id = 'holoBioLabCss';
+                css.innerHTML = [
+                    '.biolab-modal { position: fixed !important; top: 3%; left: 2.5%; width: 95%; height: 94%; background: rgba(6, 8, 14, 0.98); border: 2px solid var(--core, #00ffcc); border-radius: 14px; box-shadow: 0 0 65px rgba(0, 255, 204, 0.45); z-index: 999999 !important; display: none; flex-direction: column; overflow: hidden; font-family: Courier New, monospace; color: #e0f7fa; }',
+                    '.biolab-modal.open { display: flex !important; }',
+                    '.biolab-hdr { background: linear-gradient(90deg, #0b151c, #140d24, #0b151c); border-bottom: 2px solid var(--core, #00ffcc); padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }',
+                    '.biolab-title { font-size: 1.05em; font-weight: bold; color: var(--core, #00ffcc); letter-spacing: 1.5px; display: flex; align-items: center; gap: 8px; }',
+                    '.biolab-deck-bar { display: flex; gap: 6px; padding: 8px 14px; background: #080b12; border-bottom: 1px solid #1e293b; overflow-x: auto; flex-wrap: wrap; align-items: center; }',
+                    '.biolab-deck-label { font-size: 0.72em; color: #8892b0; font-weight: bold; margin-right: 4px; text-transform: uppercase; }',
+                    '.bio-chip { background: #111827; color: #a5f3fc; border: 1px solid #0e7490; border-radius: 6px; padding: 6px 10px; font-family: Courier New, monospace; font-size: 0.75em; font-weight: bold; cursor: pointer; transition: 0.2s; white-space: nowrap; }',
+                    '.bio-chip:hover, .bio-chip.active { background: var(--core, #00ffcc); color: #000; border-color: var(--core, #00ffcc); box-shadow: 0 0 12px var(--core, #00ffcc); }',
+                    '.bio-chip.plant { color: #86efac; border-color: #15803d; }',
+                    '.bio-chip.plant:hover, .bio-chip.plant.active { background: #22c55e; color: #000; border-color: #22c55e; box-shadow: 0 0 12px #22c55e; }',
+                    '.bio-chip.repro { color: #f9a8d4; border-color: #be185d; }',
+                    '.bio-chip.repro:hover, .bio-chip.repro.active { background: #ec4899; color: #000; border-color: #ec4899; box-shadow: 0 0 12px #ec4899; }',
+                    '.biolab-main { display: flex; flex: 1; min-height: 0; overflow: hidden; }',
+                    '.biolab-stage-col { flex: 1.65; display: flex; flex-direction: column; background: #04060a; border-right: 1px solid #1e293b; position: relative; min-width: 0; }',
+                    '.biolab-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; background: #0b0f19; border-bottom: 1px solid #1e293b; gap: 8px; flex-wrap: wrap; }',
+                    '.biolab-viewport { flex: 1; position: relative; width: 100%; height: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; }',
+                    '.biolab-iframe { width: 100%; height: 100%; border: none; display: block; background: #030508; }',
+                    '.biolab-canvas { width: 100%; height: 100%; display: none; background: radial-gradient(circle at center, #0a192f 0%, #020408 100%); cursor: grab; }',
+                    '.biolab-info-col { flex: 1; display: flex; flex-direction: column; background: #070a12; padding: 14px; overflow-y: auto; min-width: 290px; max-width: 460px; gap: 12px; }',
+                    '.bio-card { background: rgba(15, 23, 42, 0.85); border: 1px solid #1e3a8a; border-radius: 8px; padding: 12px; }',
+                    '.bio-card h3 { margin: 0 0 6px 0; color: var(--core, #00ffcc); font-size: 0.95em; }',
+                    '.bio-card p { margin: 0; font-size: 0.8em; line-height: 1.5; color: #cbd5e1; }',
+                    '.bio-parts-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }',
+                    '.bio-part-btn { background: #0f172a; color: #38bdf8; border: 1px solid #0284c7; border-radius: 5px; padding: 5px 8px; font-family: Courier New, monospace; font-size: 0.73em; font-weight: bold; cursor: pointer; transition: 0.15s; }',
+                    '.bio-part-btn:hover, .bio-part-btn.active { background: #38bdf8; color: #000; box-shadow: 0 0 10px #38bdf8; }',
+                    '.bio-part-detail { background: #050811; border-left: 3px solid var(--core, #00ffcc); padding: 10px; font-size: 0.8em; color: #e2e8f0; line-height: 1.5; border-radius: 0 6px 6px 0; }',
+                    '.bio-custom-bar { display: flex; gap: 6px; margin-top: auto; padding-top: 8px; border-top: 1px solid #1e293b; }',
+                    '.bio-input { flex: 1; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 5px; padding: 6px 8px; font-family: Courier New, monospace; font-size: 0.75em; }',
+                    '@media (max-width: 850px) { .biolab-main { flex-direction: column; overflow-y: auto; } .biolab-stage-col { min-height: 330px; flex: none; height: 50vh; } .biolab-info-col { max-width: 100%; flex: none; } }'
+                ].join('\n');
+                document.head.appendChild(css);
+            }
+
+            // 2. Complete 17-System 3D Anatomy & Botany Database (Verified Sketchfab 3D Embed IDs + Detailed Sub-Organs)
+            const BIO_MODELS = [
+                {
+                    id: 'full_human',
+                    cat: 'repro',
+                    btn: '&#129485; FULL BODY 3D',
+                    title: 'COMPLETE HUMAN ANATOMY (ORGANS, VESSELS & SKELETON)',
+                    sketchfabId: 'bab347630ec0419995ad4ba334796f5f',
+                    overview: 'Full-body 3D anatomical integration displaying the skeletal framework, visceral organs, arterial supply (red), and systemic venous drainage (blue) in true anatomical position.',
+                    parts: [
+                        { name: 'Thoracic Cavity', desc: 'Protected by the ribcage; houses the lungs, heart, great vessels (aorta, venae cavae), trachea, and esophagus.' },
+                        { name: 'Abdominopelvic Cavity', desc: 'Inferior to the diaphragm; contains the stomach, liver, gallbladder, spleen, pancreas, small/large intestines, kidneys, and reproductive organs.' },
+                        { name: 'Systemic Arteries & Veins', desc: 'Aorta branches oxygen-rich blood to all organs; Superior and Inferior Venae Cavae return deoxygenated blood to the right atrium.' },
+                        { name: 'Axial vs Appendicular', desc: 'Axial skeleton (skull, vertebral column, sternum, ribs) protects vital CNS/thoracic organs; Appendicular skeleton powers locomotion.' }
+                    ]
+                },
+                {
+                    id: 'male_skeleton',
+                    cat: 'repro',
+                    btn: '&#9794; MALE ANATOMY / BONES',
+                    title: 'ADULT MALE FULL SKELETAL & BODY ANATOMY (206 BONES)',
+                    sketchfabId: 'be643fd4575f4637a6cc5237b460cea1',
+                    overview: 'Complete 206-bone adult male osteological architecture featuring higher bone mineral density, prominent cranial brow ridges, broader shoulders (clavicles), and a narrow, heart-shaped pelvic inlet.',
+                    parts: [
+                        { name: 'Male Pelvis (Android)', desc: 'Narrower, deeper pelvic cavity with a subpubic angle less than 90 degrees (typically 50-60 deg) and a heart-shaped pelvic inlet built for load-bearing.' },
+                        { name: 'Cranium & Mandible', desc: '22 cranial and facial bones; male skull exhibits more pronounced superciliary arches (brow ridges), larger mastoid processes, and a squarer mandible.' },
+                        { name: 'Vertebral Column (33)', desc: '7 Cervical, 12 Thoracic, 5 Lumbar, 5 fused Sacral, and 4 fused Coccygeal vertebrae supporting upright posture and housing the spinal cord.' },
+                        { name: 'Femur & Long Bones', desc: 'The femur is the longest, strongest bone in the body; red bone marrow in epiphyses performs hematopoiesis (blood cell production).' }
+                    ]
+                },
+                {
+                    id: 'female_anatomy',
+                    cat: 'repro',
+                    btn: '&#9792; FEMALE ANATOMY / BONES',
+                    title: 'ADULT FEMALE COMPLETE ANATOMY & SKELETAL SYSTEM',
+                    sketchfabId: 'c207cd6950c640e394511d1b8b62e2c5',
+                    overview: 'Full adult female anatomical and skeletal structure highlighting the wider gynecoid pelvic girdle, wider subpubic arch, smoother cranial contours, and thoracic/visceral proportions.',
+                    parts: [
+                        { name: 'Female Pelvis (Gynecoid)', desc: 'Wider, shallower pelvic basin with a circular/oval inlet, wider greater sciatic notch, and a subpubic angle greater than 90 degrees (adapted for childbirth).' },
+                        { name: 'Sacrum & Coccyx', desc: 'Female sacrum is shorter, wider, and curves more posteriorly to enlarge the pelvic outlet capacity.' },
+                        { name: 'Thoracic Ribcage', desc: '12 pairs of ribs (True ribs 1-7, False ribs 8-10, Floating ribs 11-12) with slightly more oblique inclination and greater costal cartilage flexibility.' },
+                        { name: 'Q-Angle (Femoral)', desc: 'Due to the wider female pelvis, the quadriceps angle (Q-angle) between hip and knee is slightly larger than in males.' }
+                    ]
+                },
+                {
+                    id: 'male_repro',
+                    cat: 'repro',
+                    btn: '&#9794; MALE REPRODUCTIVE',
+                    title: 'MALE REPRODUCTIVE SYSTEM (3D LABELED ORGANS & DUCTS)',
+                    sketchfabId: '8fa06a7490aa44e69ee9d97e3ba7ae80',
+                    overview: 'Complete 3D dissection of the male reproductive and urogenital tract including testes, epididymis, vas deferens, seminal vesicles, prostate gland, bulbourethral glands, and urethra.',
+                    parts: [
+                        { name: 'Testes & Seminiferous Tubules', desc: 'Located in the scrotum (2-3 deg C cooler than core body temp); Sertoli cells nourish developing sperm (spermatogenesis) while Leydig cells secrete testosterone.' },
+                        { name: 'Epididymis & Vas Deferens', desc: 'Coiled duct where spermatozoa mature and gain motility before propelling through the muscular vas deferens around the urinary bladder.' },
+                        { name: 'Seminal Vesicles & Prostate', desc: 'Accessory glands contributing ~90% of semen volume: fructose (energy), prostaglandins, alkaline mucus, and citrate/enzymes to activate sperm.' },
+                        { name: 'Urethra (Urogenital Duct)', desc: 'Shared passageway carrying both urine from the bladder and semen from the ejaculatory ducts to the exterior.' }
+                    ]
+                },
+                {
+                    id: 'female_repro',
+                    cat: 'repro',
+                    btn: '&#9792; FEMALE REPRODUCTIVE',
+                    title: 'FEMALE REPRODUCTIVE SYSTEM (UTERUS, OVARIES & FALLOPIAN TUBES)',
+                    sketchfabId: '656b36b1bd174c8cb912d305a6da6181',
+                    overview: 'High-detail 3D coronal cross-section of the female reproductive system showcasing the ovaries, fimbriae, fallopian tubes (oviducts), uterus layers, cervix, and vaginal canal.',
+                    parts: [
+                        { name: 'Ovaries (Oogenesis & Hormones)', desc: 'Paired almond-shaped gonads containing ovarian follicles; release a secondary oocyte every ~28 days (ovulation) and secrete Estrogen and Progesterone.' },
+                        { name: 'Fallopian Tubes (Oviducts)', desc: 'Finger-like fimbriae sweep the ovulated egg into the infundibulum; fertilization typically occurs in the wide Ampulla region via ciliated epithelium.' },
+                        { name: 'Uterus (Perimetrium, Myometrium, Endometrium)', desc: 'Hollow muscular organ: the vascular Endometrium thickens for embryo implantation; the thick smooth-muscle Myometrium contracts during labor (oxytocin).' },
+                        { name: 'Cervix & Birth Canal', desc: 'The muscular neck of the uterus (internal and external os) producing cervical mucus that regulates sperm entry and dilates during parturition.' }
+                    ]
+                },
+                {
+                    id: 'skin_system',
+                    cat: 'human',
+                    btn: '&#129521; SKIN (INTEGUMENTARY)',
+                    title: 'HUMAN SKIN CROSS-SECTION (EPIDERMIS, DERMIS & HYPODERMIS)',
+                    sketchfabId: 'c8701505fd844c3d9680604bfeca8098',
+                    overview: '3D histological block of the integumentary system (the body largest organ), illustrating the stratified layers, hair follicles, arrector pili muscles, sweat glands, and sensory receptors.',
+                    parts: [
+                        { name: 'Epidermis (5 Strata)', desc: 'Keratinized stratified squamous epithelium (Stratum corneum, lucidum, granulosum, spinosum, basale). Contains melanocytes (melanin UV shield) and Langerhans immune cells.' },
+                        { name: 'Dermis (Papillary & Reticular)', desc: 'Dense irregular connective tissue rich in collagen and elastin fibers, capillary loops, Meissner (touch) and Pacinian (deep pressure) corpuscles.' },
+                        { name: 'Eccrine & Apocrine Sweat Glands', desc: 'Sudoriferous glands coiled in the dermis that secrete hypotonic sweat through pores onto the skin surface for evaporative thermoregulation.' },
+                        { name: 'Hair Follicle & Sebaceous Gland', desc: 'Holocrine sebaceous glands secrete lipid-rich sebum into the hair follicle to waterproof skin and inhibit bacterial growth; Arrector pili causes goosebumps.' }
+                    ]
+                },
+                {
+                    id: 'muscular_system',
+                    cat: 'human',
+                    btn: '&#128170; MUSCULAR (ECORCHE)',
+                    title: 'HUMAN MUSCULAR & NEUROVASCULAR SYSTEM (3D ECORCHE)',
+                    sketchfabId: 'fa8c26d21fc146c6a7a9917bf5d07556',
+                    overview: '3D anatomical ecorche stripping away the skin to reveal superficial and deep striated skeletal muscle bellies, tendons, aponeuroses, and neurovascular bundles.',
+                    parts: [
+                        { name: 'Striated Skeletal Muscle', desc: 'Voluntary, multinucleated muscle fibers organized into sarcomeres (Actin thin filaments sliding over Myosin thick filaments via Ca2+ and ATP).' },
+                        { name: 'Tendons vs Ligaments', desc: 'Dense regular collagenous tissue: Tendons attach Muscle to Bone (transmitting contractile force), whereas Ligaments stabilize Bone to Bone at joints.' },
+                        { name: 'Antagonistic Muscle Pairs', desc: 'Muscles only pull, never push: e.g., Biceps brachii (flexor) contracts while Triceps brachii (extensor) relaxes to bend the elbow.' },
+                        { name: 'Cranial & Facial Muscles', desc: 'Temporalis and Masseter power mastication (chewing); Orbicularis oculi and Zygomaticus control facial expression via Cranial Nerve VII.' }
+                    ]
+                },
+                {
+                    id: 'digestive_system',
+                    cat: 'human',
+                    btn: '&#127828; DIGESTIVE SYSTEM',
+                    title: 'HUMAN DIGESTIVE SYSTEM (ALIMENTARY CANAL & ACCESSORY ORGANS)',
+                    sketchfabId: 'b5d7083efb044e9198569b14b6576f98',
+                    overview: 'Complete 9-meter gastrointestinal tract and hepatobiliary organs responsible for ingestion, peristalsis, enzymatic chemical digestion, nutrient absorption, and egestion.',
+                    parts: [
+                        { name: 'Esophagus & Stomach Rugae', desc: 'Peristaltic waves push bolus through the cardiac sphincter. Gastric glands secrete HCl (parietal cells, pH 1.5-2.0) and Pepsinogen (chief cells) to digest proteins into peptones.' },
+                        { name: 'Liver, Gallbladder & Pancreas', desc: 'Liver produces alkaline Bile (emulsifies fats via bile salts); Pancreas secretes Trypsin, Amylase, and Lipase into the Duodenum.' },
+                        { name: 'Small Intestine (Duodenum, Jejunum, Ileum)', desc: 'Primary site of complete chemical digestion and absorption; lined with millions of finger-like Villi and Microvilli containing blood capillaries (glucose/amino acids) and Lacteals (fats).' },
+                        { name: 'Large Intestine (Colon & Cecum)', desc: 'Absorbs remaining water, electrolytes, and vitamins (K and B12 synthesized by symbiotic gut bacteria) before compacting undigested residue.' }
+                    ]
+                },
+                {
+                    id: 'excretory_system',
+                    cat: 'human',
+                    btn: '&#128167; EXCRETORY / KIDNEY',
+                    title: 'EXCRETORY SYSTEM: 3D KIDNEY CROSS-SECTION & NEPHRON',
+                    sketchfabId: 'b6778e8f1c0e487cb1f24adb6f5e5553',
+                    overview: 'High-resolution dissected human kidney showcasing the outer renal cortex, striated renal pyramids (medulla), renal pelvis, ureter, renal artery/vein, and microscopic nephron filtration.',
+                    parts: [
+                        { name: 'Renal Cortex & Medullary Pyramids', desc: 'Outer Cortex houses renal corpuscles (Glomerulus + Bowman capsule) and convoluted tubules; inner Medulla contains cone-shaped Renal Pyramids draining into calyces.' },
+                        { name: 'Ultrafiltration (Glomerulus)', desc: 'Afferent arteriole (wider) brings blood at high hydrostatic pressure into the glomerulus; water, urea, glucose, and ions filter across podocytes into Bowman space.' },
+                        { name: 'Selective Reabsorption (PCT & Loop of Henle)', desc: 'PCT reabsorbs 100% of glucose and amino acids + ~65% of water/Na+; the hairpin Loop of Henle creates a medullary osmolarity gradient via counter-current multiplication.' },
+                        { name: 'Tubular Secretion & ADH Control', desc: 'DCT and Collecting Duct adjust K+/H+ pH balance; Pituitary ADH (vasopressin) inserts aquaporin channels to concentrate urine before it exits via the Ureter.' }
+                    ]
+                },
+                {
+                    id: 'nervous_brain',
+                    cat: 'human',
+                    btn: '&#129504; NERVOUS / 3D BRAIN',
+                    title: 'CENTRAL NERVOUS SYSTEM: 3D HUMAN BRAIN & LOBES',
+                    sketchfabId: '1ed87947216945e6a88a26ff5fc4de95',
+                    overview: 'Detailed 3D neuroanatomical model of the human brain highlighting the cerebral hemispheres (gyri and sulci), corpus callosum, cerebellum, diencephalon, and brainstem.',
+                    parts: [
+                        { name: 'Cerebrum (Frontal, Parietal, Occipital, Temporal)', desc: 'Outer gray matter (cerebral cortex) controls conscious thought, motor commands (precentral gyrus), somatosensory perception, vision (occipital), and hearing/memory.' },
+                        { name: 'Thalamus & Hypothalamus', desc: 'Thalamus acts as the sensory relay station; Hypothalamus regulates body temperature (37 C), hunger, thirst, circadian rhythms, and commands the Pituitary gland.' },
+                        { name: 'Cerebellum (Arbor Vitae)', desc: 'Located posteriorly beneath the cerebrum; coordinates precision voluntary movement, posture, balance, and motor learning.' },
+                        { name: 'Brainstem (Midbrain, Pons, Medulla Oblongata)', desc: 'Medulla Oblongata contains vital autonomic reflex centers controlling heartbeat rate, blood vessel diameter, breathing rhythm, swallowing, and vomiting.' }
+                    ]
+                },
+                {
+                    id: 'neuron_synapse',
+                    cat: 'human',
+                    btn: '&#9889; 3D NEURON & SYNAPSE',
+                    title: 'MICRO-NEUROBIOLOGY: 3D PYRAMIDAL NEURON & ACTION POTENTIAL',
+                    sketchfabId: 'b33d1d02099b46bf8d1f58dc81764806',
+                    overview: '3D cellular reconstruction of excitable pyramidal neurons displaying dendritic arborizations, soma (perikaryon), axon hillock, myelin sheath nodes, and synaptic terminals.',
+                    parts: [
+                        { name: 'Dendrites & Soma (Nissl Granules)', desc: 'Branched dendritic spines receive chemical neurotransmitters from upstream neurons and conduct graded electrical potentials toward the cell body (Soma).' },
+                        { name: 'Axon & Myelin Sheath (Saltatory Conduction)', desc: 'Schwann cells (PNS) or Oligodendrocytes (CNS) wrap the axon in lipid myelin insulation; action potentials jump rapidly from Node of Ranvier to Node of Ranvier.' },
+                        { name: 'Depolarization & Repolarization', desc: 'Resting potential (-70 mV) flips to +30 mV when voltage-gated Na+ channels open (influx); K+ channels then open (efflux) to repolarize the membrane.' },
+                        { name: 'Chemical Synapse (Acetylcholine)', desc: 'Arrival of impulse at the synaptic knob triggers Ca2+ influx, fusing vesicles to release neurotransmitters across the synaptic cleft onto postsynaptic receptors.' }
+                    ]
+                },
+                {
+                    id: 'heart_circulatory',
+                    cat: 'human',
+                    btn: '&#129728; 3D HEART (CHAMBERS)',
+                    title: 'CIRCULATORY SYSTEM: DISSECTED 4-CHAMBER HUMAN HEART',
+                    sketchfabId: '07131559d2d24cde9fbde79eb2e18a1f',
+                    overview: 'High-resolution 3D dissected scan of the human heart showing the right and left atria, thick-walled ventricles, interventricular septum, chordae tendineae, valves, and great vessels.',
+                    parts: [
+                        { name: 'Right Atrium & Right Ventricle (Pulmonary Pump)', desc: 'Receives deoxygenated blood from Superior/Inferior Vena Cava and Coronary Sinus; pumps it through the Tricuspid Valve and Pulmonary Semilunar Valve to the lungs.' },
+                        { name: 'Left Atrium & Left Ventricle (Systemic Pump)', desc: 'Receives oxygenated blood via 4 Pulmonary Veins; passes through the Bicuspid (Mitral) Valve into the thick-walled Left Ventricle, which ejects blood into the Aorta.' },
+                        { name: 'Valves & Chordae Tendineae (Lub-Dub)', desc: 'Papillary muscles and Chordae Tendineae anchor AV valves to prevent prolapse. First heart sound (LUB) = closure of Tricuspid/Bicuspid; DUB = closure of Semilunar valves.' },
+                        { name: 'SAN, AVN & Purkinje Pacemaker', desc: 'Sinoatrial Node (SAN in right atrium) initiates rhythmic electrical impulses (~72 bpm) that pause at the AV Node before racing down the Bundle of His and Purkinje fibers.' }
+                    ]
+                },
+                {
+                    id: 'lungs_respiratory',
+                    cat: 'human',
+                    btn: '&#129729; LUNGS & RESPIRATORY',
+                    title: 'RESPIRATORY SYSTEM: LARYNX, TRACHEA, BRONCHI & LUNGS',
+                    sketchfabId: 'e8129b73b0994c63ab2213c7fd6c06be',
+                    overview: 'Complete 3D respiratory tree showing the larynx, C-shaped cartilaginous tracheal rings, right (3-lobed) and left (2-lobed) lungs, bronchial branching, and alveolar gas exchange.',
+                    parts: [
+                        { name: 'Larynx & C-Ring Trachea', desc: 'Epiglottis prevents food entry into the glottis; incomplete C-shaped hyaline cartilage rings keep the trachea patent during negative-pressure inhalation.' },
+                        { name: 'Right Lung (3 Lobes) vs Left Lung (2 Lobes)', desc: 'Right lung has Superior, Middle, and Inferior lobes; Left lung has 2 lobes plus the Cardiac Notch to accommodate the apex of the heart. Covered by double-walled Pleura.' },
+                        { name: 'Bronchioles & Alveoli (Gas Exchange)', desc: '~300 million thin-walled (1-cell thick squamous epithelium) Alveoli surrounded by pulmonary capillaries; O2 diffuses into RBCs (oxyhemoglobin) while CO2 diffuses out.' },
+                        { name: 'Diaphragm & Intercostal Mechanics', desc: 'Inhalation: Diaphragm contracts (flattens) and external intercostals lift ribs -> thoracic volume increases -> intrapulmonary pressure drops below atmospheric pressure.' }
+                    ]
+                },
+                {
+                    id: 'plant_cell',
+                    cat: 'plant',
+                    btn: '&#127793; 3D PLANT CELL',
+                    title: 'BOTANY & CYTOLOGY: 3D EUKARYOTIC PLANT CELL & ORGANELLES',
+                    sketchfabId: '1ebfc73eabd845e6a7b0cd411a5bf577',
+                    overview: 'Interactive 3D cutaway of a generalized plant cell highlighting the rigid cellulose cell wall, plasma membrane, large central vacuole (tonoplast), nucleus, chloroplasts, and Golgi.',
+                    parts: [
+                        { name: 'Cellulose Cell Wall & Plasmodesmata', desc: 'Freely permeable outer structural wall composed of beta-glucose cellulose microfibrils, pectin (middle lamella), and microscopic cytoplasmic bridges (Plasmodesmata).' },
+                        { name: 'Large Central Vacuole & Tonoplast', desc: 'Occupies up to 80-90% of mature cell volume; filled with cell sap bounded by the selectively permeable Tonoplast membrane to maintain turgor pressure against the wall.' },
+                        { name: 'Nucleus, Nucleolus & Rough/Smooth ER', desc: 'Double-membrane nuclear envelope with pores housing chromatin (DNA); Nucleolus synthesizes rRNA; Rough ER folds proteins while Smooth ER synthesizes lipids.' },
+                        { name: 'Golgi Apparatus (Dictyosomes)', desc: 'Stacks of flattened cisternae that modify, package, and secrete cell-wall polysaccharides (hemicellulose/pectin) during cytokinesis (cell plate formation).' }
+                    ]
+                },
+                {
+                    id: 'leaf_chloroplast',
+                    cat: 'plant',
+                    btn: '&#127811; LEAF & CHLOROPLAST 3D',
+                    title: 'PHOTOSYNTHESIS ENGINE: 3D CHLOROPLAST & LEAF ANATOMY',
+                    sketchfabId: '61ccbae7ef884bed83cb86169b04c28d',
+                    overview: '3D ultra-structural dissection of the chloroplast and leaf photosynthetic machinery showing the outer/inner membranes, thylakoid discs, grana stacks, stroma lamellae, and vascular tissues.',
+                    parts: [
+                        { name: 'Grana & Thylakoid Membranes (Light Reaction)', desc: 'Coin-like stacks of thylakoids containing Chlorophyll-a and b pigments; site of Photolysis of water (2H2O -> 4H+ + 4e- + O2) and photophosphorylation (ATP + NADPH).' },
+                        { name: 'Stroma Matrix (Calvin Cycle / Dark Reaction)', desc: 'Colorless proteinaceous fluid containing RuBisCO enzyme, circular plastid DNA, and 70S ribosomes where CO2 is fixed into Glucose (C6H12O6).' },
+                        { name: 'Leaf Mesophyll (Palisade vs Spongy)', desc: 'Upper Palisade mesophyll consists of tightly packed cylindrical cells rich in chloroplasts for maximum light capture; lower Spongy mesophyll has air spaces for CO2 diffusion.' },
+                        { name: 'Stomata Guard Cells, Xylem & Phloem', desc: 'Kidney-shaped Guard Cells regulate stomatal pore opening via K+ turgor changes; Xylem vessels conduct water/minerals upward (transpiration pull); Phloem translocates sucrose.' }
+                    ]
+                },
+                {
+                    id: 'flower_anatomy',
+                    cat: 'plant',
+                    btn: '&#127802; 3D FLOWER DISSECTION',
+                    title: 'PLANT REPRODUCTION: 3D ANGIOSPERM FLOWER (HIBISCUS)',
+                    sketchfabId: '23df2be9272547c8b50637a9b93f8ea2',
+                    overview: 'Complete 3D botanical model of a bisexual angiosperm flower (Hibiscus rosa-sinensis) demonstrating the four floral whorls: Calyx, Corolla, Androecium (male), and Gynoecium (female).',
+                    parts: [
+                        { name: 'Androecium (Stamen: Anther & Filament)', desc: 'Male reproductive whorl; bilobed Anther contains 4 pollen sacs (microsporangia) that undergo meiosis to produce haploid Pollen Grains (male gametophytes).' },
+                        { name: 'Gynoecium / Pistil (Stigma, Style, Ovary)', desc: 'Female reproductive whorl; sticky Stigma captures pollen, which germinates a pollen tube down the Style into the basal swollen Ovary containing Ovules.' },
+                        { name: 'Double Fertilization & Triple Fusion', desc: 'Unique to angiosperms: one male gamete fuses with the Egg cell to form the diploid Zygote (2n -> Embryo); the second fuses with two polar nuclei to form triploid Endosperm (3n).' },
+                        { name: 'Calyx (Sepals) & Corolla (Petals)', desc: 'Green Sepals (and epicalyx) protect the flower in bud stage; brightly colored Petals and nectaries attract insect pollinators (entomophily).' }
+                    ]
+                },
+                {
+                    id: 'mitochondria_dna',
+                    cat: 'plant',
+                    btn: '&#129516; MITOCHONDRIA & DNA 3D',
+                    title: 'CELLULAR RESPIRATION & GENETICS: 3D MITOCHONDRION',
+                    sketchfabId: 'cb01ec9a63314bb4be9d9445045510a3',
+                    overview: '3D labeled organelle model of the Mitochondrion (powerhouse of eukaryotic animal and plant cells) showing outer membrane, inner cristae folds, matrix, and mitochondrial DNA.',
+                    parts: [
+                        { name: 'Inner Membrane & Cristae (ETC)', desc: 'Deeply folded into finger-like Cristae to maximize surface area for the Electron Transport Chain and F0-F1 ATP Synthase (oxysomes) generating ~32-34 ATP per glucose.' },
+                        { name: 'Mitochondrial Matrix (Krebs / Citric Acid Cycle)', desc: 'Contains enzymes for the Krebs Cycle (converting Acetyl-CoA into CO2, NADH, and FADH2), along with circular maternal mtDNA and 70S ribosomes (semi-autonomous).' },
+                        { name: 'DNA Double Helix (Watson-Crick Model)', desc: 'Two antiparallel polynucleotide strands (5-prime to 3-prime) with a sugar-phosphate backbone and complementary nitrogenous base pairs: Adenine=Thymine (2 H-bonds), Guanine===Cytosine (3 H-bonds).' },
+                        { name: 'Chromatin, Histones & Genes', desc: 'Negatively charged DNA wraps around positively charged Histone octamers to form Nucleosomes, condensing into Chromosomes during mitosis and meiosis.' }
+                    ]
+                }
+            ];
+
+            // 3. Build the Bio-Lab Modal DOM
+            const oldModal = document.getElementById('holoBioLabModal');
+            if (oldModal) oldModal.remove();
+
+            const modalWrap = document.createElement('div');
+            modalWrap.innerHTML = [
+                '<div id="holoBioLabModal" class="biolab-modal">',
+                '  <div class="biolab-hdr">',
+                '    <div class="biolab-title">&#129516; 3D HOLO-BIO LAB // COMPLETE HUMAN (MALE/FEMALE) &amp; PLANT ANATOMY</div>',
+                '    <div style="display:flex; gap:6px; flex-wrap:wrap;">',
+                '      <button id="bioModeCloudBtn" class="hp-btn active">&#127760; 3D WEBGL MODEL</button>',
+                '      <button id="bioModeHoloBtn" class="hp-btn">&#128300; 3D HOLO-DISSECTOR</button>',
+                '      <button id="bioBeamPartnerBtn" class="hp-btn" title="Beam current 3D Organ to Ghost-Link Partner">&#128225; BEAM TO PARTNER</button>',
+                '      <button id="bioCloseBtn" class="hp-btn danger">&#10006; EXIT LAB</button>',
+                '    </div>',
+                '  </div>',
+                '  <div id="bioDeckBar" class="biolab-deck-bar"></div>',
+                '  <div class="biolab-main">',
+                '    <div class="biolab-stage-col">',
+                '      <div class="biolab-toolbar">',
+                '        <span id="bioActiveTitle" style="font-size:0.8em; font-weight:bold; color:#38bdf8;">LOADING 3D ANATOMY...</span>',
+                '        <span style="font-size:0.7em; color:#94a3b8;">&#128433; Drag to Rotate 360&#176; | Scroll/Pinch to Zoom Inside</span>',
+                '      </div>',
+                '      <div class="biolab-viewport">',
+                '        <iframe id="bioSketchfabFrame" class="biolab-iframe" allow="autoplay; fullscreen; xr-spatial-tracking" allowfullscreen></iframe>',
+                '        <canvas id="bioHoloCanvas" class="biolab-canvas"></canvas>',
+                '      </div>',
+                '    </div>',
+                '    <div class="biolab-info-col">',
+                '      <div class="bio-card">',
+                '        <h3 id="bioInfoHeading">ANATOMICAL SYSTEM OVERVIEW</h3>',
+                '        <p id="bioInfoOverview"></p>',
+                '      </div>',
+                '      <div class="bio-card">',
+                '        <h3>&#128269; CLICK SUB-STRUCTURES TO INSPECT</h3>',
+                '        <div id="bioPartsList" class="bio-parts-grid"></div>',
+                '        <div id="bioPartDetailBox" class="bio-part-detail" style="margin-top:10px;">Select any sub-structure above to inspect its exact histological &amp; physiological mechanism.</div>',
+                '      </div>',
+                '      <div class="bio-card" style="border-color:#7c3aed;">',
+                '        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">',
+                '          <h3 style="margin:0; color:#c084fc;">&#129302; AI ANATOMY VIVA QUIZZER</h3>',
+                '          <button id="bioAiQuizBtn" class="hp-btn" style="font-size:0.72em;">&#9889; GENERATE VIVA QUIZ</button>',
+                '        </div>',
+                '        <div id="bioAiOutput" style="font-size:0.78em; color:#e2e8f0; line-height:1.45; max-height:150px; overflow-y:auto;">Click GENERATE VIVA QUIZ to test yourself on the currently active 3D organ!</div>',
+                '      </div>',
+                '      <div class="bio-custom-bar">',
+                '        <input id="bioCustomInput" class="bio-input" type="text" placeholder="Paste any Sketchfab 3D URL or Model ID..." />',
+                '        <button id="bioCustomLoadBtn" class="hp-btn">LOAD 3D</button>',
+                '      </div>',
+                '    </div>',
+                '  </div>',
+                '</div>'
+            ].join('\n');
+            document.body.appendChild(modalWrap.firstChild);
+
+            // 4. Dock the 🧬 BIO-LAB Button Directly into the 3-Lines / Ghost-Link Menu Bar
+            function mountBioLabMenuButton() {
+                const oldBtn = document.getElementById('bioLabLauncherBtn');
+                if (oldBtn) oldBtn.remove();
+
+                const bioBtn = document.createElement('button');
+                bioBtn.id = 'bioLabLauncherBtn';
+                bioBtn.innerHTML = '&#129516; BIO-LAB';
+
+                // Find the 3-lines / Ghost-Link button bar (next to HOLO-POD, SHARE SCREEN, or VOICE CALL)
+                const refBtn = document.getElementById('uniShareScreenBtn') || document.getElementById('holoPodLauncher') || Array.from(document.querySelectorAll('button, a')).find(function(b) {
+                    const t = (b.innerText || '').toUpperCase();
+                    return t.indexOf('VOICE CALL') > -1 || t.indexOf('BEAM PDF') > -1;
+                });
+
+                if (refBtn && refBtn.parentElement) {
+                    bioBtn.className = refBtn.className || 'hp-btn';
+                    refBtn.parentElement.appendChild(bioBtn);
+                } else {
+                    bioBtn.className = 'hp-btn';
+                    document.body.appendChild(bioBtn);
+                }
+
+                // Also add a quick-access button next to CYBER-LAB if present on main screen
+                const oldQuick = document.getElementById('bioLabQuickOrb');
+                if (oldQuick) oldQuick.remove();
+                const cyberTrigger = document.getElementById('cyberLabTrigger') || Array.from(document.querySelectorAll('button')).find(function(b) {
+                    return (b.innerText || '').toUpperCase().indexOf('CYBER-LAB') > -1;
+                });
+                if (cyberTrigger) {
+                    const quickBtn = document.createElement('button');
+                    quickBtn.id = 'bioLabQuickOrb';
+                    quickBtn.className = cyberTrigger.className || 'hp-btn';
+                    quickBtn.style.cssText = 'position:fixed; bottom:25px; left:185px; z-index:9400; background:#111; color:var(--core, #00ffcc); border:2px solid var(--core, #00ffcc); border-radius:50px; padding:10px 18px; font-family:Courier New, monospace; font-weight:bold; cursor:pointer; box-shadow:0 0 18px rgba(0,255,204,0.4);';
+                    quickBtn.innerHTML = '&#129516; 3D BIO-LAB';
+                    quickBtn.addEventListener('click', openBioLab);
+                    document.body.appendChild(quickBtn);
+                }
+
+                return bioBtn;
+            }
+
+            const bioModal = document.getElementById('holoBioLabModal');
+            const bioDeckBar = document.getElementById('bioDeckBar');
+            const bioSketchfabFrame = document.getElementById('bioSketchfabFrame');
+            const bioHoloCanvas = document.getElementById('bioHoloCanvas');
+            const bioActiveTitle = document.getElementById('bioActiveTitle');
+            const bioInfoHeading = document.getElementById('bioInfoHeading');
+            const bioInfoOverview = document.getElementById('bioInfoOverview');
+            const bioPartsList = document.getElementById('bioPartsList');
+            const bioPartDetailBox = document.getElementById('bioPartDetailBox');
+            const bioModeCloudBtn = document.getElementById('bioModeCloudBtn');
+            const bioModeHoloBtn = document.getElementById('bioModeHoloBtn');
+            const bioBeamPartnerBtn = document.getElementById('bioBeamPartnerBtn');
+            const bioCloseBtn = document.getElementById('bioCloseBtn');
+            const bioAiQuizBtn = document.getElementById('bioAiQuizBtn');
+            const bioAiOutput = document.getElementById('bioAiOutput');
+            const bioCustomInput = document.getElementById('bioCustomInput');
+            const bioCustomLoadBtn = document.getElementById('bioCustomLoadBtn');
+
+            let currentModel = BIO_MODELS[0];
+            let currentPartIdx = 0;
+            let viewMode = 'cloud'; // 'cloud' or 'holo'
+            let holoAnimId = null;
+            let rotY = 0.4, rotX = 0.2;
+            let isDraggingHolo = false, lastX = 0, lastY = 0;
+
+            // 5. Populate All 17 Model Buttons in the Top Deck Bar
+            BIO_MODELS.forEach(function(m, idx) {
+                const chip = document.createElement('button');
+                chip.className = 'bio-chip ' + (m.cat === 'plant' ? 'plant' : (m.cat === 'repro' ? 'repro' : '')) + (idx === 0 ? ' active' : '');
+                chip.dataset.id = m.id;
+                chip.innerHTML = m.btn;
+                chip.addEventListener('click', function() {
+                    if (typeof playSynth === 'function') playSynth(620, 1420, 0.08, 'triangle');
+                    selectBioModel(m.id);
+                });
+                bioDeckBar.appendChild(chip);
+            });
+
+            function selectBioModel(modelId) {
+                const found = BIO_MODELS.find(function(x) { return x.id === modelId; });
+                if (!found) return;
+                currentModel = found;
+                currentPartIdx = 0;
+
+                Array.from(bioDeckBar.querySelectorAll('.bio-chip')).forEach(function(c) {
+                    c.classList.toggle('active', c.dataset.id === modelId);
+                });
+
+                bioActiveTitle.innerText = found.title;
+                bioInfoHeading.innerText = found.title;
+                bioInfoOverview.innerText = found.overview;
+
+                // Load Sketchfab 3D Embed URL
+                const embedUrl = 'https://sketchfab.com/models/' + found.sketchfabId + '/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0&ui_theme=dark&dnt=1';
+                if (bioSketchfabFrame.src !== embedUrl) {
+                    bioSketchfabFrame.src = embedUrl;
+                }
+
+                // Render Sub-Structure Buttons
+                bioPartsList.innerHTML = '';
+                found.parts.forEach(function(p, pIdx) {
+                    const pb = document.createElement('button');
+                    pb.className = 'bio-part-btn' + (pIdx === 0 ? ' active' : '');
+                    pb.innerText = (pIdx + 1) + '. ' + p.name;
+                    pb.addEventListener('click', function() {
+                        if (typeof playSynth === 'function') playSynth(750, 1500, 0.06, 'sine');
+                        currentPartIdx = pIdx;
+                        Array.from(bioPartsList.querySelectorAll('.bio-part-btn')).forEach(function(b, i) {
+                            b.classList.toggle('active', i === pIdx);
+                        });
+                        bioPartDetailBox.innerHTML = '<strong style="color:#38bdf8;">' + p.name + ':</strong> ' + p.desc;
+                    });
+                    bioPartsList.appendChild(pb);
+                });
+
+                if (found.parts[0]) {
+                    bioPartDetailBox.innerHTML = '<strong style="color:#38bdf8;">' + found.parts[0].name + ':</strong> ' + found.parts[0].desc;
+                }
+            }
+
+            // 6. Interactive 3D Holo-Dissector Wireframe Renderer (Works 100% Offline + Clickable Nodes!)
+            function startHoloCanvasLoop() {
+                if (holoAnimId) cancelAnimationFrame(holoAnimId);
+                const ctx = bioHoloCanvas.getContext('2d');
+
+                function drawHoloFrame() {
+                    if (viewMode !== 'holo' || !bioModal.classList.contains('open')) return;
+                    const rect = bioHoloCanvas.getBoundingClientRect();
+                    if (bioHoloCanvas.width !== rect.width || bioHoloCanvas.height !== rect.height) {
+                        bioHoloCanvas.width = Math.max(300, rect.width);
+                        bioHoloCanvas.height = Math.max(260, rect.height);
+                    }
+                    const w = bioHoloCanvas.width, h = bioHoloCanvas.height;
+                    const cx = w / 2, cy = h / 2;
+
+                    ctx.clearRect(0, 0, w, h);
+
+                    // Draw Cyberpunk Grid
+                    ctx.strokeStyle = 'rgba(0, 255, 204, 0.08)';
+                    ctx.lineWidth = 1;
+                    for (let gx = 0; gx < w; gx += 40) {
+                        ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, h); ctx.stroke();
+                    }
+                    for (let gy = 0; gy < h; gy += 40) {
+                        ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke();
+                    }
+
+                    if (!isDraggingHolo) rotY += 0.012;
+
+                    const isPlant = currentModel.cat === 'plant';
+                    const primaryColor = isPlant ? '#22c55e' : (currentModel.cat === 'repro' ? '#ec4899' : '#00ffcc');
+
+                    // Draw 3D Rotating Wireframe Mesh
+                    const rings = 14;
+                    const segs = 20;
+                    const radius = Math.min(w, h) * 0.28;
+
+                    for (let i = 0; i <= rings; i++) {
+                        const lat = (i / rings) * Math.PI - Math.PI / 2;
+                        ctx.beginPath();
+                        for (let j = 0; j <= segs; j++) {
+                            const lon = (j / segs) * Math.PI * 2;
+                            let x = Math.cos(lat) * Math.cos(lon) * radius;
+                            let y = Math.sin(lat) * radius * (currentModel.id.indexOf('skeleton') > -1 || currentModel.id.indexOf('full') > -1 ? 1.35 : 1.0);
+                            let z = Math.cos(lat) * Math.sin(lon) * radius;
+
+                            // 3D Rotation
+                            const x1 = x * Math.cos(rotY) - z * Math.sin(rotY);
+                            const z1 = z * Math.cos(rotY) + x * Math.sin(rotY);
+                            const y1 = y * Math.cos(rotX) - z1 * Math.sin(rotX);
+
+                            const sx = cx + x1;
+                            const sy = cy + y1;
+                            if (j === 0) ctx.moveTo(sx, sy);
+                            else ctx.lineTo(sx, sy);
+                        }
+                        ctx.strokeStyle = primaryColor;
+                        ctx.globalAlpha = 0.28;
+                        ctx.lineWidth = 1.2;
+                        ctx.stroke();
+                    }
+                    ctx.globalAlpha = 1.0;
+
+                    // Draw Orbiting Anatomical Callout Pins for Each Sub-Part
+                    currentModel.parts.forEach(function(part, idx) {
+                        const angle = rotY + (idx * (Math.PI * 2 / currentModel.parts.length));
+                        const yOff = (idx - 1.5) * (radius * 0.42);
+                        const px = cx + Math.cos(angle) * (radius * 0.75);
+                        const py = cy + yOff;
+
+                        const isSelected = (idx === currentPartIdx);
+                        ctx.beginPath();
+                        ctx.arc(px, py, isSelected ? 10 : 6, 0, Math.PI * 2);
+                        ctx.fillStyle = isSelected ? '#ff0055' : primaryColor;
+                        ctx.fill();
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = '#fff';
+                        ctx.stroke();
+
+                        // Leader line & label
+                        const lx = px + (px >= cx ? 28 : -28);
+                        ctx.beginPath();
+                        ctx.moveTo(px, py);
+                        ctx.lineTo(lx, py - 10);
+                        ctx.strokeStyle = isSelected ? '#ff0055' : primaryColor;
+                        ctx.stroke();
+
+                        ctx.fillStyle = isSelected ? '#ffdd00' : '#ffffff';
+                        ctx.font = (isSelected ? 'bold 13px ' : '11px ') + 'Courier New';
+                        ctx.textAlign = (px >= cx) ? 'left' : 'right';
+                        ctx.fillText('[' + (idx + 1) + '] ' + part.name, lx + (px >= cx ? 6 : -6), py - 6);
+                    });
+
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = primaryColor;
+                    ctx.font = 'bold 13px Courier New';
+                    ctx.fillText('HOLO-SCANNER ACTIVE // ' + currentModel.title, 18, 28);
+
+                    holoAnimId = requestAnimationFrame(drawHoloFrame);
+                }
+                drawHoloFrame();
+            }
+
+            bioHoloCanvas.addEventListener('mousedown', function(e) { isDraggingHolo = true; lastX = e.clientX; lastY = e.clientY; });
+            window.addEventListener('mousemove', function(e) {
+                if (!isDraggingHolo) return;
+                rotY += (e.clientX - lastX) * 0.01;
+                rotX += (e.clientY - lastY) * 0.01;
+                lastX = e.clientX; lastY = e.clientY;
+            });
+            window.addEventListener('mouseup', function() { isDraggingHolo = false; });
+
+            bioModeCloudBtn.addEventListener('click', function() {
+                viewMode = 'cloud';
+                bioModeCloudBtn.classList.add('active');
+                bioModeHoloBtn.classList.remove('active');
+                bioSketchfabFrame.style.display = 'block';
+                bioHoloCanvas.style.display = 'none';
+            });
+
+            bioModeHoloBtn.addEventListener('click', function() {
+                viewMode = 'holo';
+                bioModeHoloBtn.classList.add('active');
+                bioModeCloudBtn.classList.remove('active');
+                bioSketchfabFrame.style.display = 'none';
+                bioHoloCanvas.style.display = 'block';
+                startHoloCanvasLoop();
+            });
+
+            // 7. Custom Sketchfab ID / URL Loader
+            bioCustomLoadBtn.addEventListener('click', function() {
+                const raw = (bioCustomInput.value || '').trim();
+                if (!raw) return;
+                const match = raw.match(/([a-f0-9]{32})/i);
+                const uid = match ? match[1] : raw;
+                viewMode = 'cloud';
+                bioModeCloudBtn.click();
+                bioSketchfabFrame.src = 'https://sketchfab.com/models/' + uid + '/embed?autostart=1&ui_theme=dark&dnt=1';
+                bioActiveTitle.innerText = 'CUSTOM 3D MODEL LOADED: ' + uid;
+            });
+
+            // 8. AI Anatomy Viva Quizzer (Uses User's Stored Gemini Key or Built-In High-Yield Questions)
+            bioAiQuizBtn.addEventListener('click', async function() {
+                if (typeof playSynth === 'function') playSynth(650, 1550, 0.1, 'triangle');
+                bioAiOutput.innerText = 'Scanning ' + currentModel.title + ' & generating 3 high-yield Viva questions...';
+                const savedKey = localStorage.getItem('cartel_gemini_key') || localStorage.getItem('gemini_api_key') || localStorage.getItem('GEMINI_API_KEY');
+
+                if (savedKey) {
+                    try {
+                        const promptTxt = 'Create 3 concise, high-yield exam viva questions with short answers on: ' + currentModel.title + ' (' + currentModel.parts.map(function(p){return p.name;}).join(', ') + '). Keep it crisp.';
+                        const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + savedKey, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ contents: [{ parts: [{ text: promptTxt }] }] })
+                        });
+                        const json = await resp.json();
+                        const ans = json && json.candidates && json.candidates[0] && json.candidates[0].content && json.candidates[0].content.parts[0].text;
+                        if (ans) {
+                            bioAiOutput.innerText = ans;
+                            return;
+                        }
+                    } catch (e) {}
+                }
+
+                // Instant Offline Viva Fallback if no API key is set
+                bioAiOutput.innerHTML = currentModel.parts.map(function(p, i) {
+                    return '<div style="margin-bottom:6px;"><strong style="color:#c084fc;">Q' + (i + 1) + ' (' + p.name + '):</strong> Explain its structural adaptation &amp; role.<br><span style="color:#a7f3d0;">&#10148; ' + p.desc + '</span></div>';
+                }).join('');
+            });
+
+            // 9. Ghost-Link Co-Op Partner Sync (Beam Active 3D Organ to Partner!)
+            bioBeamPartnerBtn.addEventListener('click', function() {
+                if (typeof playSynth === 'function') playSynth(700, 1650, 0.12, 'triangle');
+                if (window.cartelConn && window.cartelConn.open) {
+                    window.cartelConn.send({ type: 'HOLO_BIO_SYNC', modelId: currentModel.id });
+                    bioBeamPartnerBtn.innerHTML = '&#128994; BEAMED!';
+                    setTimeout(function() { bioBeamPartnerBtn.innerHTML = '&#128225; BEAM TO PARTNER'; }, 1500);
+                } else {
+                    alert('Connect with your partner in the Ghost-Link War Room first to beam 3D organs live!');
+                }
+            });
+
+            setInterval(function() {
+                if (window.cartelConn && !window.cartelConn._bioHooked) {
+                    window.cartelConn._bioHooked = true;
+                    window.cartelConn.on('data', function(d) {
+                        if (d && d.type === 'HOLO_BIO_SYNC' && d.modelId) {
+                            openBioLab();
+                            selectBioModel(d.modelId);
+                        }
+                    });
+                }
+            }, 1200);
+
+            function openBioLab() {
+                if (typeof playSynth === 'function') playSynth(520, 1380, 0.12, 'triangle');
+                bioModal.classList.add('open');
+                if (!bioSketchfabFrame.src) {
+                    selectBioModel(BIO_MODELS[0].id);
+                }
+            }
+
+            const bioMenuBtn = mountBioLabMenuButton();
+            if (bioMenuBtn) {
+                bioMenuBtn.addEventListener('click', openBioLab);
+            }
+            bioCloseBtn.addEventListener('click', function() {
+                if (typeof playSynth === 'function') playSynth(600, 300, 0.08, 'sawtooth');
+                bioModal.classList.remove('open');
+            });
+
+            // Initialize default model metadata
+            selectBioModel(BIO_MODELS[0].id);
+        })();
+// ============================================================================
+        // BIO-LAB ADD-ON PATCH: GENERALIZED ANIMAL CELL & PLANT CELL ULTRASTRUCTURE
+        // ============================================================================
+        (function() {
+            const CELL_ADDON_MODELS = [
+                {
+                    id: 'general_animal_cell',
+                    btn: '&#129440; 3D ANIMAL CELL (GENERALIZED)',
+                    title: 'CYTOLOGY: STRUCTURE OF A GENERALIZED EUKARYOTIC ANIMAL CELL',
+                    sketchfabId: '41f56ccbbc7642f786e2833853b7d6b3',
+                    overview: 'Complete 3D ultrastructure of a generalized animal cell bounded by a flexible, selectively permeable lipo-protein Plasma Membrane (lacking a cell wall), containing a true nucleus, centrosome with centrioles, lysosomes, and membrane-bound organelles suspended in cytoplasm.',
+                    parts: [
+                        { name: 'Plasma Membrane (Fluid Mosaic)', desc: 'Outermost living, flexible phospholipid bilayer with embedded extrinsic/intrinsic proteins and cholesterol; regulates selective transport (osmosis, diffusion, active transport, endocytosis) and forms microvilli to increase absorption surface area.' },
+                        { name: 'Centrosome & Centrioles (Animal Exclusive)', desc: 'Located near the nucleus; contains a pair of barrel-shaped Centrioles arranged perpendicular to each other in a (9+0) microtubular triplet array. Initiates spindle fiber & aster formation during animal cell division.' },
+                        { name: 'Lysosomes (Suicidal Bags)', desc: 'Membrane-bound spherical vesicles budded off from the Golgi complex containing ~40 acid hydrolase enzymes (pH ~4.5-5.0) for intracellular digestion, autophagy of worn-out organelles, and autolysis.' },
+                        { name: 'Nucleus, Nucleolus & Chromatin', desc: 'Centrally located master control center bounded by a porous double nuclear envelope; contains DNA-histone Chromatin fibers and a dense, membrane-less Nucleolus (factory of rRNA and 80S ribosome subunits).' },
+                        { name: 'Rough & Smooth Endoplasmic Reticulum', desc: 'Endomembrane network of cisternae, tubules, and vesicles: Rough ER (studded with 80S ribosomes) synthesizes and transports proteins; Smooth ER synthesizes lipids, steroid hormones, and detoxifies drugs/poisons.' },
+                        { name: 'Golgi Apparatus & Mitochondria', desc: 'Golgi complex (cis/trans cisternae) packages glycoproteins, secretions, and lysosomes; Mitochondria generate ATP energy via aerobic cellular respiration (Krebs cycle in matrix + ETC on cristae). Vacuoles, if present, are small and temporary.' }
+                    ]
+                },
+                {
+                    id: 'general_plant_cell_ultra',
+                    btn: '&#127793; 3D PLANT CELL (GENERALIZED)',
+                    title: 'CYTOLOGY: STRUCTURE OF A GENERALIZED EUKARYOTIC PLANT CELL',
+                    sketchfabId: 'f6aae4cecc204eeca2b6505b3522c4e1',
+                    overview: 'Complete 3D ultrastructure of a generalized parenchymatous plant cell featuring a rigid outer Cellulose Cell Wall, a massive permanent Central Sap Vacuole (bounded by Tonoplast) that pushes the Nucleus to the periphery, double-membrane Plastids (Chloroplasts), and Dictyosomes.',
+                    parts: [
+                        { name: 'Cell Wall, Middle Lamella & Plasmodesmata', desc: 'Non-living, freely permeable rigid outer layer made of Cellulose microfibrils, hemicellulose, and a calcium/magnesium pectate Middle Lamella cementing adjacent cells. Pierced by cytoplasmic bridges called Plasmodesmata.' },
+                        { name: 'Large Central Vacuole & Tonoplast', desc: 'Permanent central sap vacuole occupying 80-90% of mature cell volume; bounded by the selectively permeable Tonoplast membrane. Stores water, anthocyanins, and maintains mechanical Turgor Pressure against the cell wall.' },
+                        { name: 'Plastids (Chloroplasts, Chromoplasts, Leucoplasts)', desc: 'Double-membrane semi-autonomous organelles unique to plants: Chloroplasts (chlorophyll in thylakoid grana + RuBisCO in stroma) perform photosynthesis; Chromoplasts give flower/fruit color; Leucoplasts (amyloplasts/elaioplasts) store starch/oils.' },
+                        { name: 'Peripheral Nucleus & ER Network', desc: 'Pushed to the lateral periphery by the large central vacuole; contains nuclear envelope, nucleoplasm, nucleolus, and chromatin, continuous with Rough and Smooth Endoplasmic Reticulum.' },
+                        { name: 'Dictyosomes (Plant Golgi) & Spherosomes', desc: 'In plant cells, Golgi bodies exist as dispersed subunits called Dictyosomes that synthesize cell-wall polysaccharides and form the Cell Plate (Phragmoplast) during cytokinesis. Spherosomes store and synthesize lipids.' },
+                        { name: 'Anastral Division & Microtubules (No Centrioles)', desc: 'Higher plant cells lack centrosomes and centrioles; during mitosis, spindle fibers organize directly from cytoplasmic Microtubule Organizing Centers (MTOCs) without asters (anastral mitosis).' }
+                    ]
+                },
+                {
+                    id: 'plant_vs_animal_comp',
+                    btn: '&#9878; PLANT VS ANIMAL CELL',
+                    title: 'COMPARATIVE ULTRASTRUCTURE: GENERALIZED PLANT CELL VS ANIMAL CELL',
+                    sketchfabId: '1ebfc73eabd845e6a7b0cd411a5bf577',
+                    overview: 'High-yield side-by-side structural and physiological comparison between a Generalized Plant Cell and a Generalized Animal Cell across all major exam parameters.',
+                    parts: [
+                        { name: '1. Outer Boundary & Shape', desc: 'PLANT CELL: Rigid, non-living Cellulose Cell Wall outside the plasma membrane; fixed polygonal/rectangular shape. | ANIMAL CELL: Only flexible Plasma Membrane (no cell wall); irregular/spherical shape that can change.' },
+                        { name: '2. Vacuoles & Nucleus Position', desc: 'PLANT CELL: One huge, permanent Central Sap Vacuole (up to 90% volume) bounded by Tonoplast; Nucleus is pushed to the periphery. | ANIMAL CELL: Vacuoles are small, numerous, and temporary; Nucleus is centrally located.' },
+                        { name: '3. Plastids & Nutrition', desc: 'PLANT CELL: Plastids (Chloroplasts, Chromoplasts, Leucoplasts) are present; autotrophic (photosynthetic). | ANIMAL CELL: Plastids are completely absent (except Euglena); heterotrophic.' },
+                        { name: '4. Centrosome, Centrioles & Mitosis', desc: 'PLANT CELL: Centrosome and Centrioles are absent in higher plants; spindle is Anastral (no asters). | ANIMAL CELL: Centrosome with 2 Centrioles (9+0 array) is present; spindle is Amphiastral (2 asters).' },
+                        { name: '5. Cytokinesis & Golgi Bodies', desc: 'PLANT CELL: Divides centrifugally by Cell Plate (Phragmoplast) formation; Golgi appears as scattered Dictyosomes. | ANIMAL CELL: Divides centripetally by Cleavage Furrow constriction; single compact Golgi apparatus.' },
+                        { name: '6. Reserve Food & Lysosomes', desc: 'PLANT CELL: Reserve food stored as Starch grains; central vacuole & spherosomes perform lysosomal functions. | ANIMAL CELL: Reserve food stored as Glycogen granules & fat droplets; distinct Lysosomes present.' }
+                    ]
+                }
+            ];
+
+            function injectGeneralizedCellModels() {
+                const deckBar = document.getElementById('bioDeckBar');
+                const frame = document.getElementById('bioSketchfabFrame');
+                const activeTitle = document.getElementById('bioActiveTitle');
+                const infoHeading = document.getElementById('bioInfoHeading');
+                const infoOverview = document.getElementById('bioInfoOverview');
+                const partsList = document.getElementById('bioPartsList');
+                const detailBox = document.getElementById('bioPartDetailBox');
+                const aiQuizBtn = document.getElementById('bioAiQuizBtn');
+                const aiOutput = document.getElementById('bioAiOutput');
+
+                if (!deckBar || document.getElementById('chip_general_animal_cell')) return;
+
+                // Remove old simple plant_cell button if present so our upgraded Generalized Plant Cell replaces it cleanly
+                const oldPlantBtn = deckBar.querySelector('[data-id="plant_cell"]');
+                const anchorEl = oldPlantBtn || deckBar.firstChild;
+
+                let activeAddonModel = null;
+
+                function activateAddonCell(m) {
+                    activeAddonModel = m;
+                    Array.from(deckBar.querySelectorAll('.bio-chip')).forEach(function(c) {
+                        c.classList.toggle('active', c.dataset.id === m.id);
+                    });
+
+                    if (activeTitle) activeTitle.innerText = m.title;
+                    if (infoHeading) infoHeading.innerText = m.title;
+                    if (infoOverview) infoOverview.innerText = m.overview;
+
+                    const embedUrl = 'https://sketchfab.com/models/' + m.sketchfabId + '/embed?autostart=1&internal=1&tracking=0&ui_ar=0&ui_infos=0&ui_snapshots=1&ui_stop=0&ui_theatre=1&ui_watermark=0&ui_theme=dark&dnt=1';
+                    if (frame && frame.src !== embedUrl) {
+                        frame.src = embedUrl;
+                    }
+
+                    if (partsList && detailBox) {
+                        partsList.innerHTML = '';
+                        m.parts.forEach(function(p, idx) {
+                            const pb = document.createElement('button');
+                            pb.className = 'bio-part-btn' + (idx === 0 ? ' active' : '');
+                            pb.innerText = (idx + 1) + '. ' + p.name;
+                            pb.addEventListener('click', function() {
+                                if (typeof playSynth === 'function') playSynth(750, 1500, 0.06, 'sine');
+                                Array.from(partsList.querySelectorAll('.bio-part-btn')).forEach(function(b, i) {
+                                    b.classList.toggle('active', i === idx);
+                                });
+                                detailBox.innerHTML = '<strong style="color:#38bdf8;">' + p.name + ':</strong> ' + p.desc;
+                            });
+                            partsList.appendChild(pb);
+                        });
+                        if (m.parts[0]) {
+                            detailBox.innerHTML = '<strong style="color:#38bdf8;">' + m.parts[0].name + ':</strong> ' + m.parts[0].desc;
+                        }
+                    }
+
+                    if (aiOutput) {
+                        aiOutput.innerHTML = m.parts.slice(0, 3).map(function(p, i) {
+                            return '<div style="margin-bottom:6px;"><strong style="color:#c084fc;">Viva Note ' + (i + 1) + ' (' + p.name + '):</strong><br><span style="color:#a7f3d0;">&#10148; ' + p.desc + '</span></div>';
+                        }).join('');
+                    }
+                }
+
+                // Clear activeAddonModel if another standard organ chip is clicked
+                deckBar.addEventListener('click', function(e) {
+                    const btn = e.target.closest('.bio-chip');
+                    if (btn && !btn.dataset.isCellAddon) {
+                        activeAddonModel = null;
+                    }
+                });
+
+                CELL_ADDON_MODELS.forEach(function(m) {
+                    const chip = document.createElement('button');
+                    chip.id = 'chip_' + m.id;
+                    chip.className = 'bio-chip plant';
+                    chip.dataset.id = m.id;
+                    chip.dataset.isCellAddon = '1';
+                    chip.innerHTML = m.btn;
+                    chip.addEventListener('click', function() {
+                        if (typeof playSynth === 'function') playSynth(640, 1460, 0.08, 'triangle');
+                        activateAddonCell(m);
+                    });
+                    if (anchorEl) {
+                        deckBar.insertBefore(chip, anchorEl);
+                    } else {
+                        deckBar.appendChild(chip);
+                    }
+                });
+
+                if (oldPlantBtn) oldPlantBtn.remove();
+            }
+
+            injectGeneralizedCellModels();
+            setTimeout(injectGeneralizedCellModels, 500);
+        })();
     </script>
 </body>
 </html>
