@@ -6667,7 +6667,7 @@
             });
         })();
 // ============================================================================
-        // CYBER-RADIO (ZERO-MB LIVE FOCUS STREAMS) & NON-POLITICAL GOOD-NEWS TERMINAL
+        // CARTEL-SPOTIFY YOUTUBE AUDIO ENGINE & NON-POLITICAL GOOD-NEWS TERMINAL
         // ============================================================================
         (function() {
             // 1. Inject Styles for Cyber-Radio Pill & News Modal
@@ -6675,10 +6675,10 @@
                 const st = document.createElement('style');
                 st.id = 'cyberRadioNewsCss';
                 st.innerHTML = [
-                    '.radio-pill { position: fixed; top: 20px; right: 350px; background: #111; color: var(--core); border: 2px solid var(--core); border-radius: 8px; padding: 7px 12px; display: flex; align-items: center; gap: 8px; z-index: 100; box-shadow: 0 0 12px var(--core-glow); font-family: "Courier New", monospace; font-size: 0.82em; font-weight: bold; }',
-                    '.radio-btn { background: #18181f; color: var(--core); border: 1px solid var(--core); border-radius: 5px; padding: 3px 8px; cursor: pointer; font-family: "Courier New", monospace; font-size: 0.82em; font-weight: bold; transition: 0.2s; }',
-                    '.radio-btn:hover, .radio-btn.active { background: var(--core); color: #000; box-shadow: 0 0 10px var(--core); }',
-                    '.radio-select { background: #0c0c10; color: var(--core); border: 1px solid var(--core); border-radius: 5px; padding: 3px 6px; font-family: "Courier New", monospace; font-size: 0.8em; outline: none; }',
+                    '.radio-pill { position: fixed; top: 20px; right: 350px; background: #111; color: var(--core, #00ffcc); border: 2px solid var(--core, #00ffcc); border-radius: 8px; padding: 7px 12px; display: flex; align-items: center; gap: 8px; z-index: 100; box-shadow: 0 0 12px rgba(0, 255, 204, 0.4); font-family: "Courier New", monospace; font-size: 0.82em; font-weight: bold; }',
+                    '.radio-btn { background: #18181f; color: var(--core, #00ffcc); border: 1px solid var(--core, #00ffcc); border-radius: 5px; padding: 3px 8px; cursor: pointer; font-family: "Courier New", monospace; font-size: 0.82em; font-weight: bold; transition: 0.2s; }',
+                    '.radio-btn:hover, .radio-btn.active { background: var(--core, #00ffcc); color: #000; box-shadow: 0 0 10px var(--core, #00ffcc); }',
+                    '.radio-select { background: #0c0c10; color: var(--core, #00ffcc); border: 1px solid var(--core, #00ffcc); border-radius: 5px; padding: 3px 6px; font-family: "Courier New", monospace; font-size: 0.8em; outline: none; max-width: 190px; text-overflow: ellipsis; }',
                     '.news-modal { position: fixed !important; top: 3%; left: 2.5%; width: 95%; height: 94%; background: rgba(6, 8, 14, 0.98); border: 2px solid var(--core, #00ffcc); border-radius: 14px; box-shadow: 0 0 65px rgba(0, 255, 204, 0.45); z-index: 999999 !important; display: none; flex-direction: column; overflow: hidden; font-family: "Courier New", monospace; color: #e0f7fa; text-align: left; }',
                     '.news-modal.open { display: flex !important; }',
                     '.news-hdr { background: linear-gradient(90deg, #09131c, #160d29, #09131c); border-bottom: 2px solid var(--core, #00ffcc); padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }',
@@ -6693,33 +6693,42 @@
                     '.news-snippet { font-size: 0.78em; color: #94a3b8; line-height: 1.5; margin: 0; }',
                     '.news-link { color: var(--core, #00ffcc); font-size: 0.76em; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: auto; }',
                     '.news-link:hover { text-decoration: underline; }',
-                    '@media (max-width: 900px) { .radio-pill { position: static; margin: 10px auto; width: fit-content; } }'
+                    '@media (max-width: 1100px) { .radio-pill { top: auto !important; bottom: 20px !important; left: 20px !important; right: auto !important; } }'
                 ].join('\n');
                 document.head.appendChild(st);
             }
 
-            // 2. Build Cyber-Radio Player (Zero-Storage Icecast Streams + Audio Engine)
-            const radioAudio = document.createElement('audio');
-            radioAudio.id = 'cyberRadioAudio';
-            radioAudio.preload = 'none';
-            document.body.appendChild(radioAudio);
+            // 2. Build Cartel-Spotify (Hidden YouTube Iframe Bridge)
+            const ytContainer = document.createElement('div');
+            ytContainer.id = 'ytRadioNode';
+            ytContainer.style.position = 'absolute';
+            ytContainer.style.width = '10px';
+            ytContainer.style.height = '10px';
+            ytContainer.style.opacity = '0.01';
+            ytContainer.style.pointerEvents = 'none';
+            ytContainer.style.zIndex = '-100';
+            document.body.appendChild(ytContainer);
 
             const radioPill = document.createElement('div');
             radioPill.className = 'radio-pill';
             radioPill.innerHTML = [
-                '<span id="radioLed">&#128251; RADIO: OFF</span>',
+                '<span id="radioLed">&#128251; AUDIO: OFF</span>',
                 '<select id="radioStationSelect" class="radio-select">',
-                '  <option value="https://ice1.somafm.com/dronezone-128-mp3">DRONE ZONE (SPACE AMBIENT)</option>',
-                '  <option value="https://ice1.somafm.com/defcon-128-mp3">DEF CON (CYBER SYNTH)</option>',
-                '  <option value="https://ice1.somafm.com/groovesalad-128-mp3">GROOVE SALAD (CHILLOUT)</option>',
-                '  <option value="generator">BINAURAL FOCUS RAIN</option>',
+                '  <option value="jfKfPfyJRdk">&#127911; LOFI GIRL (24/7 BEATS)</option>',
+                '  <option value="4xDzrUhVKVA">&#128187; SYNTHWAVE (24/7 CYBERPUNK)</option>',
+                '  <option value="0RVWG4uEskI">&#9203; 3-HOUR POMODORO STUDY MIX</option>',
+                '  <option value="5yx6BWlEVcY">&#127795; CHILLHOP (24/7 RELAX)</option>',
+                '  <option value="custom" style="color:#f59e0b;">&#128279; PASTE ANY YOUTUBE LINK...</option>',
+                '  <option value="generator">&#127783; OFFLINE FOCUS RAIN</option>',
                 '</select>',
                 '<button id="radioPlayBtn" class="radio-btn">&#9654; PLAY</button>',
-                '<input type="range" id="radioVol" min="0" max="100" value="70" style="width:65px; accent-color:var(--core);" title="Volume">'
+                '<input type="range" id="radioVol" min="0" max="100" value="50" style="width:65px; accent-color:var(--core);" title="Volume">'
             ].join('\n');
             document.body.appendChild(radioPill);
 
             let isRadioPlaying = false;
+            let ytPlayer = null;
+            let isYtReady = false;
             let rainOsc = null;
             let rainGain = null;
 
@@ -6728,6 +6737,39 @@
             const radioVol = document.getElementById('radioVol');
             const radioLed = document.getElementById('radioLed');
 
+            // Load YouTube API
+            window.onYouTubeIframeAPIReady = function() {
+                ytPlayer = new window.YT.Player('ytRadioNode', {
+                    height: '10',
+                    width: '10',
+                    videoId: '',
+                    playerVars: { 'autoplay': 0, 'controls': 0, 'disablekb': 1, 'fs': 0, 'modestbranding': 1, 'playsinline': 1 },
+                    events: {
+                        'onReady': function() { isYtReady = true; },
+                        'onStateChange': function(e) {
+                            if (e.data === window.YT.PlayerState.ENDED) {
+                                // Auto-loop standard videos
+                                if (ytPlayer && typeof ytPlayer.seekTo === 'function') {
+                                    ytPlayer.seekTo(0);
+                                    ytPlayer.playVideo();
+                                }
+                            }
+                            if (e.data === window.YT.PlayerState.PLAYING) {
+                                radioLed.innerHTML = '&#128251; <span style="color:#22c55e;">LIVE</span>';
+                            }
+                        }
+                    }
+                });
+            };
+
+            if (!document.getElementById('ytApiScript')) {
+                const tag = document.createElement('script');
+                tag.id = 'ytApiScript';
+                tag.src = 'https://www.youtube.com/iframe_api';
+                document.head.appendChild(tag);
+            }
+
+            // Offline Rain Generator Math
             function toggleOfflineRain(start) {
                 if (!start) {
                     if (rainOsc) { try { rainOsc.stop(); rainOsc.disconnect(); } catch (e) {} rainOsc = null; }
@@ -6761,27 +6803,37 @@
             function startRadio() {
                 const target = radioStationSelect.value;
                 if (target === 'generator') {
-                    radioAudio.pause();
+                    if (ytPlayer && isYtReady) ytPlayer.pauseVideo();
                     toggleOfflineRain(true);
                 } else {
                     toggleOfflineRain(false);
-                    radioAudio.src = target;
-                    radioAudio.volume = parseFloat(radioVol.value) / 100;
-                    radioAudio.play().catch(function() {});
+                    if (ytPlayer && isYtReady) {
+                        const currentId = ytPlayer.getVideoData ? ytPlayer.getVideoData().video_id : '';
+                        if (currentId !== target) {
+                            ytPlayer.loadVideoById(target);
+                        } else {
+                            ytPlayer.playVideo();
+                        }
+                        ytPlayer.setVolume(parseFloat(radioVol.value));
+                    } else {
+                        radioLed.innerHTML = '&#128251; <span style="color:#f59e0b;">LOADING...</span>';
+                        setTimeout(startRadio, 1000);
+                        return;
+                    }
                 }
                 isRadioPlaying = true;
                 radioPlayBtn.innerHTML = '&#9208; PAUSE';
                 radioPlayBtn.classList.add('active');
-                radioLed.innerHTML = '&#128251; <span style="color:#22c55e;">LIVE</span>';
+                if (target === 'generator') radioLed.innerHTML = '&#128251; <span style="color:#22c55e;">LIVE</span>';
             }
 
             function stopRadio() {
-                radioAudio.pause();
+                if (ytPlayer && isYtReady) ytPlayer.pauseVideo();
                 toggleOfflineRain(false);
                 isRadioPlaying = false;
                 radioPlayBtn.innerHTML = '&#9654; PLAY';
                 radioPlayBtn.classList.remove('active');
-                radioLed.innerHTML = '&#128251; RADIO: OFF';
+                radioLed.innerHTML = '&#128251; AUDIO: OFF';
             }
 
             radioPlayBtn.addEventListener('click', function() {
@@ -6791,13 +6843,28 @@
             });
 
             radioStationSelect.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    const url = prompt('PASTE ANY YOUTUBE LINK (e.g. a 4-Hour Study With Me, Hans Zimmer Mix, or Lofi track):');
+                    if (url) {
+                        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
+                        if (match && match[1]) {
+                            this.options[this.selectedIndex].value = match[1];
+                            this.options[this.selectedIndex].text = '&#128279; CUSTOM YT STREAM';
+                        } else {
+                            alert('Invalid YouTube Link! Falling back to Lofi Girl.');
+                            this.value = 'jfKfPfyJRdk';
+                        }
+                    } else {
+                        this.value = 'jfKfPfyJRdk';
+                    }
+                }
                 if (isRadioPlaying) startRadio();
             });
 
             radioVol.addEventListener('input', function() {
-                const v = parseFloat(this.value) / 100;
-                radioAudio.volume = v;
-                if (rainGain) rainGain.gain.setValueAtTime(v * 0.15, 0);
+                const v = parseFloat(this.value);
+                if (ytPlayer && isYtReady) ytPlayer.setVolume(v);
+                if (rainGain) rainGain.gain.setValueAtTime((v / 100) * 0.15, 0);
             });
 
             // 3. Build Non-Political Daily Good-News Terminal Modal
@@ -6805,7 +6872,7 @@
             newsModalWrap.innerHTML = [
                 '<div id="cartelNewsModal" class="news-modal">',
                 '  <div class="news-hdr">',
-                '    <div style="font-weight:bold; font-size:1.05em; color:var(--core); letter-spacing:1px; display:flex; align-items:center; gap:8px;">',
+                '    <div style="font-weight:bold; font-size:1.05em; color:var(--core, #00ffcc); letter-spacing:1px; display:flex; align-items:center; gap:8px;">',
                 '      &#128240; THE BINARY CARTEL // GLOBAL GOOD-NEWS TERMINAL (NON-POLITICAL)',
                 '    </div>',
                 '    <div style="display:flex; gap:6px; align-items:center;">',
@@ -6826,50 +6893,12 @@
             ].join('\n');
             document.body.appendChild(newsModalWrap.firstChild);
 
-            // 4. Curated Non-Political Breakthroughs (High-Yield Scientific & Environmental Intel)
+            // 4. Curated Non-Political Breakthroughs
             const CURATED_NEWS = [
-                {
-                    cat: 'science',
-                    tag: 'ASTRONOMY & SPACE',
-                    title: 'James Webb Space Telescope Identifies Atmospheric Water Vapor on Habitable-Zone Exoplanet',
-                    snippet: 'Astronomers detect clear atmospheric biosignature components and water spectral bands on a temperate Earth-sized world, opening a new chapter in astronomical spectroscopy.',
-                    url: 'https://www.sciencedaily.com/news/space_time/'
-                },
-                {
-                    cat: 'nature',
-                    tag: 'PLANET RECOVERY',
-                    title: 'Global Mangrove Restoration Project Reaches 1.5 Million Hectares Revitalized',
-                    snippet: 'Coastal wetlands across Southeast Asia and the Indian Ocean report a 24% rebound in native marine nurseries and migratory bird population densities.',
-                    url: 'https://www.goodnewsnetwork.org/category/news/earth/'
-                },
-                {
-                    cat: 'tech',
-                    tag: 'CLEAN ENERGY & TECH',
-                    title: 'Perovskite-Silicon Tandem Solar Cells Shatter Laboratory Efficiency Barrier Above 34%',
-                    snippet: 'Materials scientists create durable commercial-scale tandem photovoltaic wafers, setting a world record in solar energy harvesting without toxic solvents.',
-                    url: 'https://positive.news/environment/'
-                },
-                {
-                    cat: 'science',
-                    tag: 'MEDICAL SCIENCE',
-                    title: 'Universal mRNA Vaccine Against Pan-Infectious Pathogens Enters Phase II Human Trials',
-                    snippet: 'Molecular biology labs validate broad-spectrum neutralizing antibody production protecting against multi-strain respiratory viruses in preclinical cohorts.',
-                    url: 'https://www.sciencedaily.com/news/health_medicine/'
-                },
-                {
-                    cat: 'tech',
-                    tag: 'ROBOTICS & AI',
-                    title: 'Engineers Create Self-Healing Biodegradable Soft Robots for Deep-Ocean Exploration',
-                    snippet: 'Novel biopolymer hydrogels can autonomously reseal punctures under extreme marine pressures while monitoring coral reef health non-invasively.',
-                    url: 'https://fixthenews.com/'
-                },
-                {
-                    cat: 'nature',
-                    tag: 'WILDLIFE VICTORY',
-                    title: 'Snow Leopard Populations Across the Himalayas Show Resilient Population Stabilization',
-                    snippet: 'Camera trap surveys and satellite GPS collaring confirm thriving breeding pairs across high-altitude wildlife corridors thanks to local community stewardship.',
-                    url: 'https://www.goodnewsnetwork.org/category/news/animals/'
-                }
+                { cat: 'science', tag: 'ASTRONOMY & SPACE', title: 'James Webb Space Telescope Identifies Atmospheric Water Vapor on Habitable-Zone Exoplanet', snippet: 'Astronomers detect clear atmospheric biosignature components and water spectral bands on a temperate Earth-sized world.', url: 'https://www.sciencedaily.com/news/space_time/' },
+                { cat: 'nature', tag: 'PLANET RECOVERY', title: 'Global Mangrove Restoration Project Reaches 1.5 Million Hectares Revitalized', snippet: 'Coastal wetlands across Southeast Asia report a 24% rebound in native marine nurseries and migratory bird densities.', url: 'https://www.goodnewsnetwork.org/category/news/earth/' },
+                { cat: 'tech', tag: 'CLEAN ENERGY & TECH', title: 'Perovskite-Silicon Tandem Solar Cells Shatter Laboratory Efficiency Barrier Above 34%', snippet: 'Materials scientists create durable commercial-scale tandem photovoltaic wafers, setting a world record in solar energy harvesting.', url: 'https://positive.news/environment/' },
+                { cat: 'science', tag: 'MEDICAL SCIENCE', title: 'Universal mRNA Vaccine Against Pan-Infectious Pathogens Enters Phase II Human Trials', snippet: 'Molecular biology labs validate broad-spectrum neutralizing antibody production in preclinical cohorts.', url: 'https://www.sciencedaily.com/news/health_medicine/' }
             ];
 
             const newsModal = document.getElementById('cartelNewsModal');
@@ -6881,11 +6910,9 @@
             function renderNewsCards(items) {
                 if (!newsFeedGrid) return;
                 newsFeedGrid.innerHTML = '';
-                const filtered = items.filter(function(i) {
-                    return currentNewsCat === 'all' || i.cat === currentNewsCat;
-                });
+                const filtered = items.filter(function(i) { return currentNewsCat === 'all' || i.cat === currentNewsCat; });
                 if (filtered.length === 0) {
-                    newsFeedGrid.innerHTML = '<div style="color:#94a3b8; font-size:0.85em; grid-column:1/-1;">No articles found for this section. Refreshing live feed...</div>';
+                    newsFeedGrid.innerHTML = '<div style="color:#94a3b8; font-size:0.85em; grid-column:1/-1;">No articles found. Refreshing feed...</div>';
                     return;
                 }
                 filtered.forEach(function(item) {
@@ -6916,13 +6943,7 @@
                                 if (/space|star|planet|quantum|gene|biology|physic|medic|health/i.test(hay)) cat = 'science';
                                 else if (/energy|solar|battery|ai|robot|computer|innovat|tech/i.test(hay)) cat = 'tech';
                                 else if (/animal|ocean|forest|species|tiger|leopard|mangrove|tree/i.test(hay)) cat = 'nature';
-                                return {
-                                    cat: cat,
-                                    tag: cat.toUpperCase(),
-                                    title: it.title,
-                                    snippet: snip || 'Inspiring daily breakthrough in innovation and scientific human progress.',
-                                    url: it.link
-                                };
+                                return { cat: cat, tag: cat.toUpperCase(), title: it.title, snippet: snip || 'Inspiring daily breakthrough.', url: it.link };
                             });
                             renderNewsCards(liveItems.concat(CURATED_NEWS));
                         }
@@ -6944,41 +6965,31 @@
                 if (typeof playSynth === 'function') playSynth(600, 1500, 0.1, 'triangle');
                 fetchLiveGoodNews();
             });
-
             newsCloseBtn.addEventListener('click', function() {
                 if (typeof playSynth === 'function') playSynth(600, 300, 0.08, 'sawtooth');
                 newsModal.classList.remove('open');
             });
 
-            // 5. Dock Good-News Feed Inside Top-Left 3-Lines Menu (#cartelHamDrop)
+            // 5. Dock Good-News Feed Inside Menu (#cartelHamDrop)
             function dockNewsMenuButton() {
                 const hamDrop = document.getElementById('cartelHamDrop');
-                const hamBtn = document.getElementById('cartelHamBtn');
-                const oldNews = document.getElementById('cartelNewsOrb');
-                if (oldNews) oldNews.remove();
-
+                if (document.getElementById('cartelNewsOrb')) document.getElementById('cartelNewsOrb').remove();
                 const newsBtn = document.createElement('button');
                 newsBtn.id = 'cartelNewsOrb';
                 newsBtn.className = 'cyberlab-orb';
                 newsBtn.innerHTML = '&#128240; GOOD-NEWS FEED';
-
                 newsBtn.addEventListener('click', function() {
                     if (typeof playSynth === 'function') playSynth(520, 1420, 0.12, 'triangle');
                     if (hamDrop) hamDrop.classList.remove('open');
-                    if (hamBtn) hamBtn.classList.remove('active');
                     newsModal.classList.add('open');
                     fetchLiveGoodNews();
                 });
-
-                if (hamDrop) {
-                    hamDrop.appendChild(newsBtn);
-                } else {
-                    document.body.appendChild(newsBtn);
-                }
+                if (hamDrop) hamDrop.appendChild(newsBtn);
+                else document.body.appendChild(newsBtn);
             }
             dockNewsMenuButton();
         })();
-        // ============================================================================
+// ============================================================================
         // SOLAR DAY MODE / CYBER NIGHT MODE ENGINE (CLEAN SINGLE-BUTTON EDITION)
         // ============================================================================
         (function() {
