@@ -7364,6 +7364,687 @@
                 }
             });
         })();
+// ============================================================================
+        // NEXUS OS DOCK, CTRL+K OMNI-COMMANDER, LIVE CALCULATOR & GLASS SCRATCHPAD
+        // ============================================================================
+        (function() {
+            // 1. Inject Nexus OS Dock, Omni-Commander & Scratchpad Styles
+            if (!document.getElementById('nexusOsCoreCss')) {
+                const st = document.createElement('style');
+                st.id = 'nexusOsCoreCss';
+                st.innerHTML = [
+                    '/* Bottom-Center Glass OS Taskbar Dock */',
+                    '.nexus-os-dock {',
+                    '  position: fixed !important;',
+                    '  bottom: 12px !important;',
+                    '  left: 50% !important;',
+                    '  transform: translateX(-50%) !important;',
+                    '  background: rgba(8, 13, 24, 0.92) !important;',
+                    '  border: 2px solid var(--core, #00ffcc) !important;',
+                    '  border-radius: 14px !important;',
+                    '  padding: 6px 10px !important;',
+                    '  display: flex !important;',
+                    '  align-items: center !important;',
+                    '  gap: 6px !important;',
+                    '  z-index: 1000040 !important;',
+                    '  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 255, 204, 0.3) !important;',
+                    '  backdrop-filter: blur(10px) !important;',
+                    '  font-family: "Courier New", monospace !important;',
+                    '  transition: bottom 0.22s ease !important;',
+                    '}',
+                    '.nexus-os-dock.tucked {',
+                    '  bottom: -44px !important;',
+                    '}',
+                    '.nexus-dock-tuck {',
+                    '  position: absolute !important;',
+                    '  top: -20px !important;',
+                    '  left: 50% !important;',
+                    '  transform: translateX(-50%) !important;',
+                    '  background: #0b1120 !important;',
+                    '  color: var(--core, #00ffcc) !important;',
+                    '  border: 1px solid var(--core, #00ffcc) !important;',
+                    '  border-bottom: none !important;',
+                    '  border-radius: 6px 6px 0 0 !important;',
+                    '  padding: 1px 10px !important;',
+                    '  font-size: 0.68em !important;',
+                    '  font-weight: bold !important;',
+                    '  cursor: pointer !important;',
+                    '}',
+                    '.nexus-dock-btn {',
+                    '  position: relative !important;',
+                    '  background: #111827 !important;',
+                    '  color: #e2e8f0 !important;',
+                    '  border: 1px solid #1e3a8a !important;',
+                    '  border-radius: 8px !important;',
+                    '  padding: 6px 10px !important;',
+                    '  font-family: "Courier New", monospace !important;',
+                    '  font-size: 0.75em !important;',
+                    '  font-weight: bold !important;',
+                    '  cursor: pointer !important;',
+                    '  display: flex !important;',
+                    '  align-items: center !important;',
+                    '  gap: 5px !important;',
+                    '  white-space: nowrap !important;',
+                    '  transition: 0.18s !important;',
+                    '}',
+                    '.nexus-dock-btn:hover {',
+                    '  background: var(--core, #00ffcc) !important;',
+                    '  color: #000000 !important;',
+                    '  border-color: var(--core, #00ffcc) !important;',
+                    '  transform: translateY(-3px) !important;',
+                    '  box-shadow: 0 0 14px var(--core, #00ffcc) !important;',
+                    '}',
+                    '.nexus-dock-btn.omni-trigger {',
+                    '  background: linear-gradient(90deg, #06283d, #1e1b4b) !important;',
+                    '  color: var(--core, #00ffcc) !important;',
+                    '  border-color: var(--core, #00ffcc) !important;',
+                    '}',
+                    '.nexus-dock-dot {',
+                    '  width: 6px !important;',
+                    '  height: 6px !important;',
+                    '  border-radius: 50% !important;',
+                    '  background: transparent !important;',
+                    '  display: inline-block !important;',
+                    '}',
+                    '.nexus-dock-btn.running .nexus-dock-dot {',
+                    '  background: #22c55e !important;',
+                    '  box-shadow: 0 0 8px #22c55e !important;',
+                    '}',
+                    '.nexus-dock-btn.minimized .nexus-dock-dot {',
+                    '  background: #f59e0b !important;',
+                    '  box-shadow: 0 0 8px #f59e0b !important;',
+                    '}',
+                    '.cartel-lab-minimized {',
+                    '  display: none !important;',
+                    '}',
+                    '',
+                    '/* Ctrl+K Universal Omni-Commander Overlay */',
+                    '.nexus-omni-backdrop {',
+                    '  position: fixed !important;',
+                    '  top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;',
+                    '  background: rgba(2, 6, 14, 0.78) !important;',
+                    '  backdrop-filter: blur(6px) !important;',
+                    '  z-index: 1000060 !important;',
+                    '  display: none !important;',
+                    '  justify-content: center !important;',
+                    '  align-items: flex-start !important;',
+                    '  padding-top: 8vh !important;',
+                    '  font-family: "Courier New", monospace !important;',
+                    '}',
+                    '.nexus-omni-backdrop.open {',
+                    '  display: flex !important;',
+                    '}',
+                    '.nexus-omni-box {',
+                    '  width: 92% !important;',
+                    '  max-width: 690px !important;',
+                    '  background: #080d1a !important;',
+                    '  border: 2px solid var(--core, #00ffcc) !important;',
+                    '  border-radius: 14px !important;',
+                    '  box-shadow: 0 20px 65px rgba(0, 0, 0, 0.9), 0 0 35px rgba(0, 255, 204, 0.4) !important;',
+                    '  overflow: hidden !important;',
+                    '  color: #e2e8f0 !important;',
+                    '  text-align: left !important;',
+                    '}',
+                    '.nexus-omni-input-row {',
+                    '  display: flex !important;',
+                    '  align-items: center !important;',
+                    '  padding: 12px 16px !important;',
+                    '  background: #0d1526 !important;',
+                    '  border-bottom: 1px solid #1e293b !important;',
+                    '  gap: 10px !important;',
+                    '}',
+                    '.nexus-omni-input {',
+                    '  flex: 1 !important;',
+                    '  background: transparent !important;',
+                    '  border: none !important;',
+                    '  outline: none !important;',
+                    '  color: var(--core, #00ffcc) !important;',
+                    '  font-family: "Courier New", monospace !important;',
+                    '  font-size: 1.02em !important;',
+                    '  font-weight: bold !important;',
+                    '}',
+                    '.nexus-omni-calc {',
+                    '  padding: 10px 16px !important;',
+                    '  background: #071a1e !important;',
+                    '  border-bottom: 1px solid #0d9488 !important;',
+                    '  color: #2dd4bf !important;',
+                    '  font-size: 0.9em !important;',
+                    '  display: none;',
+                    '  justify-content: space-between !important;',
+                    '  align-items: center !important;',
+                    '}',
+                    '.nexus-omni-actions {',
+                    '  padding: 10px 16px !important;',
+                    '  background: #060a12 !important;',
+                    '  border-bottom: 1px solid #1e293b !important;',
+                    '  display: flex !important;',
+                    '  gap: 6px !important;',
+                    '  flex-wrap: wrap !important;',
+                    '  align-items: center !important;',
+                    '}',
+                    '.nexus-omni-list {',
+                    '  max-height: 310px !important;',
+                    '  overflow-y: auto !important;',
+                    '  padding: 10px 14px !important;',
+                    '  display: flex !important;',
+                    '  flex-direction: column !important;',
+                    '  gap: 6px !important;',
+                    '}',
+                    '.nexus-omni-item {',
+                    '  background: #0f172a !important;',
+                    '  border: 1px solid #1e293b !important;',
+                    '  border-radius: 8px !important;',
+                    '  padding: 8px 12px !important;',
+                    '  display: flex !important;',
+                    '  justify-content: space-between !important;',
+                    '  align-items: center !important;',
+                    '  cursor: pointer !important;',
+                    '  font-size: 0.82em !important;',
+                    '  transition: 0.15s !important;',
+                    '}',
+                    '.nexus-omni-item:hover {',
+                    '  border-color: var(--core, #00ffcc) !important;',
+                    '  background: #132238 !important;',
+                    '  transform: translateX(4px) !important;',
+                    '}',
+                    '',
+                    '/* Floating Glass Scratchpad & Sketch Studio */',
+                    '.nexus-scratch-modal {',
+                    '  position: fixed !important;',
+                    '  bottom: 68px !important;',
+                    '  left: 50% !important;',
+                    '  transform: translateX(-50%) !important;',
+                    '  width: 540px !important;',
+                    '  max-width: 94vw !important;',
+                    '  height: 390px !important;',
+                    '  background: rgba(7, 11, 20, 0.97) !important;',
+                    '  border: 2px solid var(--core, #00ffcc) !important;',
+                    '  border-radius: 12px !important;',
+                    '  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.88), 0 0 25px rgba(0, 255, 204, 0.35) !important;',
+                    '  z-index: 1000038 !important;',
+                    '  display: none !important;',
+                    '  flex-direction: column !important;',
+                    '  overflow: hidden !important;',
+                    '  font-family: "Courier New", monospace !important;',
+                    '}',
+                    '.nexus-scratch-modal.open {',
+                    '  display: flex !important;',
+                    '}',
+                    '.nexus-scratch-hdr {',
+                    '  padding: 7px 12px !important;',
+                    '  background: linear-gradient(90deg, #091526, #1b1236) !important;',
+                    '  border-bottom: 1px solid var(--core, #00ffcc) !important;',
+                    '  display: flex !important;',
+                    '  justify-content: space-between !important;',
+                    '  align-items: center !important;',
+                    '  font-size: 0.8em !important;',
+                    '  font-weight: bold !important;',
+                    '  color: var(--core, #00ffcc) !important;',
+                    '}',
+                    '.nexus-scratch-text {',
+                    '  flex: 1 !important;',
+                    '  width: 100% !important;',
+                    '  background: #050811 !important;',
+                    '  color: #e2e8f0 !important;',
+                    '  border: none !important;',
+                    '  outline: none !important;',
+                    '  padding: 12px !important;',
+                    '  font-family: "Courier New", monospace !important;',
+                    '  font-size: 0.85em !important;',
+                    '  line-height: 1.5 !important;',
+                    '  resize: none !important;',
+                    '  box-sizing: border-box !important;',
+                    '}',
+                    '.nexus-scratch-canvas {',
+                    '  flex: 1 !important;',
+                    '  width: 100% !important;',
+                    '  background: #04070f !important;',
+                    '  cursor: crosshair !important;',
+                    '  display: none;',
+                    '}',
+                    '',
+                    '/* Solar Day Mode Compatibility */',
+                    'body.cartel-day-mode .nexus-os-dock, body.cartel-day-mode .nexus-omni-box, body.cartel-day-mode .nexus-scratch-modal {',
+                    '  background: rgba(255, 255, 255, 0.97) !important;',
+                    '  color: #0f172a !important;',
+                    '  border-color: #0284c7 !important;',
+                    '  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18) !important;',
+                    '}',
+                    'body.cartel-day-mode .nexus-dock-btn, body.cartel-day-mode .nexus-omni-item {',
+                    '  background: #f1f5f9 !important;',
+                    '  color: #0f172a !important;',
+                    '  border-color: #cbd5e1 !important;',
+                    '}',
+                    'body.cartel-day-mode .nexus-dock-btn:hover, body.cartel-day-mode .nexus-dock-btn.omni-trigger {',
+                    '  background: #0284c7 !important;',
+                    '  color: #ffffff !important;',
+                    '}',
+                    'body.cartel-day-mode .nexus-omni-input-row, body.cartel-day-mode .nexus-omni-actions, body.cartel-day-mode .nexus-scratch-hdr {',
+                    '  background: #e0f2fe !important;',
+                    '  color: #0369a1 !important;',
+                    '}',
+                    'body.cartel-day-mode .nexus-omni-input, body.cartel-day-mode .nexus-scratch-text {',
+                    '  background: #ffffff !important;',
+                    '  color: #0f172a !important;',
+                    '}',
+                    '@media (max-width: 900px) { .nexus-os-dock { max-width: 96vw; overflow-x: auto; } }'
+                ].join('\n');
+                document.head.appendChild(st);
+            }
+
+            // 2. Lab Definitions for OS Dock & Cross-Lab Teleporter
+            const DOCK_LABS = [
+                { key: 'bio',  label: '&#129516; BIO',  modalId: 'bioLabModal',     orbId: 'bioLabOrb',     hdrClass: '.bl-hdr' },
+                { key: 'chem', label: '&#9879; CHEM',   modalId: 'chemForgeModal',  orbId: 'chemForgeOrb',  hdrClass: '.cf-hdr', inputId: 'cfQueryInput', btnId: 'cfSearchBtn' },
+                { key: 'phys', label: '&#9889; PHYS',   modalId: 'physForgeModal',  orbId: 'physForgeOrb',  hdrClass: '.pf-hdr', inputId: 'pfCustomInput', btnId: 'pfInvokeBtn' },
+                { key: 'geo',  label: '&#127757; GEO',  modalId: 'geoRadarModal',   orbId: 'geoRadarOrb',   hdrClass: '.gr-hdr', inputId: 'grQueryInput', btnId: 'grScanBtn' },
+                { key: 'news', label: '&#128240; NEWS', modalId: 'cartelNewsModal', orbId: 'cartelNewsOrb', hdrClass: '.news-hdr' }
+            ];
+
+            // 3. Build Bottom-Center Glass OS Taskbar Dock
+            const oldDock = document.getElementById('nexusOsDock');
+            if (oldDock) oldDock.remove();
+
+            const dock = document.createElement('div');
+            dock.id = 'nexusOsDock';
+            dock.className = 'nexus-os-dock';
+
+            let dockHtml = [
+                '<button id="nexusDockTuckBtn" class="nexus-dock-tuck" title="Hide or Show OS Dock">&#9660; DOCK</button>',
+                '<button id="nexusOmniBtn" class="nexus-dock-btn omni-trigger" title="Open Universal Omni-Commander & Calculator (Ctrl + K)">&#128269; OMNI (Ctrl+K)</button>'
+            ];
+
+            DOCK_LABS.forEach(function(lab) {
+                dockHtml.push(
+                    '<button class="nexus-dock-btn lab-dock-trigger" data-lab="' + lab.key + '" title="Launch, Minimize or Restore ' + lab.key.toUpperCase() + ' Lab">' +
+                    '<span class="nexus-dock-dot"></span>' + lab.label +
+                    '</button>'
+                );
+            });
+
+            dockHtml.push('<button id="nexusScratchBtn" class="nexus-dock-btn" title="Toggle Floating Rough-Work Scratchpad & Sketch Canvas">&#128221; SCRATCHPAD</button>');
+            dock.innerHTML = dockHtml.join('\n');
+            document.body.appendChild(dock);
+
+            const tuckBtn = document.getElementById('nexusDockTuckBtn');
+            tuckBtn.addEventListener('click', function() {
+                const isTucked = dock.classList.toggle('tucked');
+                tuckBtn.innerHTML = isTucked ? '&#9650; DOCK' : '&#9660; DOCK';
+            });
+
+            // Inject Minimize [_] Button into Every Lab Header & Manage OS Taskbar State
+            function ensureMinimizeButtonsAndSync() {
+                DOCK_LABS.forEach(function(lab) {
+                    const modal = document.getElementById(lab.modalId);
+                    const dockBtn = dock.querySelector('.lab-dock-trigger[data-lab="' + lab.key + '"]');
+                    if (!modal || !dockBtn) return;
+
+                    // Inject [_] Minimize button into lab header once
+                    if (!modal._minBtnAdded) {
+                        const hdr = modal.querySelector(lab.hdrClass) || modal.firstElementChild;
+                        if (hdr) {
+                            const btnArea = hdr.children[1] || hdr;
+                            const minBtn = document.createElement('button');
+                            minBtn.type = 'button';
+                            minBtn.className = 'pip-ctrl-btn';
+                            minBtn.innerHTML = '&#128469; MINIMIZE';
+                            minBtn.title = 'Minimize Lab to Bottom OS Dock without losing your work';
+                            minBtn.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                if (typeof playSynth === 'function') playSynth(620, 380, 0.07, 'sine');
+                                modal.classList.add('cartel-lab-minimized');
+                                ensureMinimizeButtonsAndSync();
+                            });
+                            btnArea.insertBefore(minBtn, btnArea.firstChild);
+                            modal._minBtnAdded = true;
+                        }
+                    }
+
+                    const isOpen = modal.classList.contains('open');
+                    const isMin = modal.classList.contains('cartel-lab-minimized');
+                    dockBtn.classList.toggle('running', isOpen && !isMin);
+                    dockBtn.classList.toggle('minimized', isOpen && isMin);
+                });
+            }
+            setInterval(ensureMinimizeButtonsAndSync, 800);
+
+            function launchOrToggleLab(labKey, queryToInject) {
+                const lab = DOCK_LABS.find(function(x) { return x.key === labKey; });
+                if (!lab) return;
+                const modal = document.getElementById(lab.modalId);
+                const orb = document.getElementById(lab.orbId);
+
+                if (modal) {
+                    const isOpen = modal.classList.contains('open');
+                    const isMin = modal.classList.contains('cartel-lab-minimized');
+
+                    if (!isOpen) {
+                        if (orb) orb.click();
+                        else modal.classList.add('open');
+                        modal.classList.remove('cartel-lab-minimized');
+                    } else if (isMin) {
+                        modal.classList.remove('cartel-lab-minimized');
+                        window.dispatchEvent(new Event('resize'));
+                    } else if (!queryToInject) {
+                        modal.classList.add('cartel-lab-minimized');
+                    }
+                } else if (orb) {
+                    orb.click();
+                }
+
+                // If a Cross-Lab search query was passed, inject it and fire the lab's scanner!
+                if (queryToInject && queryToInject.trim()) {
+                    setTimeout(function() {
+                        const activeModal = document.getElementById(lab.modalId);
+                        if (!activeModal) return;
+                        activeModal.classList.remove('cartel-lab-minimized');
+                        const inp = (lab.inputId && document.getElementById(lab.inputId)) || activeModal.querySelector('input[type="text"]');
+                        const btn = (lab.btnId && document.getElementById(lab.btnId));
+                        if (inp) {
+                            inp.value = queryToInject.trim();
+                            if (btn) btn.click();
+                            else inp.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+                        }
+                    }, 260);
+                }
+                setTimeout(ensureMinimizeButtonsAndSync, 120);
+            }
+
+            Array.from(dock.querySelectorAll('.lab-dock-trigger')).forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    if (typeof playSynth === 'function') playSynth(580, 1380, 0.08, 'triangle');
+                    launchOrToggleLab(btn.getAttribute('data-lab'));
+                });
+            });
+
+            // 4. Build Ctrl+K Universal Omni-Commander & Live Scientific Calculator
+            const oldOmni = document.getElementById('nexusOmniBackdrop');
+            if (oldOmni) oldOmni.remove();
+
+            const omniWrap = document.createElement('div');
+            omniWrap.innerHTML = [
+                '<div id="nexusOmniBackdrop" class="nexus-omni-backdrop">',
+                '  <div class="nexus-omni-box">',
+                '    <div class="nexus-omni-input-row">',
+                '      <span style="font-size:1.2em;">&#9889;</span>',
+                '      <input id="nexusOmniInput" class="nexus-omni-input" type="text" placeholder="Search ANY PDF/Folder, calculate math (e.g. 760*250/300, sqrt(144)), or beam to a 3D Lab..." autocomplete="off" />',
+                '      <button id="nexusOmniCloseBtn" class="pip-ctrl-btn" style="border-color:#ef4444 !important; color:#fca5a5 !important;">ESC</button>',
+                '    </div>',
+                '    <div id="nexusOmniCalcBar" class="nexus-omni-calc">',
+                '      <span id="nexusOmniCalcVal">= 0</span>',
+                '      <button id="nexusOmniCopyCalc" class="pip-ctrl-btn">COPY RESULT</button>',
+                '    </div>',
+                '    <div class="nexus-omni-actions">',
+                '      <span style="font-size:0.72em; color:#94a3b8; font-weight:bold;">BEAM QUERY TO LAB:</span>',
+                '      <button class="pip-ctrl-btn omni-beam-btn" data-target="chem">&#9879; 3D CHEM-FORGE</button>',
+                '      <button class="pip-ctrl-btn omni-beam-btn" data-target="geo">&#127757; 3D GEO-RADAR</button>',
+                '      <button class="pip-ctrl-btn omni-beam-btn" data-target="phys">&#9889; 3D PHYS-FORGE</button>',
+                '      <button class="pip-ctrl-btn omni-beam-btn" data-target="bio">&#129516; 3D BIO-LAB</button>',
+                '    </div>',
+                '    <div id="nexusOmniResults" class="nexus-omni-list"></div>',
+                '  </div>',
+                '</div>'
+            ].join('\n');
+            document.body.appendChild(omniWrap.firstChild);
+
+            const omniBackdrop = document.getElementById('nexusOmniBackdrop');
+            const omniInput = document.getElementById('nexusOmniInput');
+            const omniCloseBtn = document.getElementById('nexusOmniCloseBtn');
+            const omniCalcBar = document.getElementById('nexusOmniCalcBar');
+            const omniCalcVal = document.getElementById('nexusOmniCalcVal');
+            const omniCopyCalc = document.getElementById('nexusOmniCopyCalc');
+            const omniResults = document.getElementById('nexusOmniResults');
+
+            // Safe Scientific Math Evaluator (Supports +, -, *, /, ^, sqrt, sin, cos, tan, log, pi)
+            function evaluateMathExpression(raw) {
+                const s = (raw || '').trim();
+                if (!s || !/[0-9]/.test(s)) return null;
+                if (!/^[0-9+\-*/().^\s,a-zA-Z]+$/.test(s)) return null;
+                try {
+                    let expr = s.toLowerCase()
+                        .replace(/\^/g, '**')
+                        .replace(/\bsqrt\(/g, 'Math.sqrt(')
+                        .replace(/\bsin\(/g, 'Math.sin((Math.PI/180)*')
+                        .replace(/\bcos\(/g, 'Math.cos((Math.PI/180)*')
+                        .replace(/\btan\(/g, 'Math.tan((Math.PI/180)*')
+                        .replace(/\blog\(/g, 'Math.log10(')
+                        .replace(/\bln\(/g, 'Math.log(')
+                        .replace(/\bpi\b/g, 'Math.PI');
+                    if (/[a-zA-Z]/.test(expr.replace(/Math\.(sqrt|sin|cos|tan|log10|log|PI)/g, ''))) return null;
+                    const fn = new Function('return (' + expr + ');');
+                    const val = fn();
+                    if (typeof val === 'number' && isFinite(val)) {
+                        return Math.round(val * 1000000) / 1000000;
+                    }
+                } catch (e) {}
+                return null;
+            }
+
+            // Harvest All Clickable Folders & PDFs on Current Page + Remember Across Vault
+            const VAULT_INDEX_KEY = 'cartelGlobalVaultIndex';
+
+            function scanPageItemsIntoMemory() {
+                const mem = [];
+                try {
+                    const existing = JSON.parse(localStorage.getItem(VAULT_INDEX_KEY) || '[]');
+                    existing.forEach(function(x) { mem.push(x); });
+                } catch (e) {}
+
+                const selectors = 'a, .card, .folder-card, .pdf-card, [onclick]';
+                Array.from(document.querySelectorAll(selectors)).forEach(function(el) {
+                    if (el.closest('#nexusOsDock, #nexusOmniBackdrop, #nexusScratchModal, #cartelHamDrop, .georadar-modal, .physforge-modal, .chemforge-modal')) return;
+                    const txt = (el.innerText || '').replace(/\s+/g, ' ').trim();
+                    if (!txt || txt.length < 3 || txt.length > 95) return;
+                    if (/^(RETURN|CORE:|AUDIO:|DAY MODE|NIGHT MODE|RADIO:|PLAY|PAUSE|JARVIS AI)$/i.test(txt)) return;
+
+                    let href = el.getAttribute('href') || '';
+                    const isPdf = /\.pdf/i.test(txt) || /\.pdf/i.test(href);
+                    const typeLabel = isPdf ? 'PDF INTEL' : 'VAULT NODE';
+
+                    const existingIdx = mem.findIndex(function(m) { return m.title.toLowerCase() === txt.toLowerCase(); });
+                    const entry = { title: txt, type: typeLabel, href: href, pageUrl: window.location.href };
+                    if (existingIdx >= 0) mem[existingIdx] = entry;
+                    else mem.unshift(entry);
+                });
+
+                localStorage.setItem(VAULT_INDEX_KEY, JSON.stringify(mem.slice(0, 120)));
+            }
+            setTimeout(scanPageItemsIntoMemory, 900);
+
+            function renderOmniResults(query) {
+                const q = (query || '').trim().toLowerCase();
+
+                // 1. Live Calculator Check
+                const mathAns = evaluateMathExpression(query);
+                if (mathAns !== null && /[+\-*/^()]/.test(query)) {
+                    omniCalcBar.style.display = 'flex';
+                    omniCalcVal.innerHTML = '&#129518; <b>LIVE RESULT:</b> ' + mathAns;
+                    omniCopyCalc.onclick = function() {
+                        navigator.clipboard.writeText(String(mathAns));
+                        omniCopyCalc.innerText = 'COPIED!';
+                        setTimeout(function() { omniCopyCalc.innerText = 'COPY RESULT'; }, 1200);
+                    };
+                } else {
+                    omniCalcBar.style.display = 'none';
+                }
+
+                // 2. Gather Live DOM Nodes + Stored Vault Index
+                omniResults.innerHTML = '';
+                const liveDomMatches = [];
+                const seenTitles = {};
+
+                Array.from(document.querySelectorAll('a, .card, .folder-card, .pdf-card, button, [onclick]')).forEach(function(el) {
+                    if (el.closest('#nexusOsDock, #nexusOmniBackdrop, #nexusScratchModal, .georadar-modal, .physforge-modal, .chemforge-modal')) return;
+                    const txt = (el.innerText || '').replace(/\s+/g, ' ').trim();
+                    if (!txt || txt.length < 3 || txt.length > 90) return;
+                    const key = txt.toLowerCase();
+                    if (seenTitles[key]) return;
+                    if (!q || key.indexOf(q) > -1) {
+                        seenTitles[key] = true;
+                        liveDomMatches.push({ title: txt, el: el, isPdf: /\.pdf/i.test(txt) });
+                    }
+                });
+
+                liveDomMatches.slice(0, 12).forEach(function(item) {
+                    const row = document.createElement('div');
+                    row.className = 'nexus-omni-item';
+                    const badge = item.isPdf ? '&#128196; OPEN PDF' : '&#128193; JUMP ON PAGE';
+                    row.innerHTML = '<span><b>' + item.title + '</b></span><span style="color:var(--core, #00ffcc); font-size:0.85em;">' + badge + ' &#10132;</span>';
+                    row.addEventListener('click', function() {
+                        omniBackdrop.classList.remove('open');
+                        item.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        item.el.click();
+                    });
+                    omniResults.appendChild(row);
+                });
+
+                // Also filter the page's built-in search bar if one exists!
+                const pageFilter = document.querySelector('input[placeholder*="FILTER" i], input[type="search"]');
+                if (pageFilter && q) {
+                    pageFilter.value = query;
+                    pageFilter.dispatchEvent(new Event('input', { bubbles: true }));
+                    pageFilter.dispatchEvent(new Event('keyup', { bubbles: true }));
+                }
+            }
+
+            function openOmniCommander() {
+                if (typeof playSynth === 'function') playSynth(640, 1520, 0.08, 'triangle');
+                scanPageItemsIntoMemory();
+                omniBackdrop.classList.add('open');
+                omniInput.focus();
+                omniInput.select();
+                renderOmniResults(omniInput.value);
+            }
+
+            document.getElementById('nexusOmniBtn').addEventListener('click', openOmniCommander);
+            omniCloseBtn.addEventListener('click', function() { omniBackdrop.classList.remove('open'); });
+            omniBackdrop.addEventListener('click', function(e) {
+                if (e.target === omniBackdrop) omniBackdrop.classList.remove('open');
+            });
+
+            omniInput.addEventListener('input', function() {
+                renderOmniResults(omniInput.value);
+            });
+
+            Array.from(document.querySelectorAll('.omni-beam-btn')).forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const targetLab = btn.getAttribute('data-target');
+                    const q = omniInput.value.trim();
+                    omniBackdrop.classList.remove('open');
+                    launchOrToggleLab(targetLab, q);
+                });
+            });
+
+            // 5. Build Floating Neon Scratchpad & Freehand Diagram Canvas
+            const oldScratch = document.getElementById('nexusScratchModal');
+            if (oldScratch) oldScratch.remove();
+
+            const scratchWrap = document.createElement('div');
+            scratchWrap.innerHTML = [
+                '<div id="nexusScratchModal" class="nexus-scratch-modal">',
+                '  <div class="nexus-scratch-hdr">',
+                '    <span>&#128221; CARTEL ROUGH-WORK SCRATCHPAD &amp; DIAGRAM BOARD</span>',
+                '    <div style="display:flex; gap:5px;">',
+                '      <button id="scratchModeText" class="pip-ctrl-btn active">&#128221; NOTES</button>',
+                '      <button id="scratchModeDraw" class="pip-ctrl-btn">&#127912; SKETCH</button>',
+                '      <button id="scratchClearBtn" class="pip-ctrl-btn" style="border-color:#f59e0b !important; color:#fde68a !important;">CLEAR</button>',
+                '      <button id="scratchCloseBtn" class="pip-ctrl-btn" style="border-color:#ef4444 !important; color:#fca5a5 !important;">&#10006;</button>',
+                '    </div>',
+                '  </div>',
+                '  <textarea id="nexusScratchArea" class="nexus-scratch-text" placeholder="Type quick formulas, rough numerical steps, balanced equations, or revision points here... (Auto-saved in your vault!)"></textarea>',
+                '  <canvas id="nexusScratchCanvas" class="nexus-scratch-canvas" width="520" height="330"></canvas>',
+                '</div>'
+            ].join('\n');
+            document.body.appendChild(scratchWrap.firstChild);
+
+            const scratchModal = document.getElementById('nexusScratchModal');
+            const scratchArea = document.getElementById('nexusScratchArea');
+            const scratchCanvas = document.getElementById('nexusScratchCanvas');
+            const scratchModeText = document.getElementById('scratchModeText');
+            const scratchModeDraw = document.getElementById('scratchModeDraw');
+            const scratchClearBtn = document.getElementById('scratchClearBtn');
+            const scratchCloseBtn = document.getElementById('scratchCloseBtn');
+
+            const SCRATCH_KEY = 'cartelQuickScratchNotes';
+            scratchArea.value = localStorage.getItem(SCRATCH_KEY) || '';
+            scratchArea.addEventListener('input', function() {
+                localStorage.setItem(SCRATCH_KEY, scratchArea.value);
+            });
+
+            let isSketchMode = false;
+            const ctx = scratchCanvas.getContext('2d');
+            let drawing = false;
+
+            function syncScratchCanvasSize() {
+                const r = scratchModal.getBoundingClientRect();
+                if (r.width > 50 && r.height > 60) {
+                    scratchCanvas.width = Math.round(r.width - 4);
+                    scratchCanvas.height = Math.round(r.height - 42);
+                }
+            }
+
+            scratchCanvas.addEventListener('mousedown', function(e) {
+                drawing = true;
+                const r = scratchCanvas.getBoundingClientRect();
+                ctx.beginPath();
+                ctx.moveTo(e.clientX - r.left, e.clientY - r.top);
+            });
+            window.addEventListener('mousemove', function(e) {
+                if (!drawing || !isSketchMode) return;
+                const r = scratchCanvas.getBoundingClientRect();
+                ctx.lineWidth = 2.4;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = '#00ffcc';
+                ctx.lineTo(e.clientX - r.left, e.clientY - r.top);
+                ctx.stroke();
+            });
+            window.addEventListener('mouseup', function() { drawing = false; });
+
+            scratchModeText.addEventListener('click', function() {
+                isSketchMode = false;
+                scratchModeText.classList.add('active');
+                scratchModeDraw.classList.remove('active');
+                scratchArea.style.display = 'block';
+                scratchCanvas.style.display = 'none';
+            });
+
+            scratchModeDraw.addEventListener('click', function() {
+                isSketchMode = true;
+                scratchModeDraw.classList.add('active');
+                scratchModeText.classList.remove('active');
+                scratchArea.style.display = 'none';
+                scratchCanvas.style.display = 'block';
+                syncScratchCanvasSize();
+            });
+
+            scratchClearBtn.addEventListener('click', function() {
+                if (isSketchMode) {
+                    ctx.clearRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+                } else if (confirm('Clear scratchpad notes?')) {
+                    scratchArea.value = '';
+                    localStorage.removeItem(SCRATCH_KEY);
+                }
+            });
+
+            document.getElementById('nexusScratchBtn').addEventListener('click', function() {
+                if (typeof playSynth === 'function') playSynth(600, 1280, 0.08, 'sine');
+                scratchModal.classList.toggle('open');
+            });
+            scratchCloseBtn.addEventListener('click', function() {
+                scratchModal.classList.remove('open');
+            });
+
+            // 6. Global Keyboard Shortcuts: [Ctrl + K] for Omni-Commander, [Escape] to Close
+            window.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+                    e.preventDefault();
+                    if (omniBackdrop.classList.contains('open')) omniBackdrop.classList.remove('open');
+                    else openOmniCommander();
+                } else if (e.key === 'Escape' && omniBackdrop.classList.contains('open')) {
+                    omniBackdrop.classList.remove('open');
+                }
+            });
+        })();
     </script>
 </body>
 </html>
