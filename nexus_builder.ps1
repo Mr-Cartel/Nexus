@@ -22,13 +22,19 @@ Function Build-DirectoryUI {
             if ($item.Extension -eq ".ps1") { $shouldIgnore =$true; }
             if ($item.Extension -eq ".bat") { $shouldIgnore =$true; }
             if ($item.Extension -eq ".html") { $shouldIgnore =$true; }
-            if ($name -eq ".gitignore") { $shouldIgnore =$true; }
-
+            if ($name -eq ".gitignore") { $shouldIgnore =$true; }$isSection9 = ($CurrentFolder -match "09_Telegram_Uploads")
+            
             if ($shouldIgnore -eq$false) {
                 if ($item.PSIsContainer) {$buttonsHtml += "        <a href=""$name/index.html""><div class=""card"">$name</div></a>`r`n";
                     Build-DirectoryUI -CurrentFolder ($item.FullName);
                 } else {
-                    $buttonsHtml += "        <a href=""$name"" target=""_blank""><div class=""card"">$name</div></a>`r`n";
+                    if ($isSection9) {
+                        # Creates the special copy-to-clipboard button for Section 9
+                        $buttonsHtml += "        <div class=""card"" style=""flex-direction:column; gap:10px; padding:20px;""><a href=""$name"" target=""_blank"" style=""color:#fff;"">📄 $name</a><button onclick=""navigator.clipboard.writeText('$name'); alert('File Name Copied! Move it manually in Windows File Explorer.');"" style=""background:#0f172a; color:#38bdf8; border:1px solid #0284c7; border-radius:5px; padding:8px 15px; cursor:pointer; font-weight:bold;"">📦 COPY NAME TO MOVE</button></div>`r`n"
+                    } else {
+                        # Normal Card for all other sections
+                        $buttonsHtml += "        <a href=""$name"" target=""_blank""><div class=""card"">$name</div></a>`r`n";
+                    }
                 }
             }
         }
