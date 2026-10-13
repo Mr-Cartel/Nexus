@@ -6641,16 +6641,17 @@
                 document.head.appendChild(st);
             }
 
-            // 2. Build Cartel-Spotify (Hidden YouTube Iframe Bridge)
-            const ytContainer = document.createElement('div');
-            ytContainer.id = 'ytRadioNode';
-            ytContainer.style.position = 'absolute';
-            ytContainer.style.width = '10px';
-            ytContainer.style.height = '10px';
-            ytContainer.style.opacity = '0.01';
-            ytContainer.style.pointerEvents = 'none';
-            ytContainer.style.zIndex = '-100';
-            document.body.appendChild(ytContainer);
+           // 2. Build Cartel-Spotify (Hidden YouTube Iframe Bridge)
+        const ytContainer = document.createElement('div');
+        ytContainer.id = 'ytRadioNode';
+        ytContainer.style.position = 'fixed'; 
+        ytContainer.style.top = '-2000px';    // Moves it completely off-screen
+        ytContainer.style.width = '300px';    // Large enough to bypass browser blocks
+        ytContainer.style.height = '300px';
+        ytContainer.style.opacity = '0';
+        ytContainer.style.pointerEvents = 'none';
+        ytContainer.style.zIndex = '-100';
+        document.body.appendChild(ytContainer);
 
             const radioPill = document.createElement('div');
             radioPill.className = 'radio-pill';
