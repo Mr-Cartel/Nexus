@@ -525,6 +525,29 @@
     </div>
     <script>
         // 1. SAFE FOLDER TITLE DETECTOR
+        // ============================================================================
+        // MASTER DOM AUTO-CLEANER (ERADICATES DUPLICATE HTML BUGS & RESTORES Z-INDEX)
+        // ============================================================================
+        (function() {
+            const idsToClean = ['bootScreen', 'matrixCanvas', 'cartelHamBtn', 'cartelHamDrop', 'jarvisOrb', 'jarvisHud', 'holoModal', 'muteBtn', 'themeBtn', 'recentIntelDock', 'deepWarpBox', 'vaultGrid', 'cyberLabModal', 'ghostLinkModal', 'holoPodLauncher', 'holoPodDock', 'holoScreenTheater'];
+            idsToClean.forEach(function(id) {
+                const els = document.querySelectorAll('#' + id);
+                for (let i = 1; i < els.length; i++) { els[i].remove(); }
+            });
+            const classesToClean = ['cartel-nav-wrap', 'header-container', 'search-container', 'subtitle'];
+            classesToClean.forEach(function(cls) {
+                const els = document.querySelectorAll('.' + cls);
+                for (let i = 1; i < els.length; i++) { els[i].remove(); }
+            });
+            const bs = document.getElementById('bootScreen');
+            if (bs) {
+                bs.addEventListener('click', function() {
+                    bs.style.display = 'none';
+                    if (typeof triggerDoorSplit === 'function') triggerDoorSplit();
+                });
+            }
+        })();
+
         try {
             const secTitle = document.getElementById('section-title');
             if (secTitle) {
