@@ -1,0 +1,1 @@
+powershell.exe -ExecutionPolicy Bypass -NoExit -File "Cartel_Bot.ps1"
