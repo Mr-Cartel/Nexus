@@ -6660,177 +6660,7 @@ $buttonsHtml
                 document.head.appendChild(st);
             }
 
-           // 2. Build Cartel-Spotify (Hidden YouTube Iframe Bridge)
-        const ytContainer = document.createElement('div');
-        ytContainer.id = 'ytRadioNode';
-        ytContainer.style.position = 'fixed'; 
-        ytContainer.style.top = '-2000px';    // Moves it completely off-screen
-        ytContainer.style.width = '300px';    // Large enough to bypass browser blocks
-        ytContainer.style.height = '300px';
-        ytContainer.style.opacity = '0';
-        ytContainer.style.pointerEvents = 'none';
-        ytContainer.style.zIndex = '-100';
-        document.body.appendChild(ytContainer);
-
-            const radioPill = document.createElement('div');
-            radioPill.className = 'radio-pill';
-            radioPill.innerHTML = [
-                '<span id="radioLed">&#128251; AUDIO: OFF</span>',
-                '<select id="radioStationSelect" class="radio-select">',
-                '  <option value="jfKfPfyJRdk">&#127911; LOFI GIRL (24/7 BEATS)</option>',
-                '  <option value="4xDzrUhVKVA">&#128187; SYNTHWAVE (24/7 CYBERPUNK)</option>',
-                '  <option value="0RVWG4uEskI">&#9203; 3-HOUR POMODORO STUDY MIX</option>',
-                '  <option value="5yx6BWlEVcY">&#127795; CHILLHOP (24/7 RELAX)</option>',
-                '  <option value="custom" style="color:#f59e0b;">&#128279; PASTE ANY YOUTUBE LINK...</option>',
-                '  <option value="generator">&#127783; OFFLINE FOCUS RAIN</option>',
-                '</select>',
-                '<button id="radioPlayBtn" class="radio-btn">&#9654; PLAY</button>',
-                '<input type="range" id="radioVol" min="0" max="100" value="50" style="width:65px; accent-color:var(--core);" title="Volume">'
-            ].join('\n');
-            document.body.appendChild(radioPill);
-
-            let isRadioPlaying = false;
-            let ytPlayer = null;
-            let isYtReady = false;
-            let rainOsc = null;
-            let rainGain = null;
-
-            const radioPlayBtn = document.getElementById('radioPlayBtn');
-            const radioStationSelect = document.getElementById('radioStationSelect');
-            const radioVol = document.getElementById('radioVol');
-            const radioLed = document.getElementById('radioLed');
-
-            // Load YouTube API
-            window.onYouTubeIframeAPIReady = function() {
-                ytPlayer = new window.YT.Player('ytRadioNode', {
-                    height: '10',
-                    width: '10',
-                    videoId: '',
-                    playerVars: { 'autoplay': 0, 'controls': 0, 'disablekb': 1, 'fs': 0, 'modestbranding': 1, 'playsinline': 1 },
-                    events: {
-                        'onReady': function() { isYtReady = true; },
-                        'onStateChange': function(e) {
-                            if (e.data === window.YT.PlayerState.ENDED) {
-                                // Auto-loop standard videos
-                                if (ytPlayer && typeof ytPlayer.seekTo === 'function') {
-                                    ytPlayer.seekTo(0);
-                                    ytPlayer.playVideo();
-                                }
-                            }
-                            if (e.data === window.YT.PlayerState.PLAYING) {
-                                radioLed.innerHTML = '&#128251; <span style="color:#22c55e;">LIVE</span>';
-                            }
-                        }
-                    }
-                });
-            };
-
-            if (!document.getElementById('ytApiScript')) {
-                const tag = document.createElement('script');
-                tag.id = 'ytApiScript';
-                tag.src = 'https://www.youtube.com/iframe_api';
-                document.head.appendChild(tag);
-            }
-
-            // Offline Rain Generator Math
-            function toggleOfflineRain(start) {
-                if (!start) {
-                    if (rainOsc) { try { rainOsc.stop(); rainOsc.disconnect(); } catch (e) {} rainOsc = null; }
-                    return;
-                }
-                try {
-                    const ctx = (typeof audioCtx !== 'undefined' && audioCtx) ? audioCtx : new (window.AudioContext || window.webkitAudioContext)();
-                    if (ctx.state === 'suspended') ctx.resume();
-                    const bufferSize = ctx.sampleRate * 2;
-                    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-                    const data = buffer.getChannelData(0);
-                    let lastOut = 0.0;
-                    for (let i = 0; i < bufferSize; i++) {
-                        const white = Math.random() * 2 - 1;
-                        data[i] = (lastOut + (0.02 * white)) / 1.02;
-                        lastOut = data[i];
-                        data[i] *= 3.5;
-                    }
-                    const noise = ctx.createBufferSource();
-                    noise.buffer = buffer;
-                    noise.loop = true;
-                    rainGain = ctx.createGain();
-                    rainGain.gain.setValueAtTime((parseFloat(radioVol.value) / 100) * 0.15, ctx.currentTime);
-                    noise.connect(rainGain);
-                    rainGain.connect(ctx.destination);
-                    noise.start();
-                    rainOsc = noise;
-                } catch (e) {}
-            }
-
-            function startRadio() {
-                const target = radioStationSelect.value;
-                if (target === 'generator') {
-                    if (ytPlayer && isYtReady) ytPlayer.pauseVideo();
-                    toggleOfflineRain(true);
-                } else {
-                    toggleOfflineRain(false);
-                    if (ytPlayer && isYtReady) {
-                        const currentId = ytPlayer.getVideoData ? ytPlayer.getVideoData().video_id : '';
-                        if (currentId !== target) {
-                            ytPlayer.loadVideoById(target);
-                        } else {
-                            ytPlayer.playVideo();
-                        }
-                        ytPlayer.setVolume(parseFloat(radioVol.value));
-                    } else {
-                        radioLed.innerHTML = '&#128251; <span style="color:#f59e0b;">LOADING...</span>';
-                        setTimeout(startRadio, 1000);
-                        return;
-                    }
-                }
-                isRadioPlaying = true;
-                radioPlayBtn.innerHTML = '&#9208; PAUSE';
-                radioPlayBtn.classList.add('active');
-                if (target === 'generator') radioLed.innerHTML = '&#128251; <span style="color:#22c55e;">LIVE</span>';
-            }
-
-            function stopRadio() {
-                if (ytPlayer && isYtReady) ytPlayer.pauseVideo();
-                toggleOfflineRain(false);
-                isRadioPlaying = false;
-                radioPlayBtn.innerHTML = '&#9654; PLAY';
-                radioPlayBtn.classList.remove('active');
-                radioLed.innerHTML = '&#128251; AUDIO: OFF';
-            }
-
-            radioPlayBtn.addEventListener('click', function() {
-                if (typeof playSynth === 'function') playSynth(600, 1400, 0.08, 'sine');
-                if (!isRadioPlaying) startRadio();
-                else stopRadio();
-            });
-
-            radioStationSelect.addEventListener('change', function() {
-                if (this.value === 'custom') {
-                    const url = prompt('PASTE ANY YOUTUBE LINK (e.g. a 4-Hour Study With Me, Hans Zimmer Mix, or Lofi track):');
-                    if (url) {
-                        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
-                        if (match && match[1]) {
-                            this.options[this.selectedIndex].value = match[1];
-                            this.options[this.selectedIndex].text = '&#128279; CUSTOM YT STREAM';
-                        } else {
-                            alert('Invalid YouTube Link! Falling back to Lofi Girl.');
-                            this.value = 'jfKfPfyJRdk';
-                        }
-                    } else {
-                        this.value = 'jfKfPfyJRdk';
-                    }
-                }
-                if (isRadioPlaying) startRadio();
-            });
-
-            radioVol.addEventListener('input', function() {
-                const v = parseFloat(this.value);
-                if (ytPlayer && isYtReady) ytPlayer.setVolume(v);
-                if (rainGain) rainGain.gain.setValueAtTime((v / 100) * 0.15, 0);
-            });
-
-            // 3. Build Non-Political Daily Good-News Terminal Modal
+                      // 3. Build Non-Political Daily Good-News Terminal Modal
             const newsModalWrap = document.createElement('div');
             newsModalWrap.innerHTML = [
                 '<div id="cartelNewsModal" class="news-modal">',
@@ -8091,6 +7921,139 @@ $buttonsHtml
                 }
             });
         })();
+// ============================================================================
+    // BULLETPROOF CARTEL-SPOTIFY (MOBILE/TAB/LAPTOP GUARANTEED)
+    // ============================================================================
+    (function() {
+        // 1. Clean up any old CSS/Modals if they exist
+        const oldCss = document.getElementById('cartelSpotifyCss');
+        if (oldCss) oldCss.remove();
+        const oldModal = document.getElementById('cartelSpotifyModal');
+        if (oldModal) oldModal.remove();
+
+        // 2. Inject Clean CSS
+        const st = document.createElement('style');
+        st.id = 'cartelSpotifyCss';
+        st.innerHTML = [
+            '.spotify-modal { position: fixed; bottom: 80px; right: 20px; width: 340px; background: #070b14; border: 2px solid #1db954; border-radius: 12px; z-index: 999999; font-family: "Courier New", monospace; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: none; }',
+            '.spotify-hdr { background: #052411; color: #1db954; padding: 10px; font-weight: bold; font-size: 14px; display: flex; justify-content: space-between; cursor: move; user-select: none; }',
+            '.spotify-body { padding: 15px; display: flex; flex-direction: column; gap: 10px; }',
+            '.spotify-input { width: 100%; background: #000; border: 1px solid #1db954; color: #1db954; padding: 8px; box-sizing: border-box; border-radius: 4px; outline: none; font-family: inherit; }',
+            '.spotify-btn { width: 100%; background: #1db954; color: #000; font-weight: bold; border: none; padding: 8px; cursor: pointer; border-radius: 4px; font-family: inherit; }',
+            '.spotify-btn:hover { background: #1ed760; }',
+            '.spotify-iframe-box { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 4px; overflow: hidden; border: 1px solid #1db954; }',
+            '.spotify-iframe { width: 100%; height: 100%; border: none; }',
+            'body.cartel-day-mode .spotify-modal { background: #f8fafc; }',
+            'body.cartel-day-mode .spotify-input { background: #fff; color: #065f46; border-color: #10b981; }'
+        ].join('\n');
+        document.head.appendChild(st);
+
+        // 3. Build the UI
+        const wrap = document.createElement('div');
+        wrap.innerHTML = [
+            '<div id="cartelSpotifyModal" class="spotify-modal">',
+            '  <div id="spotifyHdr" class="spotify-hdr">',
+            '    <span>&#127911; CARTEL SPOTIFY</span>',
+            '    <button id="spotifyClose" style="background:none; border:none; color:#ef4444; cursor:pointer; font-weight:bold;">&#10006;</button>',
+            '  </div>',
+            '  <div class="spotify-body">',
+            '    <input id="spotifyInput" class="spotify-input" type="text" placeholder="Paste YouTube Link...">',
+            '    <button id="spotifyLoad" class="spotify-btn">LOAD & PLAY</button>',
+            '    <div class="spotify-iframe-box">',
+            '      <iframe id="spotifyIframe" class="spotify-iframe" allow="autoplay; encrypted-media" allowfullscreen></iframe>',
+            '    </div>',
+            '  </div>',
+            '</div>'
+        ].join('\n');
+        document.body.appendChild(wrap.firstElementChild);
+
+        const modal = document.getElementById('cartelSpotifyModal');
+        const input = document.getElementById('spotifyInput');
+        const loadBtn = document.getElementById('spotifyLoad');
+        const iframe = document.getElementById('spotifyIframe');
+        const closeBtn = document.getElementById('spotifyClose');
+        const hdr = document.getElementById('spotifyHdr');
+
+        const STORAGE_KEY = 'cartelSpotifySavedTrack';
+
+        // 4. Extract ID and Play
+        function extractId(url) {
+            const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]{11})/);
+            return match ? match[1] : null;
+        }
+
+        function playVideo(vidId) {
+            if (!vidId) return;
+            // playsinline=1 forces mobile browsers to play it in the box, loop=1 loops it forever
+            iframe.src = 'https://www.youtube.com/embed/' + vidId + '?autoplay=1&playsinline=1&loop=1&playlist=' + vidId;
+            localStorage.setItem(STORAGE_KEY, vidId);
+        }
+
+        loadBtn.addEventListener('click', function() {
+            const vid = extractId(input.value);
+            if (vid) {
+                playVideo(vid);
+                input.value = '';
+            } else {
+                alert('Invalid YouTube Link!');
+            }
+        });
+
+        // 5. Auto-Load Memory
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            playVideo(saved);
+        }
+
+        // 6. Smooth Dragging
+        let isDragging = false, startX, startY, startLeft, startTop;
+        hdr.addEventListener('mousedown', function(e) {
+            if(e.target.tagName === 'BUTTON') return;
+            isDragging = true;
+            const rect = modal.getBoundingClientRect();
+            startX = e.clientX; startY = e.clientY;
+            startLeft = rect.left; startTop = rect.top;
+            modal.style.bottom = 'auto';
+            modal.style.right = 'auto';
+            modal.style.left = startLeft + 'px';
+            modal.style.top = startTop + 'px';
+        });
+        window.addEventListener('mousemove', function(e) {
+            if(!isDragging) return;
+            modal.style.left = (startLeft + (e.clientX - startX)) + 'px';
+            modal.style.top = (startTop + (e.clientY - startY)) + 'px';
+        });
+        window.addEventListener('mouseup', function() { isDragging = false; });
+
+        closeBtn.addEventListener('click', function() { 
+            modal.style.display = 'none'; 
+            // Stop video from playing in background when closed
+            iframe.src = '';
+        });
+        
+        // 7. Re-open from Dock
+        function attachToDock() {
+            const dock = document.getElementById('nexusOsDock');
+            if (dock && !document.getElementById('spotifyDockBtn')) {
+                const btn = document.createElement('button');
+                btn.id = 'spotifyDockBtn';
+                btn.className = 'nexus-dock-btn';
+                btn.style.borderColor = '#1db954';
+                btn.style.color = '#1db954';
+                btn.innerHTML = '&#127911; SPOTIFY';
+                btn.title = 'Open Cartel Spotify';
+                btn.addEventListener('click', function() {
+                    modal.style.display = 'block';
+                    const currentSaved = localStorage.getItem(STORAGE_KEY);
+                    if(currentSaved && !iframe.src.includes(currentSaved)) {
+                        playVideo(currentSaved);
+                    }
+                });
+                dock.insertBefore(btn, dock.lastElementChild);
+            }
+        }
+        setInterval(attachToDock, 1000);
+    })();
     </script>
 </body>
 </html>
