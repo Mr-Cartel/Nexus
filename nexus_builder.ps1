@@ -1,4 +1,4 @@
-﻿$basePath = "C:\Project Nexus PDF version";
+﻿$basePath = "/home/tejas/Project Nexus PDF version";
 $ignoreList = @(".git", ".netlify", "index.html");
 
 Function Build-DirectoryUI {
