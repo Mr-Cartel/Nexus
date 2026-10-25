@@ -136,50 +136,19 @@ try {
     Write-Host "==========================================================" -ForegroundColor Cyan
 } catch {}
 
-# --- HYPER-DRIVE WEBHOOK ENGINE (HOST HEADER FIX APPLIED) ---
-Stop-Process -Name "cloudflared" -Force -ErrorAction SilentlyContinue
-$logFile = Join-Path $VaultPath "tunnel.log"
-Remove-Item $logFile -ErrorAction SilentlyContinue
+# --- NEW HYPER-DRIVE LONG POLLING ENGINE ---
+Write-Host "[SYSTEM] ZERO-LATENCY LONG POLLING ACTIVE" -ForegroundColor Green
+$Offset = 0
 
-Write-Host "[SYSTEM] Starting Cloudflare Tunnel..." -ForegroundColor Yellow
-Start-Job -ScriptBlock {
-    param($vPath)
-    Set-Location $vPath
-    cloudflared tunnel --url http://127.0.0.1:8443 --http-host-header "127.0.0.1" 2> tunnel.log
-} -ArgumentList $VaultPath | Out-Null
+while ($true) {
+    try {
+        $Updates = Invoke-RestMethod -Uri "$apiUrl/getUpdates?offset=$Offset&timeout=60" -ErrorAction Stop
+        
+        foreach ($Update in $Updates.result) {
+            $Offset = $Update.update_id + 1
 
-$webhookUrl = $null
-for ($i = 0; $i -lt 15; $i++) {
-    Start-Sleep -Seconds 1
-    if (Test-Path $logFile) {
-        $match = Select-String -Path $logFile -Pattern "https://[a-zA-Z0-9-]+\.trycloudflare\.com"
-        if ($match) { $webhookUrl = $match.Matches[0].Value.Trim(); break }
-    }
-}
-if (!$webhookUrl) { Write-Host "[ERROR] Cloudflare Tunnel failed to start." -ForegroundColor Red; exit }
-
-Write-Host "[SYSTEM] Tunnel Online: $webhookUrl" -ForegroundColor Cyan
-Invoke-RestMethod -Uri "$apiUrl/setWebhook?url=$webhookUrl" -Method Post | Out-Null
-
-$listener = New-Object System.Net.HttpListener
-$listener.Prefixes.Add("http://127.0.0.1:8443/")
-$listener.Prefixes.Add("http://localhost:8443/")
-$listener.Start()
-Write-Host "[SYSTEM] WEBHOOK ENGINE LISTENING - 0ms LATENCY ACTIVE" -ForegroundColor Green
-
-while ($listener.IsListening) {
-    $context = $listener.GetContext()
-    $request = $context.Request
-    $response = $context.Response
-
-    if ($request.HttpMethod -eq 'POST') {
-        try {
-            $reader = New-Object System.IO.StreamReader($request.InputStream)
-            $json = $reader.ReadToEnd()
-            $update = $json | ConvertFrom-Json
-
-            if ($update.callback_query) {
-                $cb     = $update.callback_query
+            if ($Update.callback_query) {
+                $cb     = $Update.callback_query
                 $cbId   = $cb.id
                 $chatId = $cb.message.chat.id
                 $msgId  = $cb.message.message_id
@@ -230,20 +199,31 @@ while ($listener.IsListening) {
                     }
                 }
             }
-            elseif ($update.message) {
-                $message = $update.message
+            elseif ($Update.message) {
+                $message = $Update.message
                 $chatId  = $message.chat.id
 
                 if ($message.document -or $message.photo) {
                     $fileId = $null
+                    $fileSize = 0
                     $fileName = "Upload_$(Get-Date -Format 'yyyyMMdd_HHmmss').pdf"
+                    
                     if ($message.document) {
                         $fileId = $message.document.file_id
+                        $fileSize = $message.document.file_size
                         if ($message.document.file_name) { $fileName = $message.document.file_name }
                     } elseif ($message.photo) {
                         $fileId = $message.photo[-1].file_id
+                        $fileSize = $message.photo[-1].file_size
                         $fileName = "Photo_$(Get-Date -Format 'yyyyMMdd_HHmmss').jpg"
                     }
+
+                    # Guardrail: Reject anything near Telegram's 20MB bot limit to prevent crashes
+                    if ($fileSize -gt 19000000) {
+                        Invoke-RestMethod -Uri "$apiUrl/sendMessage" -Method Post -Body @{ chat_id = $chatId; text = "❌ <b>Upload Failed:</b> File is larger than the 19MB Telegram API limit." ; parse_mode = "HTML" } | Out-Null
+                        continue
+                    }
+
                     $Global:PendingUploads[$chatId] = @{ fileId = $fileId; fileName = $fileName }
                     Send-VaultMenu -ChatId $chatId -FolderPath $VaultPath
                 }
@@ -262,8 +242,9 @@ while ($listener.IsListening) {
                     }
                 }
             }
-        } catch { Write-Host "[ERROR] $_" -ForegroundColor Red }
-        $response.StatusCode = 200
-        $response.Close()
+        }
+    } catch {
+        # Silent loop continuation if internet blips momentarily
+        Start-Sleep -Seconds 2
     }
 }
