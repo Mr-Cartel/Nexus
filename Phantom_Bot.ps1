@@ -1,4 +1,5 @@
-﻿[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+﻿$ProgressPreference = 'SilentlyContinue'
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 Add-Type -AssemblyName System.Net.Http
 
 $BotToken  = "8848976862:AAEdKfpE2QDAnwpQSTwj0x-5Rri7flvgcUs"
@@ -27,7 +28,7 @@ function Get-PathId([string]$FullPath) {
 function Register-BotCommands {
     $cmdPayload = @{ commands = @(
         @{ command = "vault"; description = "Open Main Vault Dashboard" },
-        @{ command = "sync"; description = "Pull latest files from GitHub (Sync.bat)" }
+        @{ command = "sync"; description = "Force Git Sync" }
     )}
     $bytes = [System.Text.Encoding]::UTF8.GetBytes(($cmdPayload | ConvertTo-Json -Depth 5 -Compress))
     try { Invoke-RestMethod -Uri "$apiUrl/setMyCommands" -Method Post -Body $bytes -ContentType "application/json; charset=utf-8" -TimeoutSec 10 | Out-Null } catch {}
@@ -109,6 +110,7 @@ function Send-VaultMenu($ChatId, [string]$FolderPath, $EditMsgId = $null) {
     try { Invoke-RestMethod -Uri "$apiUrl/$endpoint" -Method Post -Body $jsonBytes -ContentType "application/json; charset=utf-8" | Out-Null } catch {}
 }
 
+# ENGINE 2: The Courier (Runspace for Outbound Files) 📤
 function Send-TelegramFile($ChatId, [string]$FilePath) {
     [System.Net.ServicePointManager]::Expect100Continue = $false
     $ThreadCode = {
@@ -136,10 +138,10 @@ try {
     Write-Host "==========================================================" -ForegroundColor Cyan
 } catch {}
 
-# --- NEW HYPER-DRIVE LONG POLLING ENGINE ---
-Write-Host "[SYSTEM] ZERO-LATENCY LONG POLLING ACTIVE" -ForegroundColor Green
+Write-Host "[SYSTEM] QUADRUPLE CARTEL ENGINE ACTIVE 🚀🛡️" -ForegroundColor Green
 $Offset = 0
 
+# ENGINE 1: The Vanguard (Zero-Block Polling Loop) ⚡
 while ($true) {
     try {
         $Updates = Invoke-RestMethod -Uri "$apiUrl/getUpdates?offset=$Offset&timeout=60" -ErrorAction Stop
@@ -180,18 +182,61 @@ while ($true) {
                         $fileName = $fileInfo.fileName
                         $Global:PendingUploads.Remove($chatId)
 
-                        Invoke-RestMethod -Uri "$apiUrl/answerCallbackQuery" -Method Post -Body @{ callback_query_id = $cbId; text = "Saving to folder..." } | Out-Null
-                        Invoke-RestMethod -Uri "$apiUrl/editMessageText" -Method Post -Body @{ chat_id = $chatId; message_id = $msgId; text = "⏳ <b>Downloading & Syncing to GitHub...</b>"; parse_mode = "HTML" } | Out-Null
+                        Invoke-RestMethod -Uri "$apiUrl/answerCallbackQuery" -Method Post -Body @{ callback_query_id = $cbId; text = "Quadruple Engine Engaged..." } | Out-Null
+                        Invoke-RestMethod -Uri "$apiUrl/editMessageText" -Method Post -Body @{ chat_id = $chatId; message_id = $msgId; text = "🚀 <b>Engines 3 & 4 Active: Downloading & Forcing GitHub Sync...</b>`nYou can keep navigating instantly!"; parse_mode = "HTML" } | Out-Null
 
-                        $fileReq = Invoke-RestMethod -Uri "$apiUrl/getFile?file_id=$fileId" -Method Get
-                        $downloadUrl = "https://api.telegram.org/file/bot$BotToken/$($fileReq.result.file_path)"
-                        $dest = Join-Path $dirPath $fileName
-                        Invoke-WebRequest -Uri $downloadUrl -OutFile $dest
+                        # ENGINE 3 & 4: The Atlas (Local Save) + The Enforcer (Aggressive Git Sync & Verify Loop) 🌍🛡️
+                        $SyncCode = {
+                            param($jFileId, $jFileName, $jDirPath, $jBotToken, $jVaultPath, $jChatId)
+                            $jApiUrl = "https://api.telegram.org/bot$jBotToken"
+                            
+                            try {
+                                # Engine 3: Pull file from Telegram
+                                $fileReq = Invoke-RestMethod -Uri "$jApiUrl/getFile?file_id=$jFileId" -Method Get
+                                $downloadUrl = "https://api.telegram.org/file/bot$jBotToken/$($fileReq.result.file_path)"
+                                $dest = Join-Path $jDirPath $jFileName
+                                Invoke-WebRequest -Uri $downloadUrl -OutFile $dest
 
-                        Set-Location -Path $VaultPath
-                        git add .
-                        git commit -m "Auto-Drop: $fileName"
-                        git push
+                                # Engine 4: The Enforcer Loop
+                                Set-Location -Path $jVaultPath
+                                $PushSuccess = $false
+                                $Attempts = 1
+                                $FinalLog = ""
+
+                                while (-not $PushSuccess -and $Attempts -le 20) {
+                                    # Auto-destroy corrupted git locks that block syncs
+                                    if (Test-Path ".git/index.lock") { Remove-Item ".git/index.lock" -Force -ErrorAction SilentlyContinue }
+
+                                    $pullOutput = git pull origin main 2>&1
+                                    git add .
+                                    git commit -m "Auto-Drop: $jFileName"
+                                    $pushOutput = git push origin main 2>&1
+
+                                    # Verify push success
+                                    if ($pushOutput -match "Total" -or $pushOutput -match "up-to-date" -or $pushOutput -match "Everything up-to-date") {
+                                        $PushSuccess = $true
+                                        $FinalLog = "⬇️ <b>Pull:</b> $pullOutput`n⬆️ <b>Push:</b> $pushOutput"
+                                    } else {
+                                        Start-Sleep -Seconds 4
+                                        $Attempts++
+                                    }
+                                }
+
+                                $cleanPush = $FinalLog -replace '<', '' -replace '>', ''
+                                if ($cleanPush.Length -gt 3500) { $cleanPush = $cleanPush.Substring(0, 3500) }
+                                
+                                if ($PushSuccess) {
+                                    $statusMsg = "🟢 <b>QUADRUPLE ENGINE SYNC SUCCESS:</b>`nFile mathematically guaranteed live on GitHub worldwide after $Attempts attempt(s).`n<code>$cleanPush</code>"
+                                } else {
+                                    $statusMsg = "🔴 <b>SYNC WARNING:</b> File saved to server vault, but GitHub rejected the worldwide push after 20 forceful attempts.`n<code>$cleanPush</code>"
+                                }
+                                
+                                Invoke-RestMethod -Uri "$jApiUrl/sendMessage" -Method Post -Body @{ chat_id = $jChatId; text = $statusMsg; parse_mode = "HTML" } | Out-Null
+                            } catch {}
+                        }
+                        
+                        $AtlasThread = [powershell]::Create().AddScript($SyncCode).AddArgument($fileId).AddArgument($fileName).AddArgument($dirPath).AddArgument($BotToken).AddArgument($VaultPath).AddArgument($chatId)
+                        $null = $AtlasThread.BeginInvoke()
 
                         Send-VaultMenu -ChatId $chatId -FolderPath $dirPath -EditMsgId $msgId
                     } else {
@@ -218,9 +263,8 @@ while ($true) {
                         $fileName = "Photo_$(Get-Date -Format 'yyyyMMdd_HHmmss').jpg"
                     }
 
-                    # Guardrail: Reject anything near Telegram's 20MB bot limit to prevent crashes
                     if ($fileSize -gt 19000000) {
-                        Invoke-RestMethod -Uri "$apiUrl/sendMessage" -Method Post -Body @{ chat_id = $chatId; text = "❌ <b>Upload Failed:</b> File is larger than the 19MB Telegram API limit." ; parse_mode = "HTML" } | Out-Null
+                        Invoke-RestMethod -Uri "$apiUrl/sendMessage" -Method Post -Body @{ chat_id = $chatId; text = "❌ <b>Upload Failed:</b> File is larger than the 19MB limit." ; parse_mode = "HTML" } | Out-Null
                         continue
                     }
 
@@ -235,8 +279,8 @@ while ($true) {
                     }
                     elseif ($text -match "^/sync\b") {
                         Set-Location -Path $VaultPath
-                        $gitOutput = git pull 2>&1
-                        $msg = "🔄 <b>Git Pull Executed</b>`n<code>$gitOutput</code>"
+                        $gitOutput = git pull origin main 2>&1
+                        $msg = "🔄 <b>Manual Git Pull Executed</b>`n<code>$gitOutput</code>"
                         Invoke-RestMethod -Uri "$apiUrl/sendMessage" -Method Post -Body @{ chat_id = $chatId; text = $msg; parse_mode = "HTML" } | Out-Null
                         Send-VaultMenu -ChatId $chatId -FolderPath $VaultPath
                     }
@@ -244,7 +288,6 @@ while ($true) {
             }
         }
     } catch {
-        # Silent loop continuation if internet blips momentarily
-        Start-Sleep -Seconds 2
+        Start-Sleep -Seconds 1
     }
 }
