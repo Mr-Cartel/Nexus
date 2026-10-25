@@ -40,3 +40,7 @@
 2026-10-25T03:41:39Z INF precheck component="Cloudflare API" details="API is reachable" run_id=aece7f0d-fc8d-4311-b030-62923f76efa0 status=pass target=api.cloudflare.com:443
 2026-10-25T03:41:39Z INF precheck complete hard_fail=false run_id=aece7f0d-fc8d-4311-b030-62923f76efa0 suggested_protocol=quic
 2026-10-25T03:41:40Z INF Registered tunnel connection connIndex=0 connection=a3b042eb-b169-4341-9be1-2291dd6e7d44 event=0 ip=2606:4700:a0::2 location=knu01 protocol=quic
+2026-10-25T04:09:25Z ERR  error="Incoming request ended abruptly: context canceled" connIndex=0 event=1 ingressRule=0 originService=http://127.0.0.1:8443
+2026-10-25T04:09:25Z ERR Request failed error="Incoming request ended abruptly: context canceled" connIndex=0 dest=https://rays-sailing-article-sodium.trycloudflare.com/ event=0 ip=2606:4700:a0::2 type=http
+2026-10-25T04:10:25Z ERR  error="Incoming request ended abruptly: context canceled" connIndex=0 event=1 ingressRule=0 originService=http://127.0.0.1:8443
+2026-10-25T04:10:25Z ERR Request failed error="Incoming request ended abruptly: context canceled" connIndex=0 dest=https://rays-sailing-article-sodium.trycloudflare.com/ event=0 ip=2606:4700:a0::2 type=http
